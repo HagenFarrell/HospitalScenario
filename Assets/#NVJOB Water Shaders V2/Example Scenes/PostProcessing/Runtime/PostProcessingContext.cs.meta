@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: fa12acefc06e4953a4d086a55c0d5d5a
+timeCreated: 1467630780
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/PostProcessing/Runtime/PostProcessingContext.cs
+  uploadId: 434077

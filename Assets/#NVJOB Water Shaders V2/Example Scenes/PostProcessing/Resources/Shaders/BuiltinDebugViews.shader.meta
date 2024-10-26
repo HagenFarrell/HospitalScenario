@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 1a508edd82e443e19fd32666cff24aff
+timeCreated: 1468224802
+licenseType: Store
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/PostProcessing/Resources/Shaders/BuiltinDebugViews.shader
+  uploadId: 434077

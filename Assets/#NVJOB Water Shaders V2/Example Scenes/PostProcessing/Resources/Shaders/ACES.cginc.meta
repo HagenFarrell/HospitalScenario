@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 7e6996c605024bdab7d7b00568d8d5c8
+timeCreated: 1460363486
+licenseType: Store
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/PostProcessing/Resources/Shaders/ACES.cginc
+  uploadId: 434077

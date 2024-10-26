@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 6dd2aa03074e451d9fc521e9e4f1d3e9
+timeCreated: 1467190133
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/PostProcessing/Editor/Models/DepthOfFieldModelEditor.cs
+  uploadId: 434077

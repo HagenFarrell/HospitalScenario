@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: b0f4b180b28a41529284dd7513526fa9
+timeCreated: 1485179854
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/PostProcessing/Editor/Models/DitheringModelEditor.cs
+  uploadId: 434077

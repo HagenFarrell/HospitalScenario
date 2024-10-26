@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 165957a511184d7c94007e1366788163
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/#NVJOB Water Shaders V2/NVWaterShaders.cs
+  uploadId: 434077

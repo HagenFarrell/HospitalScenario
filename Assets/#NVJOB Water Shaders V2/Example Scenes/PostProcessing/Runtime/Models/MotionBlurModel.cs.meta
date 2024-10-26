@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: fc6ae35790d34ca5b7f1066c5d0cd1a5
+timeCreated: 1468325392
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/PostProcessing/Runtime/Models/MotionBlurModel.cs
+  uploadId: 434077

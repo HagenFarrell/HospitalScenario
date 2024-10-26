@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: b315d396d4374dfa8c738c3a5d21ea0d
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/Environment/Palm Trees/Materials/Standard
+    2-Sided.shader
+  uploadId: 434077

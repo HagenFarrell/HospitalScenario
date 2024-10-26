@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 047dc7e653ef400f83b49cc3e82357dd
+timeCreated: 1467190133
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/PostProcessing/Editor/Models/GrainModelEditor.cs
+  uploadId: 434077

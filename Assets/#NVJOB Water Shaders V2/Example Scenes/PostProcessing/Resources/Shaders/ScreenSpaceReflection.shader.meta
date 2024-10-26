@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 1239af78867b4bfeafd3fe9cd1e11db9
+timeCreated: 1464350149
+licenseType: Store
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/PostProcessing/Resources/Shaders/ScreenSpaceReflection.shader
+  uploadId: 434077

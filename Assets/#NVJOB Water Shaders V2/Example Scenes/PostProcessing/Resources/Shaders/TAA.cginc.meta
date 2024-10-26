@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 0d1cc1dba12e4fa6ac612143f10736ac
+timeCreated: 1472807158
+licenseType: Store
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/PostProcessing/Resources/Shaders/TAA.cginc
+  uploadId: 434077

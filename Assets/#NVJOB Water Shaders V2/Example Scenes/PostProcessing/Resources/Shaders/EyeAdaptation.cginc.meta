@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: b7f4bf7484634c8cb0500f8f16fbd93e
+timeCreated: 1465898178
+licenseType: Store
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/PostProcessing/Resources/Shaders/EyeAdaptation.cginc
+  uploadId: 434077

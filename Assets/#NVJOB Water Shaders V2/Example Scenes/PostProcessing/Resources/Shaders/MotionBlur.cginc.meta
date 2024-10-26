@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 7bb73096584943e083f603551c0f0ae9
+timeCreated: 1470404606
+licenseType: Store
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/PostProcessing/Resources/Shaders/MotionBlur.cginc
+  uploadId: 434077

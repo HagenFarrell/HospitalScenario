@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 80024fb0caf74b5ebac71fc57f83a2d0
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/Environment/Island/Materials/Island
+    1.mat
+  uploadId: 434077

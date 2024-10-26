@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: dd7a414e67514f87a6c4d69b61222857
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/Environment/#NVJOB Assets/Dynamic
+    Sky (For Demo)/Materials/Clouds 2.mat
+  uploadId: 434077

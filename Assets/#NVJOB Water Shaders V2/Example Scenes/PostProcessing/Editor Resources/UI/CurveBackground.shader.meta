@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: cefe231a58814ae1ba344bb6e45f22c9
+timeCreated: 1460970196
+licenseType: Store
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/PostProcessing/Editor
+    Resources/UI/CurveBackground.shader
+  uploadId: 434077

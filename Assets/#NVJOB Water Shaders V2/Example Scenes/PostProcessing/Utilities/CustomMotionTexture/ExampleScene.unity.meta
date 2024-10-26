@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 8c9b9ac75f3d4991b88176950d9ae543
+timeCreated: 1487347827
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/PostProcessing/Utilities/CustomMotionTexture/ExampleScene.unity
+  uploadId: 434077

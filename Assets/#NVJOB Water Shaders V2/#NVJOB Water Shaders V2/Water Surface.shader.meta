@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: cab0bc95e1ce4946a1298a052a7d1d6f
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/#NVJOB Water Shaders V2/Water Surface.shader
+  uploadId: 434077

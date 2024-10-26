@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 49f3a6a6dfc64d49ad27983ed094f304
+timeCreated: 1459956391
+licenseType: Store
+ShaderImporter:
+  defaultTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/PostProcessing/Editor
+    Resources/Monitors/HistogramRender.shader
+  uploadId: 434077

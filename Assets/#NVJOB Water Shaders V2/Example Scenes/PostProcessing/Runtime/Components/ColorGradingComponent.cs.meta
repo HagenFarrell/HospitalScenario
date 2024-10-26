@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: f0582c8aa5c444bdbf919b00ffb9376a
+timeCreated: 1473086520
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/PostProcessing/Runtime/Components/ColorGradingComponent.cs
+  uploadId: 434077

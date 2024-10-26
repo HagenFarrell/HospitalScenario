@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: f7067ad0721247aeac448d2051892546
+timeCreated: 1460031632
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149916
+  packageName: '#NVJOB Simple Water Shaders'
+  packageVersion: 2,0
+  assetPath: Assets/#NVJOB Water Shaders V2/Example Scenes/PostProcessing/Editor/Monitors/HistogramMonitor.cs
+  uploadId: 434077
