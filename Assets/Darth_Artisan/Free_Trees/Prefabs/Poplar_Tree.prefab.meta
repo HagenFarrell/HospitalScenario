@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 826b6a0b570e8460990010fa615b5a2a
+timeCreated: 1508930547
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 103208
+  packageName: Free Trees
+  packageVersion: 1.0
+  assetPath: Assets/Darth_Artisan/Free_Trees/Prefabs/Poplar_Tree.prefab
+  uploadId: 208279

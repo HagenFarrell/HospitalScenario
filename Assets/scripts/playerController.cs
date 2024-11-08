@@ -10,9 +10,12 @@ public class playerController : MonoBehaviour
 
     void Start()
     {
-        rb = gameObject.AddComponent<Rigidbody>();
-        rb.useGravity = false;
-        rb.linearDamping = 2f; // Adds a bit of drag to smooth movement
+       rb = gameObject.AddComponent<Rigidbody>();
+       rb.useGravity = false;
+       //rb.linearDamping = 0; // Adds a bit of drag to smooth movement
+       //rb.angularDrag = 0;
+
+       // rb.mass = 1;
     }
 
     void Update()

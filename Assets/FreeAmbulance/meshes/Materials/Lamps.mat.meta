@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: f27b85431c2d8e1449ca230b1b3bcf92
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 143684
+  packageName: Simple Ambulance Van
+  packageVersion: 1.0
+  assetPath: Assets/FreeAmbulance/meshes/Materials/Lamps.mat
+  uploadId: 304330

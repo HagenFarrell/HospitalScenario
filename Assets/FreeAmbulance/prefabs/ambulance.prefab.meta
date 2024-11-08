@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: af1c3e5a3edbe1d4193759238a03cab0
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 143684
+  packageName: Simple Ambulance Van
+  packageVersion: 1.0
+  assetPath: Assets/FreeAmbulance/prefabs/ambulance.prefab
+  uploadId: 304330

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 663e4ffe6544adc40a638cd222abf9e8
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 143684
+  packageName: Simple Ambulance Van
+  packageVersion: 1.0
+  assetPath: Assets/FreeAmbulance/meshes/Materials/Plastic.mat
+  uploadId: 304330
