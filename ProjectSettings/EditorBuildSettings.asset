@@ -4,5 +4,15 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Start Screen.unity
+    guid: f206b414f9631f343b84e2b3c55e3742
+  - enabled: 1
+    path: Assets/Scenes/Options Screen.unity
+    guid: 634bd6c3613c4cb4884ebd68b3b34dd9
+  - enabled: 1
+    path: Assets/Scenes/Hospital.unity
+    guid: fa0da64bc09ce834da74b17cf8929985
   m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0
