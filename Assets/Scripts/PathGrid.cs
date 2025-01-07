@@ -2,7 +2,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
-// Represents a node in the pathfinding grid
 public class PathNode {
     public Vector3 worldPosition;
     public bool isWalkable;
