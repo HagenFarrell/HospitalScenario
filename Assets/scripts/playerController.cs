@@ -1,14 +1,28 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class playerController : MonoBehaviour
 {
-	//TEST
     public float moveSpeed = 10f; // Horizontal movement speed
     public float verticalSpeed = 5f; // Vertical movement speed
     public float smoothingSpeed = 0.1f; // Determines how smooth the movement is
 
     private Vector3 moveDirection = Vector3.zero;
     private Vector3 currentVelocity = Vector3.zero; // Used for SmoothDamp
+    public enum Roles
+    {
+        LawEnforcement,
+        FireDepartment,
+        OnSiteSecurity,
+        RadiationSaftey,
+        Dispatch,
+        Spectator,
+        Instructor,
+    }
+
+    [SerializeField] private Roles role;
+
+    private GameObject[] moveableChars; //Array of gameobjects that this player is allowed to interact with
 
     void Update()
     {
@@ -45,5 +59,24 @@ public class playerController : MonoBehaviour
 
         // Apply the smoothed velocity to the player's position
         transform.position += currentVelocity * Time.fixedDeltaTime;
+    }
+
+    public void onButtonClick(Button button)
+    {
+        switch (button) { 
+
+        }
+
+        //Hide UI
+        GameObject buttonUI = button.gameObject.transform.parent.gameObject;
+        buttonUI.gameObject.SetActive(false);
+
+        //Activate Camera
+        //TODO: Enable Camera Movement only for instructor (Waiting for a more specific implementation of camera position)
+        playerController playerController = transform.GetComponent<playerController>();
+        playerController.enabled = true;
+        GameObject Camera = transform.Find("Camera").gameObject;
+        CameraLook CameraLook = Camera.GetComponent<CameraLook>();
+        CameraLook.enabled = true;
     }
 }
