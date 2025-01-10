@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class playerController : MonoBehaviour
 {
+	//TEST
     public float moveSpeed = 10f; // Horizontal movement speed
     public float verticalSpeed = 5f; // Vertical movement speed
     public float smoothingSpeed = 0.1f; // Determines how smooth the movement is
