@@ -1,3 +1,4 @@
+using System.Data.Common;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -61,13 +62,19 @@ public class playerController : MonoBehaviour
         transform.position += currentVelocity * Time.fixedDeltaTime;
     }
 
+
+    //Helper function to get array of npcs that match the player's role
     private GameObject[] GetNpcs(string role)
     {
+
+        if(role == "" )return null;
         GameObject[] npcs = GameObject.FindGameObjectsWithTag(role);
 
         return npcs;
     }
 
+
+    //Button evevent runs reguardless of if script is enabled or not
     public void onButtonClick(Button button)
     {
         string npcRole = "";
@@ -81,9 +88,21 @@ public class playerController : MonoBehaviour
                 npcRole = "FireDepartment";
                 playerRole = Roles.FireDepartment;
                 break;
+            case "InstructorButton":
+                //No npcRole because instructor is an exception to the rule and can move all npcs
+                playerRole = Roles.Instructor;
+                break;
         }
 
         moveableChars = GetNpcs(npcRole);
+
+        for(int i = 0; i < moveableChars.Length; i++)
+        {
+            if (moveableChars[i] != null)
+            {
+                Debug.Log(moveableChars[i].name + ": " + moveableChars[i].tag);
+            }
+        }
 
         //Hide UI
         GameObject buttonUI = button.gameObject.transform.parent.gameObject;
