@@ -20,7 +20,7 @@ public class playerController : MonoBehaviour
         Instructor,
     }
 
-    [SerializeField] private Roles role;
+    [SerializeField] private Roles playerRole;
 
     private GameObject[] moveableChars; //Array of gameobjects that this player is allowed to interact with
 
@@ -61,11 +61,29 @@ public class playerController : MonoBehaviour
         transform.position += currentVelocity * Time.fixedDeltaTime;
     }
 
+    private GameObject[] GetNpcs(string role)
+    {
+        GameObject[] npcs = GameObject.FindGameObjectsWithTag(role);
+
+        return npcs;
+    }
+
     public void onButtonClick(Button button)
     {
-        switch (button) { 
+        string npcRole = "";
+        switch (button.name) {
 
+            case "LawEnfButton":
+                npcRole = "LawEnforcement";
+                playerRole = Roles.LawEnforcement;
+                break;
+            case "FireDeptButton":
+                npcRole = "FireDepartment";
+                playerRole = Roles.FireDepartment;
+                break;
         }
+
+        moveableChars = GetNpcs(npcRole);
 
         //Hide UI
         GameObject buttonUI = button.gameObject.transform.parent.gameObject;
