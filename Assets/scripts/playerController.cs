@@ -163,6 +163,13 @@ public class playerController : MonoBehaviour
         GameObject buttonUI = button.gameObject.transform.parent.gameObject;
         buttonUI.gameObject.SetActive(false);
 
+        //Activate Camera
+        //TODO: Enable Camera Movement only for instructor (Waiting for a more specific implementation of camera position) OwO
+        playerController playerController = transform.GetComponent<playerController>();
+        playerController.enabled = true;
+        GameObject Camera = transform.Find("Camera").gameObject;
+        CameraLook CameraLook = Camera.GetComponent<CameraLook>();
+        CameraLook.enabled = true;
     }
 
     private void UndoLastAction()
