@@ -5,6 +5,7 @@ public class PhaseManager : MonoBehaviour
 {
     private PhaseLinkedList phaseList;
 
+    // initialize phases (stored in doubly linked list, easily go to previous phases if needed)
     private void Start()
     {
         phaseList = new PhaseLinkedList();
