@@ -45,15 +45,15 @@ public class PhaseManager : MonoBehaviour
 
     private void StartPhase()
     {
+        Debug.Log($"Entering Phase: {phaseList.Current.Phase}");
+
         // Avoid moving when undoing a phase
         if (!isUndoing)
         {
-            Debug.Log($"Starting Phase: {phaseList.Current.Phase}");
-
             // Push the current position to the stack before moving
             positionHistory.Push(phaseTesterObject.transform.position);
 
-            MoveObjectForPhase(phaseList.Current.Phase);
+            MoveNPCsForPhase(phaseList.Current.Phase);
         }
 
         // Reset the undo flag
@@ -97,7 +97,7 @@ public class PhaseManager : MonoBehaviour
         }
     }
 
-    private void MoveObjectForPhase(GamePhase phase)
+    private void MoveNPCsForPhase(GamePhase phase)
     {
         Vector3 newPosition = phaseTesterObject.transform.position;
 
