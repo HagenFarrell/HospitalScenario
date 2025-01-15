@@ -18,6 +18,8 @@ public class npcMovement : MonoBehaviour
 
     void Update()
     {
+        //transform.Rotate(0, 1f, 0);
+
         if (Input.GetMouseButtonDown(0)) //Left mouse button
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
