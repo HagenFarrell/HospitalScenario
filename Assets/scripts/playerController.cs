@@ -46,6 +46,8 @@ public class playerController : MonoBehaviour
         {
             moveDirection.y = 0f; // No vertical movement
         }
+
+
     }
 
     void FixedUpdate()
