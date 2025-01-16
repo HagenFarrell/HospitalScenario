@@ -33,4 +33,9 @@ public class npcMovement : MonoBehaviour
             }
         }
     }
+
+    void refreshCamera()
+    {
+        mainCamera = Camera.main;
+    }
 }

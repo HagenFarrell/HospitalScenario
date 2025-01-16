@@ -4,6 +4,7 @@ public class cameraSwitch : MonoBehaviour
 {
     private Camera[] cameras; // Array to hold the cameras
     private int activeCameraIndex = 0; // Index of the currently active camera
+    private npcMovement npcMovement;
 
     void Start()
     {
@@ -28,23 +29,29 @@ public class cameraSwitch : MonoBehaviour
 
     void SwitchCamera(int cameraIndex)
     {
-        // Ensure the index is within bounds
+        //Ensure the index is within bounds
         if (cameraIndex >= 0 && cameraIndex < cameras.Length)
         {
-            // Disable the currently active camera
+            //Remove mainCamera tag on activecamera
+            cameras[activeCameraIndex].tag = "Untagged";
+
+            //Disable the currently active camera
             cameras[activeCameraIndex].enabled = false;
 
-            // Enable the selected camera
+            //Enable the selected camera
             cameras[cameraIndex].enabled = true;
 
-            // Update the active camera index
+            //Update the active camera index
             activeCameraIndex = cameraIndex;
 
-            Debug.Log($"Switched to camera {cameraIndex + 1}");
+            //Add mainCamera tag on new camera
+            cameras[activeCameraIndex].tag = "MainCamera";
+            
+
+            
+
+            //Debug.Log($"Switched to camera {cameraIndex + 1}");
         }
-        else
-        {
-            Debug.LogWarning("Camera index out of bounds!");
-        }
+
     }
 }
