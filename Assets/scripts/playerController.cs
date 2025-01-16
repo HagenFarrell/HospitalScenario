@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.UI;
+//using UnityEngine.UI;
 
 public class playerController : MonoBehaviour
 {
@@ -69,7 +69,7 @@ public class playerController : MonoBehaviour
 
         return npcs;
     }
-
+    /*
     public void onButtonClick(Button button)
     {
         string npcRole = "";
@@ -98,5 +98,5 @@ public class playerController : MonoBehaviour
         GameObject Camera = transform.Find("Camera").gameObject;
         CameraLook CameraLook = Camera.GetComponent<CameraLook>();
         CameraLook.enabled = true;
-    }
+    } */
 }
