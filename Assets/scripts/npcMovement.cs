@@ -18,24 +18,24 @@ public class npcMovement : MonoBehaviour
 
     void Update()
     {
-        //transform.Rotate(0, 1f, 0);
 
-        if (Input.GetMouseButtonDown(0)) //Left mouse button
-        {
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit))
-            {
-                // Check if the hit point is on the NavMesh
-                if (NavMesh.SamplePosition(hit.point, out NavMeshHit navMeshHit, 1.0f, NavMesh.AllAreas))
-                {
-                    agent.SetDestination(navMeshHit.position);
-                }
-            }
-        }
     }
 
     void refreshCamera()
     {
         mainCamera = Camera.main;
+    }
+
+    void moveNpc(GameObject[] npcs)
+    {
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            // Check if the hit point is on the NavMesh
+            if (NavMesh.SamplePosition(hit.point, out NavMeshHit navMeshHit, 1.0f, NavMesh.AllAreas))
+            {
+                agent.SetDestination(navMeshHit.position);
+            }
+        }
     }
 }

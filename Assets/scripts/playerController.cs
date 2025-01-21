@@ -1,5 +1,5 @@
 using UnityEngine;
-//using UnityEngine.UI;
+using UnityEngine.UI;
 
 public class playerController : MonoBehaviour
 {
@@ -22,29 +22,14 @@ public class playerController : MonoBehaviour
 
     [SerializeField] private Roles playerRole;
 
+
     private GameObject[] moveableChars; //Array of gameobjects that this player is allowed to interact with
 
     void Update()
     {
-        // Get WASD or arrow key input for horizontal and vertical movement
-        float horizontal = Input.GetAxis("Horizontal"); // A/D or Left/Right Arrows
-        float vertical = Input.GetAxis("Vertical"); // W/S or Up/Down Arrows
-
-        // Calculate movement direction
-        moveDirection = new Vector3(horizontal, 0, vertical).normalized;
-
-        // Check for upward or downward movement with Space/Shift
-        if (Input.GetKey(KeyCode.Space))
+        if (Input.GetMouseButtonDown(0))
         {
-            moveDirection.y = 1f; // Move upward
-        }
-        else if (Input.GetKey(KeyCode.LeftShift))
-        {
-            moveDirection.y = -1f; // Move downward
-        }
-        else
-        {
-            moveDirection.y = 0f; // No vertical movement
+            
         }
 
 
@@ -69,9 +54,10 @@ public class playerController : MonoBehaviour
 
         return npcs;
     }
-    /*
+    
     public void onButtonClick(Button button)
     {
+        
         string npcRole = "";
         switch (button.name) {
 
@@ -91,12 +77,5 @@ public class playerController : MonoBehaviour
         GameObject buttonUI = button.gameObject.transform.parent.gameObject;
         buttonUI.gameObject.SetActive(false);
 
-        //Activate Camera
-        //TODO: Enable Camera Movement only for instructor (Waiting for a more specific implementation of camera position)
-        playerController playerController = transform.GetComponent<playerController>();
-        playerController.enabled = true;
-        GameObject Camera = transform.Find("Camera").gameObject;
-        CameraLook CameraLook = Camera.GetComponent<CameraLook>();
-        CameraLook.enabled = true;
-    } */
+    } 
 }
