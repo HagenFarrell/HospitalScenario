@@ -14,12 +14,20 @@ public class npcMovement : MonoBehaviour
         {
             mainCamera = Camera.main;
         }
+        // Basic NavMesh setup
+        if (agent != null)
+        {
+            agent.stoppingDistance = 0.1f;
+        }
     }
 
     void Update()
+{
+    if (Input.GetMouseButtonDown(0))  // Left mouse click
     {
-
+        moveNpc(null);
     }
+}
 
     void refreshCamera()
     {
