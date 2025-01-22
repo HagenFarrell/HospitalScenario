@@ -11,6 +11,7 @@ public class playerController : MonoBehaviour
     private Vector3 currentVelocity = Vector3.zero; // Used for SmoothDamp
     public enum Roles
     {
+        None,
         LawEnforcement,
         FireDepartment,
         OnSiteSecurity,
@@ -21,17 +22,28 @@ public class playerController : MonoBehaviour
     }
 
     [SerializeField] private Roles playerRole;
-
+    public GameObject cameras;
+    public npcMovement npcs;
+    private cameraSwitch cameraswitch;
 
     private GameObject[] moveableChars; //Array of gameobjects that this player is allowed to interact with
 
+    private void Start()
+    {
+        cameraswitch = cameras.GetComponent<cameraSwitch>();
+    }
+
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && playerRole != Roles.None)
         {
-            
+            npcs.refreshCamera();
+            npcs.moveNpc(moveableChars);
         }
-
+        if (Input.GetKeyDown(KeyCode.Alpha1)) cameraswitch.SwitchCamera(0);
+        if (Input.GetKeyDown(KeyCode.Alpha2)) cameraswitch.SwitchCamera(1);
+        if (Input.GetKeyDown(KeyCode.Alpha3)) cameraswitch.SwitchCamera(2);
+        if (Input.GetKeyDown(KeyCode.Alpha4)) cameraswitch.SwitchCamera(3);
 
     }
 
