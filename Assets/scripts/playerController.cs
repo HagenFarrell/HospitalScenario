@@ -1,78 +1,130 @@
 using System.Collections.Generic;
 using UnityEditorInternal;
 using UnityEngine;
-public class PlayerController : MonoBehaviour
+using UnityEngine.UI;
+
+public class playerController : MonoBehaviour
 {
-    public float moveSpeed = 10f; // Movement speed
+    public float moveSpeed = 10f; // Horizontal movement speed
     public float verticalSpeed = 5f; // Vertical movement speed
+    public float smoothingSpeed = 0.1f; // Determines how smooth the movement is
+
     private Vector3 moveDirection = Vector3.zero;
-
-    public RoleManager.Roles PlayerRole { get; private set; } // Player's role
-
-    private bool isControlEnabled = false; // Can the player control their character?
-
-    public void EnableControl(bool enable)
+    private Vector3 currentVelocity = Vector3.zero; // Used for SmoothDamp
+    public enum Roles
     {
-        isControlEnabled = enable;
+        None,
+        LawEnforcement,
+        FireDepartment,
+        OnSiteSecurity,
+        RadiationSaftey,
+        Dispatch,
+        Spectator,
+        Instructor,
     }
 
-    private void Update()
+    [SerializeField] private Roles playerRole;
+    public GameObject cameras;
+    public npcMovement npcs;
+    private cameraSwitch cameraswitch;
+
+    private GameObject[] moveableChars; //Array of gameobjects that this player is allowed to interact with
+    private List<GameObject> selectedChars = new List<GameObject>();
+
+    private void Start()
     {
-        if (!isControlEnabled) return;
+        cameraswitch = cameras.GetComponent<cameraSwitch>();
+    }
 
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-
-        moveDirection = new Vector3(horizontal, 0, vertical).normalized;
-
-        if (Input.GetKey(KeyCode.Space))
+    void Update()
+    {
+        if (Input.GetMouseButtonDown(0) && playerRole != Roles.None)
         {
-            moveDirection.y = 1f;
+            Camera mainCamera = Camera.main;
+            
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                GameObject hitObj = hit.collider.gameObject;
+                if (hitObj.tag == playerRole.ToString())
+                {
+                    GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
+                    moveToolRing.SetActive(true);
+                    selectedChars.Add(hitObj);
+                    return;
+                }
+                
+            }
+
+            npcs.refreshCamera();
+            npcs.moveNpc(selectedChars.ToArray());
         }
-        if (Input.GetMouseButtonDown(1) && playerRole != Roles.None)
+        if(Input.GetMouseButtonDown(1) && playerRole != Roles.None)
         {
-            moveDirection.y = -1f;
+            Camera mainCamera = Camera.main;
+
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                GameObject hitObj = hit.collider.gameObject;
+                if (hitObj.tag == playerRole.ToString())
+                {
+                    GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
+                    moveToolRing.SetActive(false);
+                    selectedChars.Remove(hitObj);
+                    return;
+                }
+
+            }
         }
         if (Input.GetKeyDown(KeyCode.Alpha1)) cameraswitch.SwitchCamera(0);
         if (Input.GetKeyDown(KeyCode.Alpha2)) cameraswitch.SwitchCamera(1);
         if (Input.GetKeyDown(KeyCode.Alpha3)) cameraswitch.SwitchCamera(2);
         if (Input.GetKeyDown(KeyCode.Alpha4)) cameraswitch.SwitchCamera(3);
 
-        if (Input.GetKeyDown(KeyCode.Alpha0) && playerRole == Roles.Instructor) // Next phase
-        {
-            moveDirection.y = 0f;
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha3)) // Undo action
-        {
-            UndoLastAction();
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha4)) // End turn
-        {
-            EndTurn();
-        }
     }
 
-    private void FixedUpdate()
+    void FixedUpdate()
     {
-        if (!isControlEnabled) return;
-
+        // Calculate the target velocity based on moveDirection
         Vector3 targetVelocity = transform.TransformDirection(moveDirection) * moveSpeed;
         targetVelocity.y = moveDirection.y * verticalSpeed;
 
-        transform.position += targetVelocity * Time.fixedDeltaTime;
+        // Smoothly interpolate the current velocity towards the target velocity
+        currentVelocity = Vector3.SmoothDamp(currentVelocity, targetVelocity, ref currentVelocity, smoothingSpeed);
+
+        // Apply the smoothed velocity to the player's position
+        transform.position += currentVelocity * Time.fixedDeltaTime;
     }
 
-    private void UndoLastAction()
+    private GameObject[] GetNpcs(string role)
     {
-        Debug.Log($"{PlayerRole}: Undo last action!");
-        // This will be managed by RoleManager (future expansion)
-    }
+        GameObject[] npcs = GameObject.FindGameObjectsWithTag(role);
 
-    private void EndTurn()
-    {
-        Debug.Log($"{PlayerRole}: End turn!");
-        FindObjectOfType<RoleManager>().EndRoleTurn(this);
+        return npcs;
     }
+    
+    public void onButtonClick(Button button)
+    {
+        
+        string npcRole = "";
+        switch (button.name) {
+
+            case "LawEnfButton":
+                npcRole = "LawEnforcement";
+                playerRole = Roles.LawEnforcement;
+                break;
+            case "FireDeptButton":
+                npcRole = "FireDepartment";
+                playerRole = Roles.FireDepartment;
+                break;
+        }
+
+        moveableChars = GetNpcs(npcRole);
+
+        //Hide UI
+        GameObject buttonUI = button.gameObject.transform.parent.gameObject;
+        buttonUI.gameObject.SetActive(false);
+
+    } 
 }
