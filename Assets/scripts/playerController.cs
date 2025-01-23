@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,6 +29,7 @@ public class playerController : MonoBehaviour
     private cameraSwitch cameraswitch;
 
     private GameObject[] moveableChars; //Array of gameobjects that this player is allowed to interact with
+    private List<GameObject> selectedChars = new List<GameObject>();
 
     private void Start()
     {
@@ -37,8 +40,24 @@ public class playerController : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0) && playerRole != Roles.None)
         {
+            Camera mainCamera = Camera.main;
+            
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                GameObject hitObj = hit.collider.gameObject;
+                if (hitObj.tag == "FireDepartment")
+                {
+                    GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
+                    moveToolRing.SetActive(true);
+                    selectedChars.Add(hitObj);
+                    return;
+                }
+                
+            }
+
             npcs.refreshCamera();
-            npcs.moveNpc(moveableChars);
+            npcs.moveNpc(selectedChars.ToArray());
         }
         if (Input.GetKeyDown(KeyCode.Alpha1)) cameraswitch.SwitchCamera(0);
         if (Input.GetKeyDown(KeyCode.Alpha2)) cameraswitch.SwitchCamera(1);
