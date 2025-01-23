@@ -46,7 +46,7 @@ public class playerController : MonoBehaviour
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 GameObject hitObj = hit.collider.gameObject;
-                if (hitObj.tag == "FireDepartment")
+                if (hitObj.tag == playerRole.ToString())
                 {
                     GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
                     moveToolRing.SetActive(true);
@@ -58,6 +58,24 @@ public class playerController : MonoBehaviour
 
             npcs.refreshCamera();
             npcs.moveNpc(selectedChars.ToArray());
+        }
+        if(Input.GetMouseButtonDown(1) && playerRole != Roles.None)
+        {
+            Camera mainCamera = Camera.main;
+
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                GameObject hitObj = hit.collider.gameObject;
+                if (hitObj.tag == playerRole.ToString())
+                {
+                    GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
+                    moveToolRing.SetActive(false);
+                    selectedChars.Remove(hitObj);
+                    return;
+                }
+
+            }
         }
         if (Input.GetKeyDown(KeyCode.Alpha1)) cameraswitch.SwitchCamera(0);
         if (Input.GetKeyDown(KeyCode.Alpha2)) cameraswitch.SwitchCamera(1);

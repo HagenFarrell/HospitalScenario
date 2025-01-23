@@ -111,6 +111,7 @@ public class npcMovement : MonoBehaviour
         {
             if (NavMesh.SamplePosition(hit.point, out NavMeshHit navMeshHit, 1.0f, NavMesh.AllAreas))
             {
+                if (npcs.Length == 0) return;
                 // Find center NPC (closest to group's center)
                 Vector3 groupCenter = Vector3.zero;
                 foreach(GameObject npc in npcs)
