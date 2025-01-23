@@ -36,15 +36,15 @@ public class PhaseManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha0))
-        {
-            NextPhase();
-        }
+        // if (Input.GetKeyDown(KeyCode.Alpha0)) // Next phase
+        // {
+        //     NextPhase();
+        // }
 
-        if (Input.GetKeyDown(KeyCode.Alpha9))
-        {
-            PreviousPhase();
-        }
+        // if (Input.GetKeyDown(KeyCode.Alpha9)) // Previous phase
+        // {
+        //     PreviousPhase();
+        // }
     }
 
     private void StartPhase()
@@ -64,6 +64,7 @@ public class PhaseManager : MonoBehaviour
     {
         if (phaseList.MoveNext())
         {
+            Debug.Log("Moving to next phase.");
             StartPhase();
         }
         else
@@ -76,6 +77,7 @@ public class PhaseManager : MonoBehaviour
     {
         if (phaseList.MovePrevious())
         {
+            Debug.Log("Moving to previous phase.");
             // Undo the movement: Reset the position
             if (NPCpositionHistory.Count > 0)
             {
@@ -126,6 +128,7 @@ public class PhaseManager : MonoBehaviour
 
     private void MoveNPCsForPhase(GamePhase phase)
     {
+        Debug.Log($"Moving NPCs for phase: {phase}");
         // Static movement for testing
         Vector3 newPosition = phaseTesterObject.transform.position;
         switch (phase)
