@@ -1,130 +1,92 @@
 using System.Collections.Generic;
-using UnityEditorInternal;
 using UnityEngine;
-// using UnityEngine.UI;
 
 public class playerController : MonoBehaviour
 {
-    public float moveSpeed = 10f; // Horizontal movement speed
-    public float verticalSpeed = 5f; // Vertical movement speed
-    public float smoothingSpeed = 0.1f; // Determines how smooth the movement is
+    public float moveSpeed = 10f;
+    public float verticalSpeed = 5f;
+    public float smoothingSpeed = 0.1f;
 
     private Vector3 moveDirection = Vector3.zero;
-    private Vector3 currentVelocity = Vector3.zero; // Used for SmoothDamp
+    private Vector3 currentVelocity = Vector3.zero;
+
     public enum Roles
     {
         None,
         LawEnforcement,
         FireDepartment,
         OnSiteSecurity,
-        RadiationSaftey,
+        RadiationSafety,
         Dispatch,
         Spectator,
-        Instructor,
+        Instructor
     }
 
     [SerializeField] private Roles playerRole;
     public GameObject cameras;
     public npcMovement npcs;
-    private cameraSwitch cameraswitch;
+    private cameraSwitch cameraSwitch;
 
-    private GameObject[] moveableChars; //Array of gameobjects that this player is allowed to interact with
-    private List<GameObject> selectedChars = new List<GameObject>();
+    private GameObject[] moveableChars;
+    private int charTurnIndex = 0; // Tracks which character's turn it is
+    private Stack<Vector3> charActionHistory = new Stack<Vector3>(); // Stores character actions for undoing
 
     private void Start()
     {
-        cameraswitch = cameras.GetComponent<cameraSwitch>();
+        cameraSwitch = cameras.GetComponent<cameraSwitch>();
     }
 
-    void Update()
+    private void Update()
     {
-        if (Input.GetMouseButtonDown(0) && playerRole != Roles.None)
+        if (playerRole == Roles.None || playerRole == Roles.Instructor)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.U))
         {
-            Camera mainCamera = Camera.main;
-            
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit))
-            {
-                GameObject hitObj = hit.collider.gameObject;
-                if (hitObj.tag == playerRole.ToString())
-                {
-                    GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
-                    moveToolRing.SetActive(true);
-                    selectedChars.Add(hitObj);
-                    return;
-                }
-                
-            }
-
-            npcs.refreshCamera();
-            npcs.moveNpc(selectedChars.ToArray());
+            UndoLastAction();
         }
-        if(Input.GetMouseButtonDown(1) && playerRole != Roles.None)
+
+        if (Input.GetKeyDown(KeyCode.Space)) // Select next character in turn order
         {
-            Camera mainCamera = Camera.main;
-
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit))
-            {
-                GameObject hitObj = hit.collider.gameObject;
-                if (hitObj.tag == playerRole.ToString())
-                {
-                    GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
-                    moveToolRing.SetActive(false);
-                    selectedChars.Remove(hitObj);
-                    return;
-                }
-
-            }
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha1)) cameraswitch.SwitchCamera(0);
-        if (Input.GetKeyDown(KeyCode.Alpha2)) cameraswitch.SwitchCamera(1);
-        if (Input.GetKeyDown(KeyCode.Alpha3)) cameraswitch.SwitchCamera(2);
-        if (Input.GetKeyDown(KeyCode.Alpha4)) cameraswitch.SwitchCamera(3);
-
-    }
-
-    void FixedUpdate()
-    {
-        // Calculate the target velocity based on moveDirection
-        Vector3 targetVelocity = transform.TransformDirection(moveDirection) * moveSpeed;
-        targetVelocity.y = moveDirection.y * verticalSpeed;
-
-        // Smoothly interpolate the current velocity towards the target velocity
-        currentVelocity = Vector3.SmoothDamp(currentVelocity, targetVelocity, ref currentVelocity, smoothingSpeed);
-
-        // Apply the smoothed velocity to the player's position
-        transform.position += currentVelocity * Time.fixedDeltaTime;
-    }
-
-    private GameObject[] GetNpcs(string role)
-    {
-        GameObject[] npcs = GameObject.FindGameObjectsWithTag(role);
-
-        return npcs;
-    }
-    
-    public void onButtonClick(Button button)
-    {
-        
-        string npcRole = "";
-        switch (button.name) {
-
-            case "LawEnfButton":
-                npcRole = "LawEnforcement";
-                playerRole = Roles.LawEnforcement;
-                break;
-            case "FireDeptButton":
-                npcRole = "FireDepartment";
-                playerRole = Roles.FireDepartment;
-                break;
+            charTurnIndex = (charTurnIndex + 1) % moveableChars.Length;
+            Debug.Log($"Selected {moveableChars[charTurnIndex].name}");
         }
 
-        moveableChars = GetNpcs(npcRole);
+        if (Input.GetMouseButtonDown(0)) // Perform action
+        {
+            PerformAction();
+        }
+    }
 
-        //Hide UI
-        GameObject buttonUI = button.gameObject.transform.parent.gameObject;
-        buttonUI.gameObject.SetActive(false);
+    private void PerformAction()
+    {
+        GameObject activeChar = moveableChars[charTurnIndex];
 
-    } 
+        Vector3 originalPosition = activeChar.transform.position;
+        Vector3 newPosition = originalPosition + Vector3.forward; // Example: move forward
+        activeChar.transform.position = newPosition;
+
+        charActionHistory.Push(originalPosition); // Log action for undo
+        Debug.Log($"{activeChar.name} moved to {newPosition}");
+    }
+
+    private void UndoLastAction()
+    {
+        if (charActionHistory.Count > 0)
+        {
+            Vector3 lastPosition = charActionHistory.Pop();
+            moveableChars[charTurnIndex].transform.position = lastPosition;
+            Debug.Log($"Undo: Moved {moveableChars[charTurnIndex].name} back to {lastPosition}");
+        }
+        else
+        {
+            Debug.Log("No actions to undo!");
+        }
+    }
+
+    public void AssignRoleCharacters(GameObject[] characters)
+    {
+        moveableChars = characters;
+        charTurnIndex = 0;
+    }
 }
