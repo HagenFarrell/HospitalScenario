@@ -5,53 +5,40 @@ using PhaseLink;
 public class PhaseManager : MonoBehaviour
 {
     private PhaseLinkedList phaseList;
-    // public GameObject phaseTesterObject; 
+    public GameObject phaseTesterObject; // Assign in Inspector
 
-    private bool isUndoing = false; // Flag to prevent re-executing phase movement when going backward
-    public RoleManager roleManager; // Reference to RoleManager
+    // Each phase stores stacks for roles and their actions
+    private Dictionary<GamePhase, Dictionary<string, Stack<Vector3>>> roleActionStacks;
+
+    private bool isUndoing = false; // prevent re-executing phase movement when undoing
 
     private void Start()
     {
         phaseList = new PhaseLinkedList();
+        roleActionStacks = new Dictionary<GamePhase, Dictionary<string, Stack<Vector3>>>();
 
-        // Define the phases
-        phaseList.AddPhase(GamePhase.Phase1);
-        phaseList.AddPhase(GamePhase.Phase2);
-        phaseList.AddPhase(GamePhase.Phase3);
-        phaseList.AddPhase(GamePhase.Phase4);
-        phaseList.AddPhase(GamePhase.Phase5);
-        phaseList.AddPhase(GamePhase.Phase6);
-        phaseList.AddPhase(GamePhase.Phase7);
+        // Define the phases and initialize their stacks
+        foreach (GamePhase phase in System.Enum.GetValues(typeof(GamePhase)))
+        {
+            phaseList.AddPhase(phase);
+            roleActionStacks[phase] = new Dictionary<string, Stack<Vector3>>();
+        }
 
         // Set current phase
         phaseList.SetCurrentToHead();
         StartPhase();
     }
 
-    private void Update()
-    {
-        // Next phase
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            NextPhase();
-        }
-
-        // Previous phase
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            PreviousPhase();
-        }
-    }
-
     private void StartPhase()
     {
-        Debug.Log($"Starting Phase: {phaseList.Current.Phase}");
+        Debug.Log($"Entering Phase: {phaseList.Current.Phase}");
 
-        // Reset role turns for this phase
-        roleManager.ResetRoleTurns();
-        roleManager.StartRoleTurn(); // Start the first role's turn
+        if (!isUndoing)
+        {
+            MoveNPCsForPhase(phaseList.Current.Phase);
+        }
 
-        isUndoing = false; // Reset undo flag
+        isUndoing = false;
     }
 
     public void NextPhase()
@@ -70,10 +57,7 @@ public class PhaseManager : MonoBehaviour
     {
         if (phaseList.MovePrevious())
         {
-            // Undo all role actions for the phase
-            roleManager.UndoAllActionsForPhase();
-
-            isUndoing = true; // Set undo flag
+            isUndoing = true;
             StartPhase();
         }
         else
@@ -81,138 +65,40 @@ public class PhaseManager : MonoBehaviour
             Debug.Log("Already at the first phase!");
         }
     }
+
+    public void RecordAction(GamePhase phase, string role, Vector3 position)
+    {
+        if (!roleActionStacks[phase].ContainsKey(role))
+        {
+            roleActionStacks[phase][role] = new Stack<Vector3>();
+        }
+
+        roleActionStacks[phase][role].Push(position);
+    }
+
+    public Vector3 UndoAction(GamePhase phase, string role)
+    {
+        if (roleActionStacks[phase].ContainsKey(role) && roleActionStacks[phase][role].Count > 0)
+        {
+            return roleActionStacks[phase][role].Pop();
+        }
+
+        Debug.LogWarning($"No actions to undo for role {role} in phase {phase}");
+        return Vector3.zero;
+    }
+
+    private void MoveNPCsForPhase(GamePhase phase)
+    {
+        // Logic to handle NPC movements for the phase
+        Debug.Log($"Moving NPCs for {phase}");
+    }
+
+    public GamePhase CurrentPhase
+    {
+        get
+        {
+            return phaseList.Current.Phase;
+        }
+    }
+
 }
-
-
-// using UnityEngine;
-// using System.Collections.Generic;
-// using PhaseLink;
-
-// public class PhaseManager : MonoBehaviour
-// {
-//     private PhaseLinkedList phaseList;
-//     public GameObject phaseTesterObject; // Assign in Inspector
-
-//     private Stack<Vector3> positionHistory = new Stack<Vector3>(); // Stack to store previous positions
-//     private bool isUndoing = false; // Flag to prevent re-executing phase movement when going backward
-
-//     private void Start()
-//     {
-//         phaseList = new PhaseLinkedList();
-
-//         // Define the phases
-//         phaseList.AddPhase(GamePhase.Phase1);
-//         phaseList.AddPhase(GamePhase.Phase2);
-//         phaseList.AddPhase(GamePhase.Phase3);
-//         phaseList.AddPhase(GamePhase.Phase4);
-//         phaseList.AddPhase(GamePhase.Phase5);
-//         phaseList.AddPhase(GamePhase.Phase6);
-//         phaseList.AddPhase(GamePhase.Phase7);
-
-//         // Set current phase
-//         phaseList.SetCurrentToHead();
-//         StartPhase();
-//     }
-
-//     private void Update()
-//     {
-//         // Move to the next phase when "9" is pressed
-//         if (Input.GetKeyDown(KeyCode.Alpha9))
-//         {
-//             NextPhase();
-//         }
-
-//         // Move to the previous phase when "0" is pressed
-//         if (Input.GetKeyDown(KeyCode.Alpha0))
-//         {
-//             PreviousPhase();
-//         }
-//     }
-
-//     private void StartPhase()
-//     {
-//         Debug.Log($"Entering Phase: {phaseList.Current.Phase}");
-
-//         // Avoid moving when undoing a phase
-//         if (!isUndoing)
-//         {
-//             // Push the current position to the stack before moving
-//             positionHistory.Push(phaseTesterObject.transform.position);
-
-//             MoveNPCsForPhase(phaseList.Current.Phase);
-//         }
-
-//         // Reset the undo flag
-//         isUndoing = false;
-//     }
-
-//     public void NextPhase()
-//     {
-//         if (phaseList.MoveNext())
-//         {
-//             StartPhase();
-//         }
-//         else
-//         {
-//             Debug.Log("Already at the last phase!");
-//         }
-//     }
-
-//     public void PreviousPhase()
-//     {
-//         if (phaseList.MovePrevious())
-//         {
-//             // Undo the movement: Reset the position
-//             if (positionHistory.Count > 0)
-//             {
-//                 phaseTesterObject.transform.position = positionHistory.Pop();
-//             }
-//             else
-//             {
-//                 Debug.Log("No previous positions to undo!");
-//             }
-
-//             // Set flag to prevent a follow-up movement
-//             isUndoing = true;
-
-//             StartPhase();
-//         }
-//         else
-//         {
-//             Debug.Log("Already at the first phase!");
-//         }
-//     }
-
-//     private void MoveNPCsForPhase(GamePhase phase)
-//     {
-//         Vector3 newPosition = phaseTesterObject.transform.position;
-
-//         // static movements for testing, change to NPC event triggers and enabling player turns.
-//         switch (phase)
-//         {
-//             case GamePhase.Phase1:
-//                 newPosition += Vector3.left; // Move left
-//                 break;
-//             case GamePhase.Phase2:
-//                 newPosition += Vector3.up; // Move up
-//                 break;
-//             case GamePhase.Phase3:
-//                 newPosition += Vector3.right; // Move right
-//                 break;
-//             case GamePhase.Phase4:
-//                 newPosition += Vector3.forward; // Move forward
-//                 break;
-//             case GamePhase.Phase5:
-//                 newPosition += Vector3.back; // Move back
-//                 break;
-//             case GamePhase.Phase6:
-//                 newPosition += Vector3.down; // Move down
-//                 break;
-//             case GamePhase.Phase7:
-//                 newPosition += Vector3.one; // Move diagonally
-//                 break;
-//         }
-
-//         phaseTesterObject.transform.position = newPosition;
-//     }
-// }

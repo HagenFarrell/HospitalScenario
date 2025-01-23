@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.UI;
+// using UnityEngine.UI;
 
 public class playerController : MonoBehaviour
 {
