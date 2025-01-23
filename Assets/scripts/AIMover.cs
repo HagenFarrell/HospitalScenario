@@ -14,10 +14,10 @@ public class AIMover : MonoBehaviour
     void Start()
     {
         pathfinder = FindObjectOfType<Pathfinder>();
-        StartCoroutine(UpdatePath());
+        //StartCoroutine(UpdatePath());
     }
 
-    IEnumerator UpdatePath()
+    public IEnumerator UpdatePath()
     {
         while (true)
         {

@@ -5,12 +5,14 @@ using System.Collections.Generic;
 public class npcMovement : MonoBehaviour
 {
    Camera mainCamera;
-   private float stoppingRadius = 2f; // Radius Where NPCs can stop at
+   private float stoppingRadius = 10f; // Radius Where NPCs can stop at
 
    // Store references to all active NPCs
    private Dictionary<GameObject, NavMeshAgent> npcAgents = new Dictionary<GameObject, NavMeshAgent>();
    private Dictionary<GameObject, Animator> npcAnimators = new Dictionary<GameObject, Animator>();
    private Dictionary<GameObject, bool> npcDestinationStatus = new Dictionary<GameObject, bool>();
+
+    private AIMover[] aimovers;
 
    void Start()
    {
@@ -18,6 +20,7 @@ public class npcMovement : MonoBehaviour
        {
            mainCamera = Camera.main;
        }
+       aimovers = GetComponentsInChildren<AIMover>();
    }
 
    void Update()
@@ -52,8 +55,16 @@ public class npcMovement : MonoBehaviour
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
+            foreach (AIMover mover in aimovers)
+            {
+                mover.target.position = hit.point;
+                Debug.Log(mover.target.position);
+                StartCoroutine(mover.UpdatePath());
+            }
             if (NavMesh.SamplePosition(hit.point, out NavMeshHit navMeshHit, 1.0f, NavMesh.AllAreas))
             {
+
+                
                 // Find center NPC (closest to group's center)
                 Vector3 groupCenter = Vector3.zero;
                 foreach(GameObject npc in npcs)
@@ -108,7 +119,12 @@ public class npcMovement : MonoBehaviour
                         {
                             npcDestinationStatus[npc] = false;
                             animator.SetBool("IsWalking", true);
-                            agent.SetDestination(finalHit.position);
+                            
+                            foreach(AIMover mover in aimovers)
+                            {
+                                mover.UpdatePath();
+                            }
+                            //agent.SetDestination(finalHit.position);
                         }
                     }
                 }
