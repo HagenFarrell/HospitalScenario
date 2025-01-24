@@ -16,12 +16,15 @@ public class npcMovement : MonoBehaviour
     private Dictionary<GameObject, Animator> npcAnimators = new Dictionary<GameObject, Animator>();
     private Dictionary<GameObject, bool> npcDestinationStatus = new Dictionary<GameObject, bool>();
 
+    private AIMover[] aimovers;
+
     void Start()
     {
        if (mainCamera == null)
        {
            mainCamera = Camera.main;
        }
+       aimovers = gameObject.GetComponentsInChildren<AIMover>();
     }
 
     void Update()
@@ -109,32 +112,39 @@ public class npcMovement : MonoBehaviour
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            if (NavMesh.SamplePosition(hit.point, out NavMeshHit navMeshHit, 1.0f, NavMesh.AllAreas))
+            foreach (AIMover mover in aimovers)
             {
-                if (npcs.Length == 0) return;
-                // Find center NPC (closest to group's center)
-                Vector3 groupCenter = Vector3.zero;
-                foreach(GameObject npc in npcs)
-                {
-                    groupCenter += npc.transform.position;
-                }
-                groupCenter /= npcs.Length;
-
-                // Find NPC closest to center
-                GameObject centerNPC = npcs[0];
-                float closestDist = float.MaxValue;
-                foreach(GameObject npc in npcs)
-                {
-                    float dist = Vector3.Distance(npc.transform.position, groupCenter);
-                    if(dist < closestDist)
-                    {
-                        closestDist = dist;
-                        centerNPC = npc;
-                    }
-                }
-                // Move NPCs
-                StartCoroutine(MoveNPCsOneAtATime(npcs, navMeshHit.position, centerNPC));
+                mover.target.position = hit.point;
+                Debug.Log(mover.target.position);
+                StartCoroutine(mover.UpdatePath());
             }
+
+                if (NavMesh.SamplePosition(hit.point, out NavMeshHit navMeshHit, 1.0f, NavMesh.AllAreas))
+                {
+                    if (npcs.Length == 0) return;
+                    // Find center NPC (closest to group's center)
+                    Vector3 groupCenter = Vector3.zero;
+                    foreach(GameObject npc in npcs)
+                    {
+                        groupCenter += npc.transform.position;
+                    }
+                    groupCenter /= npcs.Length;
+
+                    // Find NPC closest to center
+                    GameObject centerNPC = npcs[0];
+                    float closestDist = float.MaxValue;
+                    foreach(GameObject npc in npcs)
+                    {
+                        float dist = Vector3.Distance(npc.transform.position, groupCenter);
+                        if(dist < closestDist)
+                        {
+                            closestDist = dist;
+                            centerNPC = npc;
+                        }
+                    }
+                    // Move NPCs
+                    StartCoroutine(MoveNPCsOneAtATime(npcs, navMeshHit.position, centerNPC));
+                }
         }
     }
 }
