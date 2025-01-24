@@ -122,7 +122,7 @@ NavMeshSettings:
     preserveTilesOutsideBounds: 0
     debug:
       m_Flags: 0
-  m_NavMeshData: {fileID: 23800000, guid: 29ebc2ea5ef9d5a4598a49dbf84798d7, type: 2}
+  m_NavMeshData: {fileID: 0}
 --- !u!1001 &14763040
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6924,6 +6924,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69bcdfe6ec5994448b2cc6512e50dc6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dynamicNavMesh: {fileID: 1076378783}
 --- !u!1001 &1658618232
 PrefabInstance:
   m_ObjectHideFlags: 0
