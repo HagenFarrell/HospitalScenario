@@ -48,6 +48,7 @@ public class DynamicNavMesh : MonoBehaviour
 
     public GridNode GetNodeFromWorldPoint(Vector3 worldPosition)
     {
+        worldPosition.z = worldPosition.z - 90; //Offset for navmesh position on Z axis
         float percentX = (worldPosition.x + gridSize.x / 2) / gridSize.x;
         float percentY = (worldPosition.z + gridSize.y / 2) / gridSize.y;
         percentX = Mathf.Clamp01(percentX);

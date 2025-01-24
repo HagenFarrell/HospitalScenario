@@ -12,6 +12,7 @@ public class Pathfinder : MonoBehaviour
 
     public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos)
     {
+        Debug.Log(startPos + " " + targetPos);
         GridNode startNode = navMesh.GetNodeFromWorldPoint(startPos);
         GridNode targetNode = navMesh.GetNodeFromWorldPoint(targetPos);
 

@@ -14,7 +14,9 @@ public class AIMover : MonoBehaviour
     void Start()
     {
         pathfinder = FindObjectOfType<Pathfinder>();
-        //StartCoroutine(UpdatePath());
+        if(pathfinder != null ) { StartCoroutine(UpdatePath()); }
+       
+        
     }
 
     public IEnumerator UpdatePath()
