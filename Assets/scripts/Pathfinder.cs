@@ -16,8 +16,8 @@ public class Pathfinder : MonoBehaviour
         GridNode startNode = navMesh.GetNodeFromWorldPoint(startPos);
         GridNode targetNode = navMesh.GetNodeFromWorldPoint(targetPos);
 
-        Debug.Log($"Start Node: {startNode?.WorldPosition} (Walkable: {startNode?.IsWalkable})");
-        Debug.Log($"Target Node: {targetNode?.WorldPosition} (Walkable: {targetNode?.IsWalkable})");
+        //Debug.Log($"Start Node: {startNode?.WorldPosition} (Walkable: {startNode?.IsWalkable})");
+        //Debug.Log($"Target Node: {targetNode?.WorldPosition} (Walkable: {targetNode?.IsWalkable})");
 
         // Debug statements, needed to see if path is actually being generated.
         if (startNode == null || !startNode.IsWalkable)

@@ -30,9 +30,11 @@ public class npcMovement : MonoBehaviour
 
     void Update()
     {
+        
         // Update animations based on movement
         foreach(var npc in npcAgents.Keys)
         {
+            
             if (!npcDestinationStatus[npc])
             {
                 AIMover agent = npcAgents[npc];
@@ -42,13 +44,13 @@ public class npcMovement : MonoBehaviour
 
                 // Check if reached destination
                 
-                if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + 0.1f)
+                if (agent.isAtDestination)
                 {
                     npcDestinationStatus[npc] = true;
                     animator.SetBool("IsWalking", false);
                 }
             }
-        }
+        } 
     }
 
     public void refreshCamera()
@@ -80,7 +82,7 @@ public class npcMovement : MonoBehaviour
             if (agent != null && animator != null)
             {
                 Vector3 destination;
-                if(npc == centerNPC)
+                if (npc == centerNPC)
                 {
                     // Center NPC goes to click point
                     destination = ClickPosition;
@@ -89,11 +91,15 @@ public class npcMovement : MonoBehaviour
                 {
                     // Others circle around based on their position relative to center
                     Vector3 dirFromCenter = (npc.transform.position - centerNPC.transform.position).normalized;
-                    float distanceFromCenter = stoppingRadius * 
+                    float distanceFromCenter = stoppingRadius *
                         (1f + Vector3.Distance(npc.transform.position, centerNPC.transform.position) * 0.2f);
                     destination = ClickPosition + dirFromCenter * distanceFromCenter;
                 }
+                npcDestinationStatus[npc] = false;
+                animator.SetBool("IsWalking", true);
                 StartCoroutine(agent.UpdatePath());
+                
+
                 // Sample the NavMesh to find a valid position
                 if (NavMesh.SamplePosition(destination, out NavMeshHit finalHit, stoppingRadius, NavMesh.AllAreas))
                 {
@@ -115,13 +121,6 @@ public class npcMovement : MonoBehaviour
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            /*
-            foreach (AIMover mover in aimovers)
-            {
-                mover.target.position = hit.point;
-                Debug.Log(mover.target.position);
-                StartCoroutine(mover.UpdatePath());
-            }*/
 
             //TODO: Instead of using navmesh here, check if the hit point when sent to grid node is walkable
             if (dynamicNavMesh.GetNodeFromWorldPoint(hit.point).IsWalkable) Debug.Log("This is walkable!");
