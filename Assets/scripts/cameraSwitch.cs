@@ -21,13 +21,10 @@ public class cameraSwitch : MonoBehaviour
     void Update()
     { 
         // Switch to the corre sponding camera based on key press
-        if (Input.GetKeyDown(KeyCode.Alpha1)) SwitchCamera(0);
-        if (Input.GetKeyDown(KeyCode.Alpha2)) SwitchCamera(1);
-        if (Input.GetKeyDown(KeyCode.Alpha3)) SwitchCamera(2);
-        if (Input.GetKeyDown(KeyCode.Alpha4)) SwitchCamera(3);
+
     }
 
-    void SwitchCamera(int cameraIndex)
+    public void SwitchCamera(int cameraIndex)
     {
         //Ensure the index is within bounds
         if (cameraIndex >= 0 && cameraIndex < cameras.Length)
@@ -46,7 +43,6 @@ public class cameraSwitch : MonoBehaviour
 
             //Add mainCamera tag on new camera
             cameras[activeCameraIndex].tag = "MainCamera";
-            
 
             
 
