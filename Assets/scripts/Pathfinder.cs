@@ -12,12 +12,11 @@ public class Pathfinder : MonoBehaviour
 
     public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos)
     {
-        //Debug.Log(startPos + " " + targetPos);
         GridNode startNode = navMesh.GetNodeFromWorldPoint(startPos);
         GridNode targetNode = navMesh.GetNodeFromWorldPoint(targetPos);
 
-        //Debug.Log($"Start Node: {startNode?.WorldPosition} (Walkable: {startNode?.IsWalkable})");
-        //Debug.Log($"Target Node: {targetNode?.WorldPosition} (Walkable: {targetNode?.IsWalkable})");
+        Debug.Log($"Start Node: {startNode?.WorldPosition} (Walkable: {startNode?.IsWalkable})");
+        Debug.Log($"Target Node: {targetNode?.WorldPosition} (Walkable: {targetNode?.IsWalkable})");
 
         // Debug statements, needed to see if path is actually being generated.
         if (startNode == null || !startNode.IsWalkable)
@@ -124,11 +123,11 @@ public class Pathfinder : MonoBehaviour
         return neighbors;
     }
 
-    // Calculate Manhattan distance (for grid-based movement)
+    // Scrapped Manhattan distance over Euclidean distance as its more accurate.
     int GetDistance(GridNode a, GridNode b)
     {
-        int dstX = Mathf.Abs(a.GridX - b.GridX);
-        int dstY = Mathf.Abs(a.GridY - b.GridY);
-        return dstX + dstY;
+        int dx = Mathf.Abs(a.GridX - b.GridX);
+        int dy = Mathf.Abs(a.GridY - b.GridY);
+        return Mathf.RoundToInt(Mathf.Sqrt(dx * dx + dy * dy) * 10);
     }
 }
