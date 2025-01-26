@@ -145,7 +145,7 @@ public class npcMovement : MonoBehaviour
                         centerNPC = npc;
                     }
                 }
-                // Move NPCs
+                // Move NPCs test
                 StartCoroutine(MoveNPCsOneAtATime(npcs, hit.point, centerNPC));
         }
     }
