@@ -123,11 +123,11 @@ public class Pathfinder : MonoBehaviour
         return neighbors;
     }
 
-    // Calculate Manhattan distance (for grid-based movement)
+    // Scrapped Manhattan distance over Euclidean distance as its more accurate.
     int GetDistance(GridNode a, GridNode b)
     {
-        int dstX = Mathf.Abs(a.GridX - b.GridX);
-        int dstY = Mathf.Abs(a.GridY - b.GridY);
-        return dstX + dstY;
+        int dx = Mathf.Abs(a.GridX - b.GridX);
+        int dy = Mathf.Abs(a.GridY - b.GridY);
+        return Mathf.RoundToInt(Mathf.Sqrt(dx * dx + dy * dy) * 10);
     }
 }
