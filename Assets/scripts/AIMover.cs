@@ -11,10 +11,15 @@ public class AIMover : MonoBehaviour
     private List<Vector3> path;
     private int currentWaypoint = 0;
 
+    public bool isAtDestination;
+
     void Start()
     {
         pathfinder = FindObjectOfType<Pathfinder>();
-        //StartCoroutine(UpdatePath());
+        isAtDestination = true;
+        //if(pathfinder != null ) { StartCoroutine(UpdatePath()); }
+       
+        
     }
 
     public IEnumerator UpdatePath()
@@ -26,6 +31,8 @@ public class AIMover : MonoBehaviour
                 path = pathfinder.FindPath(transform.position, target.position);
                 if (path != null && path.Count > 0)
                 {
+                    Debug.Log("Path found!");
+                    isAtDestination = false;
                     currentWaypoint = 0;
                 }
             }
@@ -46,6 +53,13 @@ public class AIMover : MonoBehaviour
         if (Vector2.Distance(agentXZ, waypointXZ) < 0.2f)
         {
             currentWaypoint++;
+
+            if (currentWaypoint >= path.Count)
+            {
+                Debug.Log("AI has reached the destination!");
+                isAtDestination = true;
+                // Add additional logic here, such as stopping movement or triggering an event
+            }
         }
     }
 
