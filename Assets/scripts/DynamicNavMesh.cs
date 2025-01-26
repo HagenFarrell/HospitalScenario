@@ -21,12 +21,9 @@ public class DynamicNavMesh : MonoBehaviour
 
     void CreateGrid()
     {
+
         grid = new GridNode[gridSizeX, gridSizeY];
         Vector3 worldBottomLeft = transform.position - Vector3.right * gridSize.x / 2 - Vector3.forward * gridSize.y / 2;
-
-        // Configure raycast grid density (e.g., 3x3 rays per node)
-        int raysPerAxis = 3;
-        float stepSize = nodeDiameter / (raysPerAxis - 1);
 
         for (int x = 0; x < gridSizeX; x++)
         {
@@ -36,31 +33,17 @@ public class DynamicNavMesh : MonoBehaviour
                     Vector3.right * (x * nodeDiameter + nodeRadius) +
                     Vector3.forward * (y * nodeDiameter + nodeRadius);
 
-                bool walkable = false;
+                bool walkable = Physics.Raycast(worldPoint + Vector3.up * checkHeight, Vector3.down,
+                    checkHeight + 0.1f, walkableLayer);
 
-                // Cast rays in a grid pattern within the node
-                for (int i = 0; i < raysPerAxis; i++)
-                {
-                    for (int j = 0; j < raysPerAxis; j++)
-                    {
-                        // Calculate offsets for sub-ray positions
-                        float xOffset = -nodeRadius + i * stepSize;
-                        float zOffset = -nodeRadius + j * stepSize;
-                        Vector3 rayOrigin = worldPoint + new Vector3(xOffset, checkHeight, zOffset);
-
-                        // Cast ray downward and check for walkable surfaces
-                        if (Physics.Raycast(rayOrigin, Vector3.down, checkHeight + 0.1f, walkableLayer))
-                        {
-                            walkable = true;
-                            goto EndOfRaycasts; // If any raycast hits, exit early. Performance optimization.
-                        }
-                    }
-                }
-            EndOfRaycasts:
+                // Debug ray visualization (visible in Scene view)
+                //Debug.DrawRay(worldPoint + Vector3.up * checkHeight, Vector3.down * (checkHeight + 0.1f),
+                //    walkable ? Color.green : Color.red, 100f);
 
                 grid[x, y] = new GridNode(walkable, worldPoint, x, y);
             }
         }
+
     }
 
     public GridNode GetNodeFromWorldPoint(Vector3 worldPosition)
