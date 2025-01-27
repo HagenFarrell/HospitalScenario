@@ -99,14 +99,6 @@ public class npcMovement : MonoBehaviour
                 animator.SetBool("IsWalking", true);
                 StartCoroutine(agent.UpdatePath());
                 
-
-                // Sample the NavMesh to find a valid position
-                if (NavMesh.SamplePosition(destination, out NavMeshHit finalHit, stoppingRadius, NavMesh.AllAreas))
-                {
-                    npcDestinationStatus[npc] = false;
-                    animator.SetBool("IsWalking", true);
-                    //agent.SetDestination(finalHit.position);
-                }
             }
 
             yield return new WaitForSeconds(timeDelayBetweenNPCs); // Wait before moving the next NPC
