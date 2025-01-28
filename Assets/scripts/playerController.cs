@@ -1,5 +1,7 @@
+using System.Collections.Generic;
+using UnityEditorInternal;
 using UnityEngine;
-//using UnityEngine.UI;
+using UnityEngine.UI;
 
 public class playerController : MonoBehaviour
 {
@@ -11,6 +13,7 @@ public class playerController : MonoBehaviour
     private Vector3 currentVelocity = Vector3.zero; // Used for SmoothDamp
     public enum Roles
     {
+        None,
         LawEnforcement,
         FireDepartment,
         OnSiteSecurity,
@@ -21,31 +24,81 @@ public class playerController : MonoBehaviour
     }
 
     [SerializeField] private Roles playerRole;
+    public GameObject cameras;
+    public npcMovement npcs;
+    private cameraSwitch cameraswitch;
 
     private GameObject[] moveableChars; //Array of gameobjects that this player is allowed to interact with
+    private List<GameObject> selectedChars = new List<GameObject>();
+    public PhaseManager phaseManager;
+
+    private void Start()
+    {
+        cameraswitch = cameras.GetComponent<cameraSwitch>();
+    }
 
     void Update()
     {
-        // Get WASD or arrow key input for horizontal and vertical movement
-        float horizontal = Input.GetAxis("Horizontal"); // A/D or Left/Right Arrows
-        float vertical = Input.GetAxis("Vertical"); // W/S or Up/Down Arrows
+        if (Input.GetMouseButtonDown(0) && playerRole != Roles.None)
+        {
+            Camera mainCamera = Camera.main;
 
-        // Calculate movement direction
-        moveDirection = new Vector3(horizontal, 0, vertical).normalized;
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                GameObject hitObj = hit.collider.gameObject;
+                if (hitObj.tag == playerRole.ToString() || (playerRole == Roles.Instructor && hitObj.tag != "Untagged"))
+                {
+                    GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
+                    moveToolRing.SetActive(true);
+                    selectedChars.Add(hitObj);
+                    return;
+                }
 
-        // Check for upward or downward movement with Space/Shift
-        if (Input.GetKey(KeyCode.Space))
-        {
-            moveDirection.y = 1f; // Move upward
+            }
+
+            npcs.refreshCamera();
+            npcs.moveNpc(selectedChars.ToArray());
         }
-        else if (Input.GetKey(KeyCode.LeftShift))
+        if (Input.GetMouseButtonDown(1) && playerRole != Roles.None)
         {
-            moveDirection.y = -1f; // Move downward
+            Camera mainCamera = Camera.main;
+
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                GameObject hitObj = hit.collider.gameObject;
+                if (hitObj.tag == playerRole.ToString() || (playerRole == Roles.Instructor && hitObj.tag != "Untagged"))
+                {
+                    GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
+                    moveToolRing.SetActive(false);
+                    selectedChars.Remove(hitObj);
+                    return;
+                }
+
+            }
         }
-        else
+        if (Input.GetKeyDown(KeyCode.Alpha1)) cameraswitch.SwitchCamera(0);
+        if (Input.GetKeyDown(KeyCode.Alpha2)) cameraswitch.SwitchCamera(1);
+        if (Input.GetKeyDown(KeyCode.Alpha3)) cameraswitch.SwitchCamera(2);
+        if (Input.GetKeyDown(KeyCode.Alpha4)) cameraswitch.SwitchCamera(3);
+
+        if (Input.GetKeyDown(KeyCode.Alpha0) && playerRole == Roles.Instructor) // Next phase
         {
-            moveDirection.y = 0f; // No vertical movement
+            phaseManager.NextPhase();
         }
+
+        if (Input.GetKeyDown(KeyCode.Alpha9) && playerRole == Roles.Instructor) // Previous phase
+        {
+            phaseManager.PreviousPhase();
+        }
+
+        if (Input.GetKeyDown(KeyCode.U)) // Undo last action
+        {
+            UndoLastAction();
+        }
+
+
 
 
     }
@@ -65,15 +118,30 @@ public class playerController : MonoBehaviour
 
     private GameObject[] GetNpcs(string role)
     {
-        GameObject[] npcs = GameObject.FindGameObjectsWithTag(role);
+        if (role != "Instructor")
+        {
+            Debug.Log("Not instructor");
+            return GameObject.FindGameObjectsWithTag(role);
+        }
+        else
+        {
+            GameObject[] Fire = GameObject.FindGameObjectsWithTag("FireDepartment");
+            GameObject[] Law = GameObject.FindGameObjectsWithTag("LawEnforcement");
 
-        return npcs;
+            List<GameObject> npcs = new List<GameObject>(Fire);
+            npcs.AddRange(Law);
+
+            return npcs.ToArray();
+        }
+
     }
-    /*
+
     public void onButtonClick(Button button)
     {
+
         string npcRole = "";
-        switch (button.name) {
+        switch (button.name)
+        {
 
             case "LawEnfButton":
                 npcRole = "LawEnforcement";
@@ -83,6 +151,11 @@ public class playerController : MonoBehaviour
                 npcRole = "FireDepartment";
                 playerRole = Roles.FireDepartment;
                 break;
+
+            case "InstructorButton":
+                npcRole = "Instructor";
+                playerRole = Roles.Instructor;
+                break;
         }
 
         moveableChars = GetNpcs(npcRole);
@@ -91,12 +164,19 @@ public class playerController : MonoBehaviour
         GameObject buttonUI = button.gameObject.transform.parent.gameObject;
         buttonUI.gameObject.SetActive(false);
 
-        //Activate Camera
-        //TODO: Enable Camera Movement only for instructor (Waiting for a more specific implementation of camera position)
-        playerController playerController = transform.GetComponent<playerController>();
-        playerController.enabled = true;
-        GameObject Camera = transform.Find("Camera").gameObject;
-        CameraLook CameraLook = Camera.GetComponent<CameraLook>();
-        CameraLook.enabled = true;
-    } */
+    }
+
+    private void UndoLastAction()
+    {
+        foreach (var charObj in selectedChars)
+        {
+            Vector3 lastPosition = phaseManager.UndoAction(playerRole.ToString());
+            if (lastPosition != Vector3.zero)
+            {
+                Debug.Log($"Undo action for {charObj.name}. Moving to {lastPosition}");
+                charObj.transform.position = lastPosition;
+            }
+        }
+    }
+
 }
