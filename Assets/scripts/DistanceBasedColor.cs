@@ -44,7 +44,7 @@ public class DistanceBasedColor : MonoBehaviour
             cylinderRenderer.material.color = color;
 
             // Debug the calculated distance and normalized value
-            Debug.Log($"Distance: {distance}, Normalized: {t}, Color: {color}");
+            //Debug.Log($"Distance: {distance}, Normalized: {t}, Color: {color}");
         }
         else
         {

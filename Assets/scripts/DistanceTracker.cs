@@ -14,7 +14,7 @@ public class DistanceTracker : MonoBehaviour
             float distance = Vector3.Distance(transform.position, MRIMachine.transform.position);
 
             // Print the actual distance to the console
-            Debug.Log("Distance from MRIMachine: " + distance);
+           // Debug.Log("Distance from MRIMachine: " + distance);
         }
         else
         {
