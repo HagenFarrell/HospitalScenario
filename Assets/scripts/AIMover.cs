@@ -8,8 +8,8 @@ public class AIMover : MonoBehaviour
     public float speed = 5f;
 
     private Pathfinder pathfinder;
-    private List<Vector3> path;
-    private int currentWaypoint = 0;
+    public List<Vector3> path;
+    public int currentWaypoint = 0;
 
     public bool isAtDestination;
 

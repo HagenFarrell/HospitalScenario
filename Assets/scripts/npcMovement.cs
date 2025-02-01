@@ -8,6 +8,7 @@ public class npcMovement : MonoBehaviour
     Camera mainCamera;
     private float stoppingRadius = 2f; // Radius Where NPCs can stop at
 
+    [SerializeField] private float rotationSpeed = 8f; // Rotation speed
     private float timeDelayBetweenNPCs = 0.5f; // Time between each npc movements
     private bool isMovingSequence = false; // Tracks if movement is in progress
 
@@ -30,20 +31,43 @@ public class npcMovement : MonoBehaviour
 
     void Update()
     {
-        
         // Update animations based on movement
         foreach(var npc in npcAgents.Keys)
         {
-            
             if (!npcDestinationStatus[npc])
             {
                 AIMover agent = npcAgents[npc];
                 Animator animator = npcAnimators[npc];
 
-                //animator.SetBool("IsWalking", agent.velocity.magnitude > 0.1f);
+                // Get the current waypoint from the path if it exists
+                Vector3 moveDirection = Vector3.zero;
+                if (agent.path != null && agent.currentWaypoint < agent.path.Count)
+                {
+                    Vector3 nextWaypoint = agent.path[agent.currentWaypoint];
+                    moveDirection = (nextWaypoint - npc.transform.position).normalized;
+                }
+
+                // Only rotate if we have some movement
+                if (moveDirection != Vector3.zero)
+                {
+                    // Calculate rotation towards movement direction
+                    Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+                    
+                    // Get just the Y rotation - this prevents tilting
+                    float targetY = targetRotation.eulerAngles.y;
+                    Quaternion yRotation = Quaternion.Euler(0, targetY, 0);
+                    
+                    // Smoothly rotate towards target direction (Y only)
+                    npc.transform.rotation = Quaternion.Slerp(
+                        npc.transform.rotation,
+                        yRotation,
+                        rotationSpeed * Time.deltaTime
+                    );
+
+                    animator.SetBool("IsWalking", true);
+                }
 
                 // Check if reached destination
-                
                 if (agent.isAtDestination)
                 {
                     npcDestinationStatus[npc] = true;
