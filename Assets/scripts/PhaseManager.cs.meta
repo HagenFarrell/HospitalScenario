@@ -1,10 +1,9 @@
 fileFormatVersion: 2
-guid: 74874146d4044447bbbec7eb3816b63c
+guid: 7df47dadfdc4e0f449f8f412e93b9b31
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences:
-  - phaseTesterObject: {fileID: 7438494788967298231, guid: b79d0b13355dc8f44b7956db61a82656, type: 3}
+  defaultReferences: []
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

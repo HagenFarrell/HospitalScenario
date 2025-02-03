@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class playerController : MonoBehaviour
 {
@@ -22,162 +24,146 @@ public class playerController : MonoBehaviour
     }
 
     [SerializeField] private Roles playerRole;
-    // public GameObject cameras;
+    public GameObject cameras;
     public npcMovement npcs;
-    public PhaseManager phaseManager;
     private cameraSwitch cameraswitch;
 
-    private GameObject[] moveableChars; // Array of gameobjects that this player is allowed to interact with
+    private GameObject[] moveableChars; //Array of gameobjects that this player is allowed to interact with
     private List<GameObject> selectedChars = new List<GameObject>();
-    private int currentCharIndex = 0;
+    public PhaseManager phaseManager;
 
     private void Start()
     {
-        // cameraswitch = cameras.GetComponent<cameraSwitch>();
-        Debug.Log($"This script is attached to: {gameObject.name}");
+        cameraswitch = cameras.GetComponent<cameraSwitch>();
     }
 
     void Update()
     {
-        HandleRoleSelection(); // Use keybinds to assign roles
-
-        if (playerRole == Roles.Instructor)
+        if (Input.GetMouseButtonDown(0) && playerRole != Roles.None)
         {
-            HandleInstructorControls();
+            Camera mainCamera = Camera.main;
+
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                GameObject hitObj = hit.collider.gameObject;
+                if (hitObj.tag == playerRole.ToString() || (playerRole == Roles.Instructor && hitObj.tag != "Untagged"))
+                {
+                    GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
+                    moveToolRing.SetActive(true);
+                    selectedChars.Add(hitObj);
+                    return;
+                }
+
+            }
+
+            npcs.refreshCamera();
+            npcs.moveNpc(selectedChars.ToArray());
         }
-        else
+        if (Input.GetMouseButtonDown(1) && playerRole != Roles.None)
         {
-            HandlePlayerControls();
+            Camera mainCamera = Camera.main;
+
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                GameObject hitObj = hit.collider.gameObject;
+                if (hitObj.tag == playerRole.ToString() || (playerRole == Roles.Instructor && hitObj.tag != "Untagged"))
+                {
+                    GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
+                    moveToolRing.SetActive(false);
+                    selectedChars.Remove(hitObj);
+                    return;
+                }
+
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha1)) cameraswitch.SwitchCamera(0);
+        if (Input.GetKeyDown(KeyCode.Alpha2)) cameraswitch.SwitchCamera(1);
+        if (Input.GetKeyDown(KeyCode.Alpha3)) cameraswitch.SwitchCamera(2);
+        if (Input.GetKeyDown(KeyCode.Alpha4)) cameraswitch.SwitchCamera(3);
+
+        if (Input.GetKeyDown(KeyCode.Alpha0) && playerRole == Roles.Instructor) // Next phase
+        {
+            phaseManager.NextPhase();
         }
 
-        // if (Input.GetKeyDown(KeyCode.Alpha1)) cameraswitch.SwitchCamera(0);
-        // if (Input.GetKeyDown(KeyCode.Alpha2)) cameraswitch.SwitchCamera(1);
-        // if (Input.GetKeyDown(KeyCode.Alpha3)) cameraswitch.SwitchCamera(2);
-        // if (Input.GetKeyDown(KeyCode.Alpha4)) cameraswitch.SwitchCamera(3);
+        if (Input.GetKeyDown(KeyCode.Alpha9) && playerRole == Roles.Instructor) // Previous phase
+        {
+            phaseManager.PreviousPhase();
+        }
 
         if (Input.GetKeyDown(KeyCode.U)) // Undo last action
         {
             UndoLastAction();
         }
-    }
-    
-    private void HandleRoleSelection()
-    {
-        if (Input.GetKeyDown(KeyCode.L)) // Law Enforcement
-        {
-            SetRole(Roles.LawEnforcement, "LawEnforcement");
-        }
-        if (Input.GetKeyDown(KeyCode.F)) // Fire Department
-        {
-            SetRole(Roles.FireDepartment, "FireDepartment");
-        }
-        if (Input.GetKeyDown(KeyCode.I)) // Instructor
-        {
-            SetRole(Roles.Instructor, "Instructor");
-        }
+
+
+
+
     }
 
-    private void SetRole(Roles role, string roleTag)
+    void FixedUpdate()
     {
-        if(role != playerRole){
-            playerRole = role;
-            moveableChars = GetNpcs(roleTag);
-            Debug.Log($"Role set to: {role}. Movable characters: {moveableChars.Length}");
-        }
+        // Calculate the target velocity based on moveDirection
+        Vector3 targetVelocity = transform.TransformDirection(moveDirection) * moveSpeed;
+        targetVelocity.y = moveDirection.y * verticalSpeed;
+
+        // Smoothly interpolate the current velocity towards the target velocity
+        currentVelocity = Vector3.SmoothDamp(currentVelocity, targetVelocity, ref currentVelocity, smoothingSpeed);
+
+        // Apply the smoothed velocity to the player's position
+        transform.position += currentVelocity * Time.fixedDeltaTime;
     }
 
-    private void HandleInstructorControls()
+    private GameObject[] GetNpcs(string role)
     {
-        if (Input.GetMouseButtonDown(0))
+        if (role != "Instructor")
         {
-            SelectCharacter();
+            Debug.Log("Not instructor");
+            return GameObject.FindGameObjectsWithTag(role);
+        }
+        else
+        {
+            GameObject[] Fire = GameObject.FindGameObjectsWithTag("FireDepartment");
+            GameObject[] Law = GameObject.FindGameObjectsWithTag("LawEnforcement");
+
+            List<GameObject> npcs = new List<GameObject>(Fire);
+            npcs.AddRange(Law);
+
+            return npcs.ToArray();
         }
 
-        if (Input.GetMouseButtonDown(1))
-        {
-            DeselectCharacter();
-        }
-
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            MoveSelectedCharacters();
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha0)) // Next phase
-        {
-            phaseManager.NextPhase();
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha9)) // Previous phase
-        {
-            phaseManager.PreviousPhase();
-        }
     }
 
-    private void HandlePlayerControls()
+    public void onButtonClick(Button button)
     {
-        if (Input.GetMouseButtonDown(0))
+
+        string npcRole = "";
+        switch (button.name)
         {
-            SelectCharacter();
+
+            case "LawEnfButton":
+                npcRole = "LawEnforcement";
+                playerRole = Roles.LawEnforcement;
+                break;
+            case "FireDeptButton":
+                npcRole = "FireDepartment";
+                playerRole = Roles.FireDepartment;
+                break;
+
+            case "InstructorButton":
+                npcRole = "Instructor";
+                playerRole = Roles.Instructor;
+                break;
         }
 
-        if (Input.GetMouseButtonDown(1))
-        {
-            DeselectCharacter();
-        }
+        moveableChars = GetNpcs(npcRole);
 
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            MoveSelectedCharacters();
-        }
-    }
+        //Hide UI
+        GameObject buttonUI = button.gameObject.transform.parent.gameObject;
+        buttonUI.gameObject.SetActive(false);
 
-    private void SelectCharacter()
-    {
-        Camera mainCamera = Camera.main;
-        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit))
-        {
-            GameObject hitObj = hit.collider.gameObject;
-            if (hitObj.tag == playerRole.ToString() || playerRole == Roles.Instructor)
-            {
-                Debug.Log($"Selected character: {hitObj.name}");
-                GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
-                moveToolRing.SetActive(true);
-                selectedChars.Add(hitObj);
-            }
-            else
-            {
-                Debug.Log($"Cannot interact with {hitObj.name}. Wrong role or invalid selection.");
-            }
-        }
-    }
-
-    private void DeselectCharacter()
-    {
-        Camera mainCamera = Camera.main;
-        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit))
-        {
-            GameObject hitObj = hit.collider.gameObject;
-            if (hitObj.tag == playerRole.ToString() || playerRole == Roles.Instructor)
-            {
-                Debug.Log($"Deselected character: {hitObj.name}");
-                GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
-                moveToolRing.SetActive(false);
-                selectedChars.Remove(hitObj);
-            }
-        }
-    }
-
-    private void MoveSelectedCharacters()
-    {
-        npcs.refreshCamera();
-        npcs.moveNpc(selectedChars.ToArray());
-        foreach (var charObj in selectedChars)
-        {
-            phaseManager.LogAction(playerRole.ToString(), charObj.transform.position);
-        }
     }
 
     private void UndoLastAction()
@@ -193,21 +179,4 @@ public class playerController : MonoBehaviour
         }
     }
 
-    private GameObject[] GetNpcs(string role)
-    {
-        if (role != "Instructor")
-        {
-            return GameObject.FindGameObjectsWithTag(role);
-        }
-        else
-        {
-            GameObject[] Fire = GameObject.FindGameObjectsWithTag("FireDepartment");
-            GameObject[] Law = GameObject.FindGameObjectsWithTag("LawEnforcement");
-            
-            List<GameObject> npcs = new List<GameObject>(Fire);
-            npcs.AddRange(Law);
-            
-            return npcs.ToArray();
-        }
-    }
 }
