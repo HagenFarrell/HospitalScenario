@@ -4,5 +4,20 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/MainMenuScene.unity
+    guid: 0ede9c74d206de342b955cbd5b61fcad
+  - enabled: 1
+    path: Assets/Scenes/OptionsMenu.unity
+    guid: c14318b4754e4a34d94c6f15b48acfbb
+  - enabled: 1
+    path: Assets/Scenes/VolumeMenu.unity
+    guid: 81b8cb57f740309448fa57f727700e68
+  - enabled: 1
+    path: Assets/Scenes/MultiplayerScene.unity
+    guid: 30ccccdca929bb3498e4819b874b850a
+  - enabled: 1
+    path: Assets/Scenes/Hospital.unity
+    guid: fa0da64bc09ce834da74b17cf8929985
   m_configObjects: {}
