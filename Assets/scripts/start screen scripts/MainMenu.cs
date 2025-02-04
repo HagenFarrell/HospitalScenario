@@ -11,7 +11,7 @@ public class MainMenu : MonoBehaviour
 
     public void StartMultiplayer()
     {
-        SceneManager.LoadScene("MultiplayerScene");
+        SceneManager.LoadScene("MultiplayerMenu");
         Debug.Log("load multiplayer scene");
     }
     public void openOptions()
@@ -35,5 +35,13 @@ public class MainMenu : MonoBehaviour
     {
         Application.Quit();
         Debug.Log("Game Closed!"); 
+    }
+    public void goToAbout()
+    {
+        SceneManager.LoadScene("AboutUsScene");
+    }
+    public void goToHTP()
+    {
+        SceneManager.LoadScene("HowToPlayScene");
     }
 }
