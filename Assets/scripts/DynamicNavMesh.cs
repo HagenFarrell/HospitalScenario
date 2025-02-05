@@ -21,7 +21,6 @@ public class DynamicNavMesh : MonoBehaviour
 
     void CreateGrid()
     {
-
         grid = new GridNode[gridSizeX, gridSizeY];
         Vector3 worldBottomLeft = transform.position - Vector3.right * gridSize.x / 2 - Vector3.forward * gridSize.y / 2;
 
@@ -33,17 +32,28 @@ public class DynamicNavMesh : MonoBehaviour
                     Vector3.right * (x * nodeDiameter + nodeRadius) +
                     Vector3.forward * (y * nodeDiameter + nodeRadius);
 
-                bool walkable = Physics.Raycast(worldPoint + Vector3.up * checkHeight, Vector3.down,
-                    checkHeight + 0.1f, walkableLayer);
-
-                // Debug ray visualization (visible in Scene view)
-                //Debug.DrawRay(worldPoint + Vector3.up * checkHeight, Vector3.down * (checkHeight + 0.1f),
-                //    walkable ? Color.green : Color.red, 100f);
-
+                bool walkable = false;
+                RaycastHit hit;
+                // Cast a ray downward without initially filtering by layer.
+                if (Physics.Raycast(worldPoint + Vector3.up * checkHeight, Vector3.down, out hit, checkHeight + 0.1f))
+                {
+                    // Check the layer of the hit collider.
+                    int wallLayer = LayerMask.NameToLayer("Walls");
+                    if (hit.collider.gameObject.layer == wallLayer)
+                    {
+                        // If we hit a wall, mark the node as unwalkable.
+                        walkable = false;
+                    }
+                    else
+                    {
+                        // Otherwise, assume it’s a floor.
+                        walkable = true;
+                    }
+                }
+                // If nothing is hit, the node remains unwalkable.
                 grid[x, y] = new GridNode(walkable, worldPoint, x, y);
             }
         }
-
     }
 
     public GridNode GetNodeFromWorldPoint(Vector3 worldPosition)
