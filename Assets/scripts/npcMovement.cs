@@ -65,6 +65,7 @@ public class npcMovement : MonoBehaviour
     {
         foreach(GameObject npc in npcs) // Loop though each NPC
         {
+            Debug.Log("moving to: " + ClickPosition);
             
             // Check if this NPC's components have been stored
             if (!npcAgents.ContainsKey(npc))
@@ -149,4 +150,48 @@ public class npcMovement : MonoBehaviour
                 StartCoroutine(MoveNPCsOneAtATime(npcs, hit.point, centerNPC));
         }
     }
+
+    public void MoveTo(Vector3 targetPosition, GameObject npc) //stolen logic from one at a time
+    {
+        // // Check if this NPC's components have been stored
+        // if (!npcAgents.ContainsKey(npc))
+        // {
+        //     // If not, get and store the NavMeshAgent and Animator components
+        //     npcAgents[npc] = npc.GetComponent<AIMover>();
+        //     npcAnimators[npc] = npc.GetComponent<Animator>();
+        // }
+
+        // // Get the stored component for this NPC
+        // AIMover agent = npcAgents[npc];
+        // Animator animator = npcAnimators[npc];
+        // agent.target.position = targetPosition;
+        // // Check if we have valid components
+        // if (agent != null && animator != null)
+        // {
+        //     Vector3 destination;
+        //     // NPC goes to click point
+        //     destination = targetPosition;
+
+        //     npcDestinationStatus[npc] = false;
+        //     animator.SetBool("IsWalking", true);
+        //     // StartCoroutine(agent.UpdatePath());
+            
+
+        //     // Sample the NavMesh to find a valid position
+        //     if (NavMesh.SamplePosition(destination, out NavMeshHit finalHit, stoppingRadius, NavMesh.AllAreas))
+        //     {
+        //         npcDestinationStatus[npc] = false;
+        //         animator.SetBool("IsWalking", true);
+        //         //agent.SetDestination(finalHit.position);
+        //     }
+        // }
+        if(targetPosition == null){
+            Debug.Log("null target");
+        }
+        Debug.Log("target: " + targetPosition);
+        if (dynamicNavMesh.GetNodeFromWorldPoint(targetPosition).IsWalkable) Debug.Log("This is walkable!");
+        // GameObject[] npcs = {npc};
+        // StartCoroutine(MoveNPCsOneAtATime(npcs, targetPosition, npc));
+    }
+
 }

@@ -114,6 +114,7 @@ public class playerController : MonoBehaviour
 
         // Apply the smoothed velocity to the player's position
         transform.position += currentVelocity * Time.fixedDeltaTime;
+        
     }
 
     private GameObject[] GetNpcs(string role)
@@ -151,7 +152,6 @@ public class playerController : MonoBehaviour
                 npcRole = "FireDepartment";
                 playerRole = Roles.FireDepartment;
                 break;
-
             case "InstructorButton":
                 npcRole = "Instructor";
                 playerRole = Roles.Instructor;

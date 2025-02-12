@@ -1,5 +1,16 @@
 namespace PhaseLink
 {
+    public enum GamePhase
+    {
+        Phase1,
+        Phase2,
+        Phase3,
+        Phase4,
+        Phase5,
+        Phase6,
+        Phase7
+        
+    }
     public class PhaseNode
     {
         public GamePhase Phase { get; private set; }
