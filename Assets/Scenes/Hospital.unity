@@ -3320,6 +3320,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1654711326}
     m_Modifications:
+    - target: {fileID: 2124110657170080368, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
+      propertyPath: m_Radius
+      value: 0.26
+      objectReference: {fileID: 0}
     - target: {fileID: 2400439129582445820, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: m_Name
       value: FireFighter_01 (2)
@@ -6785,7 +6789,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -3353876540095221146, guid: f34181e0f7c78db45a2d0056636ebad6, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.22
+      value: -0.35
       objectReference: {fileID: 0}
     - target: {fileID: -3325657142150511017, guid: f34181e0f7c78db45a2d0056636ebad6, type: 3}
       propertyPath: m_LocalScale.x
@@ -16637,6 +16641,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1654711326}
     m_Modifications:
+    - target: {fileID: 2124110657170080368, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
+      propertyPath: m_Radius
+      value: 0.26
+      objectReference: {fileID: 0}
     - target: {fileID: 2400439129582445820, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: m_Name
       value: FireFighter_01 (1)
@@ -19142,6 +19150,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1654711326}
     m_Modifications:
+    - target: {fileID: 2124110657170080368, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
+      propertyPath: m_Radius
+      value: 0.26
+      objectReference: {fileID: 0}
     - target: {fileID: 2400439129582445820, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: m_Name
       value: FireFighter_01

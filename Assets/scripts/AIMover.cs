@@ -36,7 +36,7 @@ public class AIMover : MonoBehaviour
                     currentWaypoint = 0;
                 }
             }
-            yield return new WaitForSeconds(0.5f); // Update path every 0.5 seconds
+            yield return new WaitForSeconds(10f); // Update path every 0.5 seconds
         }
     }
 
