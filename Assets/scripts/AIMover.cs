@@ -7,19 +7,28 @@ public class AIMover : MonoBehaviour
     public Transform target;
     public float speed = 5f;
 
+    // Variables for the BOIDS algorithm.
+    private float maxSpeed = 5f;
+    private float maxForce = 10f;
+    private float slowingRadius = 3f;
+    private float seperationWeight = 1f;
+
     private Pathfinder pathfinder;
     private List<Vector3> path;
     private int currentWaypoint = 0;
 
     public bool isAtDestination;
 
+    // Maintain a reference globally about the current speed of the AI.
+    private Vector3 currentVelocity;
+
     void Start()
     {
         pathfinder = FindObjectOfType<Pathfinder>();
         isAtDestination = true;
         //if(pathfinder != null ) { StartCoroutine(UpdatePath()); }
-       
-        
+
+
     }
 
     public IEnumerator UpdatePath()
@@ -40,27 +49,36 @@ public class AIMover : MonoBehaviour
         }
     }
 
+    // Update function rewritten to accompany new steering mechanics.
     void Update()
     {
-        if (path == null || currentWaypoint >= path.Count) return;
 
-        Vector3 direction = (path[currentWaypoint] - transform.position).normalized;
-        transform.position += direction * speed * Time.deltaTime;
+    }
 
-        // Check distance in XZ plane (ignore Y-axis)
-        Vector2 agentXZ = new Vector2(transform.position.x, transform.position.z);
-        Vector2 waypointXZ = new Vector2(path[currentWaypoint].x, path[currentWaypoint].z);
-        if (Vector2.Distance(agentXZ, waypointXZ) < 0.2f)
+    Vector3 ComputeSteeringForce()
+    {
+        // Compute the Arrival behavior.
+        Vector3 desired = target.position - transform.position;
+        float distance = desired.magnitude;
+        desired.Normalize();
+
+        // If we are inside the slowing radius, cut the max speed proportional to the distance.
+        if (distance < slowingRadius)
         {
-            currentWaypoint++;
-
-            if (currentWaypoint >= path.Count)
-            {
-                Debug.Log("AI has reached the destination!");
-                isAtDestination = true;
-                // Add additional logic here, such as stopping movement or triggering an event
-            }
+            desired *= maxSpeed * (distance / slowingRadius);
         }
+        else
+        {
+            desired *= maxSpeed;
+        }
+
+        Vector3 steeringForce = desired - currentVelocity;
+
+        // Here we need to attempt to create a seperation force as well as, unit cohesion.
+
+        // We need to clamp the steeringForce, otherwise it could exceed the maxForce causing undesired behavior.
+        steeringForce = Vector3.ClampMagnitude(steeringForce, maxForce);
+        return steeringForce;
     }
 
     void OnDrawGizmos()

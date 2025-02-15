@@ -1,12 +1,13 @@
-using UnityEngine;
-using UnityEngine.AI;
-using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class npcMovement : MonoBehaviour
 {
     Camera mainCamera;
     private float stoppingRadius = 2f; // Radius Where NPCs can stop at
+
+    private float rowSpacing = 2f;
+    private float colSpacing = 1.5f;
 
     private float timeDelayBetweenNPCs = 0.5f; // Time between each npc movements
     private bool isMovingSequence = false; // Tracks if movement is in progress
@@ -21,132 +22,113 @@ public class npcMovement : MonoBehaviour
 
     void Start()
     {
-       if (mainCamera == null)
-       {
-           mainCamera = Camera.main;
-       }
-       aimovers = gameObject.GetComponentsInChildren<AIMover>();
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+        }
+        aimovers = gameObject.GetComponentsInChildren<AIMover>();
     }
 
     void Update()
     {
-        
+
         // Update animations based on movement
-        foreach(var npc in npcAgents.Keys)
+        foreach (var npc in npcAgents.Keys)
         {
-            
+
             if (!npcDestinationStatus[npc])
             {
                 AIMover agent = npcAgents[npc];
                 Animator animator = npcAnimators[npc];
 
-                //animator.SetBool("IsWalking", agent.velocity.magnitude > 0.1f);
-
                 // Check if reached destination
-                
                 if (agent.isAtDestination)
                 {
                     npcDestinationStatus[npc] = true;
                     animator.SetBool("IsWalking", false);
                 }
             }
-        } 
+        }
     }
 
     public void refreshCamera()
     {
-       mainCamera = Camera.main;
+        mainCamera = Camera.main;
     }
 
-    /* Takes in group of NPCs we want to move
-       Takes in The positon where the player clicked
-       Takes in the center most NPC of the group */
-    private IEnumerator MoveNPCsOneAtATime(GameObject[] npcs, Vector3 ClickPosition, GameObject centerNPC)
-    {
-        foreach(GameObject npc in npcs) // Loop though each NPC
-        {
-            
-            // Check if this NPC's components have been stored
-            if (!npcAgents.ContainsKey(npc))
-            {
-                // If not, get and store the NavMeshAgent and Animator components
-                npcAgents[npc] = npc.GetComponent<AIMover>();
-                npcAnimators[npc] = npc.GetComponent<Animator>();
-            }
-
-            // Get the stored component for this NPC
-            AIMover agent = npcAgents[npc];
-            Animator animator = npcAnimators[npc];
-            agent.target.position = ClickPosition;
-             // Check if we have valid components
-            if (agent != null && animator != null)
-            {
-                Vector3 destination;
-                if (npc == centerNPC)
-                {
-                    // Center NPC goes to click point
-                    destination = ClickPosition;
-                }
-                else
-                {
-                    // Others circle around based on their position relative to center
-                    Vector3 dirFromCenter = (npc.transform.position - centerNPC.transform.position).normalized;
-                    float distanceFromCenter = stoppingRadius *
-                        (1f + Vector3.Distance(npc.transform.position, centerNPC.transform.position) * 0.2f);
-                    destination = ClickPosition + dirFromCenter * distanceFromCenter;
-                }
-                npcDestinationStatus[npc] = false;
-                animator.SetBool("IsWalking", true);
-                StartCoroutine(agent.UpdatePath());
-                
-
-                // Sample the NavMesh to find a valid position
-                if (NavMesh.SamplePosition(destination, out NavMeshHit finalHit, stoppingRadius, NavMesh.AllAreas))
-                {
-                    npcDestinationStatus[npc] = false;
-                    animator.SetBool("IsWalking", true);
-                    //agent.SetDestination(finalHit.position);
-                }
-            }
-
-            yield return new WaitForSeconds(timeDelayBetweenNPCs); // Wait before moving the next NPC
-            
-        }
-
-        isMovingSequence = false; // Ends Movement
-    }
-
+    // Rewrote this function to implement the steering solution analogous to StarCraft II's design.
     public void moveNpc(GameObject[] npcs)
     {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
+            // You know what this does ;)
+            if (npcs.Length == 0) return;
 
-            //TODO: Instead of using navmesh here, check if the hit point when sent to grid node is walkable
-            if (dynamicNavMesh.GetNodeFromWorldPoint(hit.point).IsWalkable) Debug.Log("This is walkable!");
-                if (npcs.Length == 0) return;
-                // Find center NPC (closest to group's center)
-                Vector3 groupCenter = Vector3.zero;
-                foreach(GameObject npc in npcs)
-                {
-                    groupCenter += npc.transform.position;
-                }
-                groupCenter /= npcs.Length;
+            Vector3 formationApex = hit.point;
 
-                // Find NPC closest to center
-                GameObject centerNPC = npcs[0];
-                float closestDist = float.MaxValue;
-                foreach(GameObject npc in npcs)
-                {
-                    float dist = Vector3.Distance(npc.transform.position, groupCenter);
-                    if(dist < closestDist)
-                    {
-                        closestDist = dist;
-                        centerNPC = npc;
-                    }
-                }
-                // Move NPCs
-                StartCoroutine(MoveNPCsOneAtATime(npcs, hit.point, centerNPC));
+            // Need this for the "flock" heading, which is typically a boids algorithm term.
+            Vector3 forwardDirection = Vector3.forward;
+
+            // We will now loop through each NPC and compute its placement in the triangle formation.
+            for (int i = 0; i < npcs.Length; ++i)
+            {
+                GameObject npc = npcs[i];
+
+
+                // Get cached AImover object.
+                AIMover agent = npc.GetComponent<AIMover>();
+                if (agent == null) continue;
+
+                // Calculate the formation slot for the current NPC.
+                Vector3 formationSlot = ComputeTriangleSlot(i, formationApex, forwardDirection, rowSpacing, colSpacing);
+
+                // Just updates the agents position relative to the other agents (NPCs)
+                agent.transform.position = formationSlot;
+
+                // Trigger the pathfinding subroutine.
+                StartCoroutine(agent.UpdatePath());
+            }
+        }
+    }
+
+
+
+    /* Function that computes the slot for NPCs in wedge formation.
+     * Function information:
+     * index: NPCs index (0-based) in the current group.
+     * apex: the formations front guard or target position.
+     * forward: the curent direction the formation is facing.
+     * rowSpacing: distance between sucessive rows.
+     * colSpacing: horizontal spacing between each NPC in a row.
+     */
+    Vector3 ComputeTriangleSlot(int index, Vector3 apex, Vector3 forward, float rowSpacing, float colSpacing)
+    {
+        int row = 0;
+        int count = 0;
+
+        while (true)
+        {
+            int rowCount = row + 1;
+            if (index < count + rowCount)
+            {
+                int col = index - count;
+
+                // The position for this row, from the apex of the formation backwards.
+                Vector3 rowPosition = apex - forward * (rowSpacing * row);
+
+                Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
+
+                // Centering the row horizontally.
+                // In order to grab the center of the rowCount NPC we have to do (rowCount - 1)/2.0f <-- middle position.
+                float centerOffset = (rowCount - 1) / 2.0f;
+                float horizontalOffset = (col - centerOffset) * colSpacing;
+
+                return rowPosition + right * horizontalOffset;
+            }
+
+            count += row + 1;
+            row++;
         }
     }
 }
