@@ -4,20 +4,37 @@ using UnityEngine;
 
 public class AIMover : MonoBehaviour
 {
-    // Variables for the BOIDS algorithm.
-    [SerializeField] private float speed = 5f;
-    [SerializeField] private float maxSpeed = 10f;
-    [SerializeField] private float maxForce = 5f;
+    private Animator animator;
+
+    // ---- Variables for the BOIDS algorithm. ----
+    [SerializeField] private float speed = 13f;
+    [SerializeField] private float maxSpeed = 15f;
+    [SerializeField] private float maxForce = 15f;
     [SerializeField] private float slowingRadius = 1f;
-    [SerializeField] private float seperationRadius = 2f;
+    [SerializeField] private float seperationRadius = 1f;
+    [SerializeField] private float lookAheadDistance = 1f;
+
+
+    // ---- Movement based variables ----
+    [SerializeField] private float movementThreshhold = 0.1f;
+    [SerializeField] private float animationDampTime = 0.1f;
+
+    // Animation parameter hashes for efficiency
+    private readonly int walkingHash = Animator.StringToHash("IsWalking");
+    private readonly int speedHash = Animator.StringToHash("Speed");
+
+
+    // ---- Pathingfinding variables ----
+    [SerializeField] private float pathWeight = 0.4f;
     [SerializeField] private float pathUpdateInterval = 0.5f;
-
-
     private Pathfinder pathfinder;
     private List<Vector3> path;
     private int currentWaypoint = 0;
 
+
     private Vector3 previousSteering = Vector3.zero;
+
+
 
     /* For anyone reading this that doesnt understand.
      * get: means other classes can read the value
@@ -29,6 +46,7 @@ public class AIMover : MonoBehaviour
     // Maintain a reference globally about the current speed of the AI.
     private Vector3 currentVelocity;
 
+    // Lazy loading for target transforms. Only to be used when needed. Otherwise is not loaded.
     private Transform _target;
     public Transform target
     {
@@ -49,6 +67,17 @@ public class AIMover : MonoBehaviour
     void Start()
     {
         pathfinder = FindObjectOfType<Pathfinder>();
+        if (pathfinder == null)
+        {
+            Debug.LogError($"No Pathfinder found for {gameObject.name}!");
+        }
+
+        animator = GetComponent<Animator>();
+        if (animator == null)
+        {
+            Debug.LogError($"No Animator found for {gameObject.name}!");
+        }
+
         isAtDestination = true;
     }
 
@@ -58,14 +87,18 @@ public class AIMover : MonoBehaviour
         {
             if (target != null)
             {
+                Debug.Log($"Finding path from {transform.position} to {target.position}");
                 path = pathfinder.FindPath(transform.position, target.position);
                 if (path != null && path.Count > 0)
                 {
+                    Debug.Log($"Path found with {path.Count} waypoints");
                     currentWaypoint = 0;
                 }
+                else
+                {
+                    Debug.Log("No path found!");
+                }
             }
-
-            // New pathing will be updated every 1/2 seconds.
             yield return new WaitForSeconds(pathUpdateInterval);
         }
     }
@@ -73,21 +106,34 @@ public class AIMover : MonoBehaviour
     // Update function rewritten to accompany new steering mechanics.
     private void Update()
     {
-        // Early out if path doesnt exist.
-        if (path == null || currentWaypoint >= path.Count) return;
+        // Ensuring idling if path is out.
+        if (path == null || currentWaypoint >= path.Count)
+        {
+            currentVelocity = Vector3.zero;
+            previousSteering = Vector3.zero;
+            UpdateAnimation();
+            return;
+        }
 
         Vector3 waypointTarget = path[currentWaypoint];
 
         // Call the compute steering force function.
         Vector3 steering = ComputeSteeringForce(waypointTarget);
+        Debug.Log($"{gameObject.name} steering force: {steering.magnitude}");
         applyMovement(steering);
 
+        float distToWaypoint = Vector3.Distance(transform.position, waypointTarget);
+        Debug.Log($"Distance to waypoint: {distToWaypoint}");
+
+
         // We need to check if the NPC is close the next waypoint.
-        if (Vector3.Distance(transform.position, waypointTarget) < 0.5f)
+        if (distToWaypoint < 0.5f)
         {
+            Debug.Log($"Reached waypoint {currentWaypoint}, moving to next");
             currentWaypoint++;
             if (currentWaypoint >= path.Count)
             {
+                Debug.Log("Reached final waypoint");
                 isAtDestination = true;
             }
         }
@@ -95,32 +141,85 @@ public class AIMover : MonoBehaviour
 
     private Vector3 ComputeSteeringForce(Vector3 waypointTarget)
     {
-        // Compute the Arrival behavior.
-        Vector3 desired = waypointTarget - transform.position;
-        float distance = desired.magnitude;
-        desired.Normalize();
+        // Primary movement vector this drives our main movement
+        Vector3 targetDirection = (waypointTarget - transform.position);
+        float distanceToTarget = targetDirection.magnitude;
 
-        // Apply a slowing effect when approaching the final waypoint.
-        float targetSpeed = maxSpeed;
-        if (currentWaypoint == path.Count - 1 && distance < slowingRadius)
+
+        // Use full speed for the desired velocity to ensure snappy movement
+        Vector3 desiredVelocity = targetDirection.normalized * maxSpeed;
+
+        // Predict position for path following, but keep it very short range
+        Vector3 futurePosition = transform.position + (currentVelocity * 0.5f); // Reduced look ahead
+        Vector3 nearestPathPoint = FindNearestPointOnPath(futurePosition);
+        Vector3 pathOffset = nearestPathPoint - transform.position;
+
+        // Calculate path influence - but keep it minimal
+        float pathInfluence = Mathf.Clamp01(pathOffset.magnitude / 5f) * 0.2f;
+        Vector3 pathCorrection = pathOffset.normalized * maxSpeed;
+
+        // Heavily favor direct movement
+        Vector3 blendedDesiredVelocity = Vector3.Lerp(
+            desiredVelocity,
+            pathCorrection,
+            pathInfluence
+        );
+
+        // Only slow down when very close to target
+        if (distanceToTarget < slowingRadius)
         {
-            targetSpeed = maxSpeed * (distance / slowingRadius);
+            float speedMultiplier = Mathf.Clamp01(distanceToTarget / slowingRadius);
+            blendedDesiredVelocity *= speedMultiplier;
         }
 
-        desired *= targetSpeed;
+        // More aggressive steering calculation
+        Vector3 steeringForce = (blendedDesiredVelocity - currentVelocity) * 2f; // Multiplier for stronger steering
 
-        // Base steering force, will be adjusted by a seperation force.
-        Vector3 steeringForce = desired - currentVelocity;
+        // Minimal separation only when absolutely necessary
+        steeringForce += calculateSeperation() * 0.2f;
 
-
-        steeringForce += calculateSeperation() * 1.5f;
-
-
-        // We need to clamp the steeringForce, otherwise it could exceed the maxForce causing undesired behavior.
-        steeringForce = Vector3.ClampMagnitude(steeringForce, maxForce);
-
-        return steeringForce;
+        // Allow stronger forces for quicker acceleration
+        return Vector3.ClampMagnitude(steeringForce, maxForce * 2f);
     }
+
+    private Vector3 FindNearestPointOnPath(Vector3 position)
+    {
+        if (path == null || path.Count == 0) return position;
+
+        float minDistance = float.MaxValue;
+        Vector3 nearestPoint = position;
+
+        for (int i = currentWaypoint; i < path.Count - 1; ++i)
+        {
+            Vector3 start = path[i];
+            Vector3 end = path[i + 1];
+            Vector3 point = GetNearestPointOnSegment(position, start, end);
+
+            float distance = Vector3.Distance(position, point);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                nearestPoint = point;
+            }
+        }
+        return nearestPoint;
+    }
+
+
+    private Vector3 GetNearestPointOnSegment(Vector3 point, Vector3 start, Vector3 end)
+    {
+        Vector3 segment = end - start;
+        Vector3 VectorToPoint = point - start;
+
+        float segmentLength = segment.magnitude;
+        Vector3 segmentDirection = segment / segmentLength;
+
+        float projection = Vector3.Dot(VectorToPoint, segmentDirection);
+        projection = Mathf.Clamp(projection, 0f, segmentLength);
+
+        return start + (segmentDirection * projection);
+    }
+
 
     private Vector3 calculateSeperation()
     {
@@ -168,13 +267,55 @@ public class AIMover : MonoBehaviour
 
         // Update the agents position based on the new velocity calculated.
         transform.position += currentVelocity * Time.deltaTime;
+
+        // Animate on move.
+        UpdateAnimation();
+
+        // Add smooth rotations.
+        updateRotation();
+    }
+
+    // Updates the animations of units depending on movement speed.
+    private void UpdateAnimation()
+    {
+        if (animator != null)
+        {
+            float currentSpeed = currentVelocity.magnitude;
+            animator.SetBool(walkingHash, currentSpeed > movementThreshhold);
+
+
+            // We need to consider multiple conditions for a unit to be "stopped":
+            bool shouldBeIdle =
+                // Check if we've reached our destination
+                isAtDestination ||
+                // Check if velocity is effectively zero
+                currentSpeed < 0.01f ||
+                // Check if we don't have a valid path
+                path == null ||
+                // Check if we've reached the end of our path
+                currentWaypoint >= path.Count;
+
+            // Set the walking animation state based on our idle check
+            animator.SetBool(walkingHash, !shouldBeIdle);
+
+            // If we are going to idle, make sure to zero out the NPC velocity.
+            if (shouldBeIdle)
+            {
+                currentVelocity = Vector3.zero;
+                previousSteering = Vector3.zero;
+            }
+        }
     }
 
 
-    // TODO: Update the rotation of the group based on the commander of the group.
+    // Uses quaternions (to avoid gimble lock) for smooth rotations based on hit point clicked. (target location)
     private void updateRotation()
     {
-
+        if (currentVelocity.magnitude > 0.1f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(currentVelocity.normalized);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 0.5f);
+        }
     }
 
     public void SetTargetPosition(Vector3 newPosition)

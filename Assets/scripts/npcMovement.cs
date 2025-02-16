@@ -7,9 +7,9 @@ public class npcMovement : MonoBehaviour
     private Camera mainCamera;
 
     [SerializeField] private float stoppingRadius = 2f;
-    [SerializeField] private float rowSpacing = 2f;
-    [SerializeField] private float colSpacing = 1.5f;
-    [SerializeField] private float formationUpdateInterval = 0.5f;
+    [SerializeField] private float rowSpacing = 3f;
+    [SerializeField] private float colSpacing = 2f;
+    [SerializeField] private float formationUpdateInterval = 1f;
 
     //private bool isMovingSequence = false;
 
@@ -53,14 +53,23 @@ public class npcMovement : MonoBehaviour
             // Clear tracking directories.
             npcAgents.Clear();
             npcDestinationStatus.Clear();
+            npcAnimators.Clear();
 
             foreach (GameObject npc in npcs)
             {
+                // Grab the AIMover and Animator components for each NPC.
                 AIMover mover = npc.GetComponent<AIMover>();
+                Animator animator = npc.GetComponent<Animator>();
+
                 if (mover != null)
                 {
                     npcAgents[npc] = mover;
                     npcDestinationStatus[npc] = false;
+
+                    if (animator != null)
+                    {
+                        npcAnimators[npc] = animator;
+                    }
                 }
             }
 
@@ -82,27 +91,43 @@ public class npcMovement : MonoBehaviour
         while (!allNpcsAtDestination())
         {
             AIMover commanderAI = npcs[0].GetComponent<AIMover>();
-            Vector3 commanderPosition = npcs[0].transform.position;
-            Vector3 commanderForward = npcs[0].transform.forward;
 
-            for (int i = 0; i < npcs.Length; ++i)
+            if (commanderAI == null) yield break;
+
+            Vector3 commanderPosition = commanderAI.transform.position;
+            Vector3 commanderForward = commanderAI.transform.forward;
+
+            // Update all NPCs including the commander
+            for (int i = 0; i < npcs.Length; i++)
             {
                 GameObject npc = npcs[i];
-                AIMover agent = npcAgents[npc];
+                AIMover agent = npc.GetComponent<AIMover>();
 
-                if (agent != null && !agent.isAtDestination)
+                if (agent != null)
                 {
-                    // Calculate the wedge position for each NPC unit selected.
-                    Vector3 formationSlot = ComputeTriangleSlot(
-                        i,
-                        commanderPosition,
-                        commanderForward,
-                        rowSpacing,
-                        colSpacing
-                    );
+                    // Skip commander.
+                    if (i == 0) continue;
 
-                    agent.SetTargetPosition(formationSlot);
-                    StartCoroutine(agent.UpdatePath());
+                    else
+                    {
+                        Vector3 formationSlot = ComputeTriangleSlot(
+                            i,
+                            commanderPosition,
+                            commanderForward,
+                            rowSpacing,
+                            colSpacing
+                        );
+
+                        // Only update if the NPC needs to move
+                        if (Vector3.Distance(npc.transform.position, formationSlot) > 0.5f)
+                        {
+                            agent.SetTargetPosition(formationSlot);
+                            if (!agent.isAtDestination)
+                            {
+                                StartCoroutine(agent.UpdatePath());
+                            }
+                        }
+                    }
                 }
             }
 
