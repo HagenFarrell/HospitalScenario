@@ -84,7 +84,7 @@ public class npcMovement : MonoBehaviour
                 Vector3 formationSlot = ComputeTriangleSlot(i, formationApex, forwardDirection, rowSpacing, colSpacing);
 
                 // Just updates the agents position relative to the other agents (NPCs)
-                agent.transform.position = formationSlot;
+                agent.SetTargetPosition(formationSlot);
 
                 // Trigger the pathfinding subroutine.
                 StartCoroutine(agent.UpdatePath());
