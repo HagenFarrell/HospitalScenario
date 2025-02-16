@@ -9,7 +9,7 @@ public class AIMover : MonoBehaviour
 
     // Variables for the BOIDS algorithm.
     private float maxSpeed = 10f;
-    private float maxForce = 10f;
+    private float maxForce = 5f;
     private float slowingRadius = 1f;
     private float seperationWeight = 1f;
 
@@ -18,7 +18,6 @@ public class AIMover : MonoBehaviour
     private int currentWaypoint = 0;
 
     private Vector3 previousSteering = Vector3.zero;
-    private Vector3 steeringVelocity = Vector3.zero;
 
     public bool isAtDestination;
 
@@ -74,7 +73,7 @@ public class AIMover : MonoBehaviour
         Vector3 steering = ComputeSteeringForce();
 
         // Update the currentVelocity with the steering force previously calculated.
-        Vector3 smoothedSteering = Vector3.SmoothDamp(previousSteering, steering, ref steeringVelocity, 0.3f);
+        Vector3 smoothedSteering = Vector3.Lerp(previousSteering, steering, 0.5f);
         previousSteering = smoothedSteering;
 
         currentVelocity.y = 0;
