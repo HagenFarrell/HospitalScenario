@@ -4177,7 +4177,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 636101285}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 22.698483, y: -18.797274, z: 82.84375}
+  m_LocalPosition: {x: -27.9, y: -18.797274, z: 92.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2039538832}
@@ -22870,11 +22870,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71bbb9398cbea39499095a5bfce1a9b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MRIMachine: {fileID: 0}
-  cylinderRenderer: {fileID: 0}
-  center: {fileID: 0}
-  maxDistance: 50
-  transparency: 0.5
 --- !u!23 &3873567724145442194
 MeshRenderer:
   m_ObjectHideFlags: 0
