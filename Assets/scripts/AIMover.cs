@@ -1,6 +1,6 @@
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class AIMover : MonoBehaviour
 {
@@ -10,6 +10,7 @@ public class AIMover : MonoBehaviour
     private Pathfinder pathfinder;
     private List<Vector3> path;
     private int currentWaypoint = 0;
+    private Coroutine currentPathUpdateCoroutine;
 
     public bool isAtDestination;
 
@@ -17,26 +18,34 @@ public class AIMover : MonoBehaviour
     {
         pathfinder = FindObjectOfType<Pathfinder>();
         isAtDestination = true;
-        //if(pathfinder != null ) { StartCoroutine(UpdatePath()); }
-       
-        
     }
 
     public IEnumerator UpdatePath()
     {
-        while (true)
+        // Stop any existing path update coroutine
+        if (currentPathUpdateCoroutine != null)
+        {
+            StopCoroutine(currentPathUpdateCoroutine);
+        }
+
+        isAtDestination = false;
+        
+        while (!isAtDestination)  // Only run while we haven't reached destination
         {
             if (target != null)
             {
                 path = pathfinder.FindPath(transform.position, target.position);
                 if (path != null && path.Count > 0)
                 {
-                    Debug.Log("Path found!");
-                    isAtDestination = false;
                     currentWaypoint = 0;
                 }
+                else
+                {
+                    // No path found - might want to handle this case
+                    Debug.LogWarning($"No path found for {gameObject.name}");
+                }
             }
-            yield return new WaitForSeconds(0.5f); // Update path every 0.5 seconds
+            yield return new WaitForSeconds(0.5f);
         }
     }
 
@@ -56,11 +65,22 @@ public class AIMover : MonoBehaviour
 
             if (currentWaypoint >= path.Count)
             {
-                Debug.Log("AI has reached the destination!");
+                Debug.Log($"{gameObject.name} has reached the destination!");
                 isAtDestination = true;
-                // Add additional logic here, such as stopping movement or triggering an event
+                path = null;  // Clear the path
             }
         }
+    }
+
+    // Optional: Method to explicitly stop movement
+    public void StopMoving()
+    {
+        if (currentPathUpdateCoroutine != null)
+        {
+            StopCoroutine(currentPathUpdateCoroutine);
+        }
+        isAtDestination = true;
+        path = null;
     }
 
     void OnDrawGizmos()

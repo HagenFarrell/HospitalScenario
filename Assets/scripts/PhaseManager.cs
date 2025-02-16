@@ -151,6 +151,7 @@ public class PhaseManager : MonoBehaviour
     private IEnumerator MoveNPCsRandomly(GameObject[] npcs)
     {
         // int i=0;
+        npcMove = FindObjectOfType<npcMovement>();
         while(phaseList.Current.Phase == GamePhase.Phase1){
             // if(i > 3) {
             //     Debug.Log("breaking");
@@ -159,8 +160,8 @@ public class PhaseManager : MonoBehaviour
             // i++;
             foreach (GameObject npc in npcs)
             {
-                npcMove.Add;
                 Debug.Log("moving: " + npc);
+
                 Vector3 randomDirection = new Vector3(UnityEngine.Random.Range(-5f, 5f), 0, UnityEngine.Random.Range(-5f, 5f));
                 Vector3 targetPosition = npc.transform.position + randomDirection;
 
@@ -172,6 +173,8 @@ public class PhaseManager : MonoBehaviour
                 }
 
                 npcMove.MoveTo(targetPosition, npc);   
+                // GameObject[] listofNPCs = {npc};
+                // StartCoroutine(npcMove.MoveNPCsOneAtATime(listofNPCs, targetPosition, npc));
                 yield return new WaitForSeconds(UnityEngine.Random.Range(1, 3));
             }
             yield return new WaitForSeconds(UnityEngine.Random.Range(1, 7));

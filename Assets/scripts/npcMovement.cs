@@ -61,8 +61,9 @@ public class npcMovement : MonoBehaviour
     /* Takes in group of NPCs we want to move
        Takes in The positon where the player clicked
        Takes in the center most NPC of the group */
-    private IEnumerator MoveNPCsOneAtATime(GameObject[] npcs, Vector3 ClickPosition, GameObject centerNPC)
+    public IEnumerator MoveNPCsOneAtATime(GameObject[] npcs, Vector3 ClickPosition, GameObject centerNPC)
     {
+        // Debug.Log("target: " + ClickPosition);
         foreach(GameObject npc in npcs) // Loop though each NPC
         {
             Debug.Log("moving to: " + ClickPosition);
@@ -151,47 +152,35 @@ public class npcMovement : MonoBehaviour
         }
     }
 
-    public void MoveTo(Vector3 targetPosition, GameObject npc) //stolen logic from one at a time
+    public void MoveTo(Vector3 targetPosition, GameObject npc)
     {
-        // // Check if this NPC's components have been stored
-        // if (!npcAgents.ContainsKey(npc))
-        // {
-        //     // If not, get and store the NavMeshAgent and Animator components
-        //     npcAgents[npc] = npc.GetComponent<AIMover>();
-        //     npcAnimators[npc] = npc.GetComponent<Animator>();
-        // }
-
-        // // Get the stored component for this NPC
-        // AIMover agent = npcAgents[npc];
-        // Animator animator = npcAnimators[npc];
-        // agent.target.position = targetPosition;
-        // // Check if we have valid components
-        // if (agent != null && animator != null)
-        // {
-        //     Vector3 destination;
-        //     // NPC goes to click point
-        //     destination = targetPosition;
-
-        //     npcDestinationStatus[npc] = false;
-        //     animator.SetBool("IsWalking", true);
-        //     // StartCoroutine(agent.UpdatePath());
-            
-
-        //     // Sample the NavMesh to find a valid position
-        //     if (NavMesh.SamplePosition(destination, out NavMeshHit finalHit, stoppingRadius, NavMesh.AllAreas))
-        //     {
-        //         npcDestinationStatus[npc] = false;
-        //         animator.SetBool("IsWalking", true);
-        //         //agent.SetDestination(finalHit.position);
-        //     }
-        // }
-        if(targetPosition == null){
-            Debug.Log("null target");
+        if (!npcAgents.ContainsKey(npc))
+        {
+            npcAgents[npc] = npc.GetComponent<AIMover>();
+            npcAnimators[npc] = npc.GetComponent<Animator>();
+            npcDestinationStatus[npc] = true;
         }
-        Debug.Log("target: " + targetPosition);
-        if (dynamicNavMesh.GetNodeFromWorldPoint(targetPosition).IsWalkable) Debug.Log("This is walkable!");
-        // GameObject[] npcs = {npc};
-        // StartCoroutine(MoveNPCsOneAtATime(npcs, targetPosition, npc));
+
+        AIMover agent = npcAgents[npc];
+        Animator animator = npcAnimators[npc];
+        
+        if (agent != null && animator != null)
+        {
+            // Create a temporary target if one doesn't exist
+            if (agent.target == null)
+            {
+                GameObject targetObj = new GameObject($"{npc.name}_Target");
+                agent.target = targetObj.transform;
+            }
+            
+            // Update target position
+            agent.target.position = targetPosition;
+            npcDestinationStatus[npc] = false;
+            animator.SetBool("IsWalking", true);
+            
+            // Start new path update
+            StartCoroutine(agent.UpdatePath());
+        }
     }
 
 }
