@@ -183,25 +183,34 @@ public class PhaseManager : MonoBehaviour
 
     private void MoveNPCsOnRails(GameObject[] npcs)
     {
-        foreach (GameObject npc in npcs)
+        // Define fixed positions where you want NPCs to go
+        Vector3[] destinations = new Vector3[]
         {
-            // Specify fixed waypoints (these can be loaded dynamically in the future)
-            Vector3 targetPosition = GetRailPosition(npc);
+            new Vector3(51.6f, 0.2f, 47.8f),
+            new Vector3(60.0f, 0.2f, 40.0f),
+            new Vector3(45.0f, 0.2f, 55.0f),
+            // Add more positions as needed
+        };
 
-            // Raycast downward to snap to ground level
+        // Assign each NPC to a destination (cycling through if more NPCs than positions)
+        for (int i = 0; i < npcs.Length; i++)
+        {
+            Vector3 targetPosition = destinations[i % destinations.Length];
+            
+            // Your existing ground-snapping logic
             if (Physics.Raycast(targetPosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f))
             {
                 targetPosition = hit.point;
             }
 
-            npcMove.MoveTo(targetPosition, npc);
+            npcMove.MoveTo(targetPosition, npcs[i]);
         }
     }
 
     private Vector3 GetRailPosition(GameObject npc)
     {
         // Placeholder: Assign predefined positions for "on rails" movement
-        return new Vector3(0, 0, 0); // Replace with actual logic for rail paths
+        return new Vector3(51.6f, 0.2f, 47.8f); // Replace with actual logic for rail paths
     }
 
 }
