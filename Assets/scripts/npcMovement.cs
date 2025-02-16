@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
 using System.Collections.Generic;
+using PhaseLink;
 
 public class npcMovement : MonoBehaviour
 {
@@ -159,6 +160,14 @@ public class npcMovement : MonoBehaviour
             npcAgents[npc] = npc.GetComponent<AIMover>();
             npcAnimators[npc] = npc.GetComponent<Animator>();
             npcDestinationStatus[npc] = true;
+            
+            // Create a unique target object for this NPC if it doesn't exist
+            if (npcAgents[npc].target == null)
+            {
+                GameObject targetObj = new GameObject($"{npc.name}_Target");
+                targetObj.transform.parent = npc.transform; // Parent it to the NPC for easy cleanup
+                npcAgents[npc].target = targetObj.transform;
+            }
         }
 
         AIMover agent = npcAgents[npc];
@@ -166,20 +175,59 @@ public class npcMovement : MonoBehaviour
         
         if (agent != null && animator != null)
         {
-            // Create a temporary target if one doesn't exist
-            if (agent.target == null)
-            {
-                GameObject targetObj = new GameObject($"{npc.name}_Target");
-                agent.target = targetObj.transform;
-            }
-            
-            // Update target position
+            // Update this NPC's unique target position
             agent.target.position = targetPosition;
             npcDestinationStatus[npc] = false;
             animator.SetBool("IsWalking", true);
             
-            // Start new path update
             StartCoroutine(agent.UpdatePath());
+        }
+    }
+
+    public IEnumerator MoveNPCsRandomly(GameObject[] npcs, GamePhase currentPhase)
+    {
+        while(currentPhase == GamePhase.Phase1)
+        {
+            foreach (GameObject npc in npcs)
+            {
+                // Now we have access to npcAgents and npcDestinationStatus
+                if (npcAgents.ContainsKey(npc) && npcDestinationStatus[npc])
+                {
+                    Vector3 randomDirection = new Vector3(UnityEngine.Random.Range(-5f, 5f), 0, UnityEngine.Random.Range(-5f, 5f));
+                    Vector3 targetPosition = npc.transform.position + randomDirection;
+
+                    if (Physics.Raycast(targetPosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f))
+                    {
+                        targetPosition = hit.point;
+                    }
+
+                    MoveTo(targetPosition, npc);
+                }
+            }
+            yield return new WaitForSeconds(UnityEngine.Random.Range(1, 3));
+        }
+    }
+
+    public void MoveNPCsOnRails(GameObject[] npcs)
+    {
+        Vector3[] destinations = new Vector3[]
+        {
+            new Vector3(51.6f, 0.2f, 47.8f),
+            new Vector3(60.0f, 0.2f, 40.0f),
+            new Vector3(45.0f, 0.2f, 55.0f),
+            // Add more positions as needed
+        };
+
+        for (int i = 0; i < npcs.Length; i++)
+        {
+            Vector3 targetPosition = destinations[i % destinations.Length];
+            
+            if (Physics.Raycast(targetPosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f))
+            {
+                targetPosition = hit.point;
+            }
+
+            MoveTo(targetPosition, npcs[i]);
         }
     }
 
