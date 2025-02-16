@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -58,7 +57,7 @@ public class playerController : MonoBehaviour
             }
 
             npcs.refreshCamera();
-            npcs.moveNpc(selectedChars.ToArray());
+            npcs.moveFormation(selectedChars.ToArray());
         }
         if (Input.GetMouseButtonDown(1) && playerRole != Roles.None)
         {

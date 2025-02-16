@@ -1,54 +1,29 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class npcMovement : MonoBehaviour
 {
-    Camera mainCamera;
-    private float stoppingRadius = 2f; // Radius Where NPCs can stop at
+    private Camera mainCamera;
 
-    private float rowSpacing = 2f;
-    private float colSpacing = 1.5f;
+    [SerializeField] private float stoppingRadius = 2f;
+    [SerializeField] private float rowSpacing = 2f;
+    [SerializeField] private float colSpacing = 1.5f;
+    [SerializeField] private float formationUpdateInterval = 0.5f;
 
-    private float timeDelayBetweenNPCs = 0.5f; // Time between each npc movements
-    private bool isMovingSequence = false; // Tracks if movement is in progress
+    //private bool isMovingSequence = false;
 
     // Store references to all active NPCs
     private Dictionary<GameObject, AIMover> npcAgents = new Dictionary<GameObject, AIMover>();
     private Dictionary<GameObject, Animator> npcAnimators = new Dictionary<GameObject, Animator>();
     private Dictionary<GameObject, bool> npcDestinationStatus = new Dictionary<GameObject, bool>();
+    private Coroutine formationUpdateCoroutine;
 
-    private AIMover[] aimovers;
     public DynamicNavMesh dynamicNavMesh;
 
     void Start()
     {
-        if (mainCamera == null)
-        {
-            mainCamera = Camera.main;
-        }
-        aimovers = gameObject.GetComponentsInChildren<AIMover>();
-    }
-
-    void Update()
-    {
-
-        // Update animations based on movement
-        foreach (var npc in npcAgents.Keys)
-        {
-
-            if (!npcDestinationStatus[npc])
-            {
-                AIMover agent = npcAgents[npc];
-                Animator animator = npcAnimators[npc];
-
-                // Check if reached destination
-                if (agent.isAtDestination)
-                {
-                    npcDestinationStatus[npc] = true;
-                    animator.SetBool("IsWalking", false);
-                }
-            }
-        }
+        mainCamera = Camera.main;
     }
 
     public void refreshCamera()
@@ -57,42 +32,94 @@ public class npcMovement : MonoBehaviour
     }
 
     // Rewrote this function to implement the steering solution analogous to StarCraft II's design.
-    public void moveNpc(GameObject[] npcs)
+    public void moveFormation(GameObject[] npcs)
     {
+        // You know what this does ;)
+        if (npcs.Length == 0) return;
+
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            // You know what this does ;)
-            if (npcs.Length == 0) return;
+            // We need to create a commander, this way we can have the group offset from the commanders position.
+            AIMover commanderAI = npcs[0].GetComponent<AIMover>();
 
-            Vector3 formationApex = hit.point;
-
-            // Need this for the "flock" heading, which is typically a boids algorithm term.
-            Vector3 forwardDirection = Vector3.forward;
-
-            // We will now loop through each NPC and compute its placement in the triangle formation.
-            for (int i = 0; i < npcs.Length; ++i)
+            // Early exit to prevent crashing.
+            if (commanderAI == null)
             {
-                GameObject npc = npcs[i];
-
-
-                // Get cached AImover object.
-                AIMover agent = npc.GetComponent<AIMover>();
-                if (agent == null) continue;
-
-                // Calculate the formation slot for the current NPC.
-                Vector3 formationSlot = ComputeTriangleSlot(i, formationApex, forwardDirection, rowSpacing, colSpacing);
-
-                // Just updates the agents position relative to the other agents (NPCs)
-                agent.SetTargetPosition(formationSlot);
-
-                // Trigger the pathfinding subroutine.
-                StartCoroutine(agent.UpdatePath());
+                Debug.LogError("Commander NPC does not have an AIMover component!");
+                return;
             }
+
+            // Clear tracking directories.
+            npcAgents.Clear();
+            npcDestinationStatus.Clear();
+
+            foreach (GameObject npc in npcs)
+            {
+                AIMover mover = npc.GetComponent<AIMover>();
+                if (mover != null)
+                {
+                    npcAgents[npc] = mover;
+                    npcDestinationStatus[npc] = false;
+                }
+            }
+
+            commanderAI.SetTargetPosition(hit.point);
+            StartCoroutine(commanderAI.UpdatePath());
+
+            // If a formation corutine is already running, halt.
+            if (formationUpdateCoroutine != null)
+            {
+                StopCoroutine(formationUpdateCoroutine);
+            }
+
+            formationUpdateCoroutine = StartCoroutine(updateFormationPositions(npcs));
         }
     }
 
+    private IEnumerator updateFormationPositions(GameObject[] npcs)
+    {
+        while (!allNpcsAtDestination())
+        {
+            AIMover commanderAI = npcs[0].GetComponent<AIMover>();
+            Vector3 commanderPosition = npcs[0].transform.position;
+            Vector3 commanderForward = npcs[0].transform.forward;
 
+            for (int i = 0; i < npcs.Length; ++i)
+            {
+                GameObject npc = npcs[i];
+                AIMover agent = npcAgents[npc];
+
+                if (agent != null && !agent.isAtDestination)
+                {
+                    // Calculate the wedge position for each NPC unit selected.
+                    Vector3 formationSlot = ComputeTriangleSlot(
+                        i,
+                        commanderPosition,
+                        commanderForward,
+                        rowSpacing,
+                        colSpacing
+                    );
+
+                    agent.SetTargetPosition(formationSlot);
+                    StartCoroutine(agent.UpdatePath());
+                }
+            }
+
+            yield return new WaitForSeconds(formationUpdateInterval);
+        }
+    }
+
+    private bool allNpcsAtDestination()
+    {
+        // If any npcs are not at the final destination, return false; otherwise true.
+        foreach (var status in npcDestinationStatus.Values)
+        {
+            if (!status) return false;
+        }
+
+        return true;
+    }
 
     /* Function that computes the slot for NPCs in wedge formation.
      * Function information:
