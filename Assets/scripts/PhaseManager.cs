@@ -135,82 +135,66 @@ public class PhaseManager : MonoBehaviour
         Debug.Log($"Moving NPCs for phase: {phase}");
         
         GameObject[] npcs = GameObject.FindGameObjectsWithTag("Civilians");
+        npcMove = FindObjectOfType<npcMovement>();
 
         switch (phase)
         {
             case GamePhase.Phase1:
-                StartCoroutine(MoveNPCsRandomly(npcs));
+                StartCoroutine(npcMove.MoveNPCsRandomly(npcs, phase));
                 break;
             case GamePhase.Phase2:
-                MoveNPCsOnRails(npcs);
+                npcMove.MoveNPCsOnRails(npcs);
                 break;
             // Add cases for other phases as needed
         }
     }
 
-    private IEnumerator MoveNPCsRandomly(GameObject[] npcs)
-    {
-        // int i=0;
-        npcMove = FindObjectOfType<npcMovement>();
-        while(phaseList.Current.Phase == GamePhase.Phase1){
-            // if(i > 3) {
-            //     Debug.Log("breaking");
-            //     break;
-            // }
-            // i++;
-            foreach (GameObject npc in npcs)
-            {
-                Debug.Log("moving: " + npc);
+//     private IEnumerator MoveNPCsRandomly(GameObject[] npcs)
+//     {
+//         npcMove = FindObjectOfType<npcMovement>();
+//         while(phaseList.Current.Phase == GamePhase.Phase1)
+//         {
+//             foreach (GameObject npc in npcs)
+//             {
+//                 // Only give new destination if NPC has reached its current one
+//                 if (npcAgents.ContainsKey(npc) && npcDestinationStatus[npc])
+//                 {
+//                     Vector3 randomDirection = new Vector3(UnityEngine.Random.Range(-5f, 5f), 0, UnityEngine.Random.Range(-5f, 5f));
+//                     Vector3 targetPosition = npc.transform.position + randomDirection;
 
-                Vector3 randomDirection = new Vector3(UnityEngine.Random.Range(-5f, 5f), 0, UnityEngine.Random.Range(-5f, 5f));
-                Vector3 targetPosition = npc.transform.position + randomDirection;
+//                     if (Physics.Raycast(targetPosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f))
+//                     {
+//                         targetPosition = hit.point;
+//                     }
 
-                // Raycast downward to find the ground
-                if (Physics.Raycast(targetPosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f))
-                {
-                    // Debug.Log("update targetposition: " + targetPosition);
-                    targetPosition = hit.point;
-                }
+//                     MoveTo(targetPosition, npc);
+//                 }
+//             }
+//             yield return new WaitForSeconds(UnityEngine.Random.Range(1, 3));
+//         }
+//     }
 
-                npcMove.MoveTo(targetPosition, npc);   
-                // GameObject[] listofNPCs = {npc};
-                // StartCoroutine(npcMove.MoveNPCsOneAtATime(listofNPCs, targetPosition, npc));
-                yield return new WaitForSeconds(UnityEngine.Random.Range(1, 3));
-            }
-            yield return new WaitForSeconds(UnityEngine.Random.Range(1, 7));
-        }
-    }
+//     private void MoveNPCsOnRails(GameObject[] npcs)
+//     {
+//         Vector3[] destinations = new Vector3[]
+//         {
+//             new Vector3(51.6f, 0.2f, 47.8f),
+//             new Vector3(60.0f, 0.2f, 40.0f),
+//             new Vector3(45.0f, 0.2f, 55.0f),
+//             // Add more positions as needed
+//         };
 
-    private void MoveNPCsOnRails(GameObject[] npcs)
-    {
-        // Define fixed positions where you want NPCs to go
-        Vector3[] destinations = new Vector3[]
-        {
-            new Vector3(51.6f, 0.2f, 47.8f),
-            new Vector3(60.0f, 0.2f, 40.0f),
-            new Vector3(45.0f, 0.2f, 55.0f),
-            // Add more positions as needed
-        };
-
-        // Assign each NPC to a destination (cycling through if more NPCs than positions)
-        for (int i = 0; i < npcs.Length; i++)
-        {
-            Vector3 targetPosition = destinations[i % destinations.Length];
+//         for (int i = 0; i < npcs.Length; i++)
+//         {
+//             Vector3 targetPosition = destinations[i % destinations.Length];
             
-            // Your existing ground-snapping logic
-            if (Physics.Raycast(targetPosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f))
-            {
-                targetPosition = hit.point;
-            }
+//             if (Physics.Raycast(targetPosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f))
+//             {
+//                 targetPosition = hit.point;
+//             }
 
-            npcMove.MoveTo(targetPosition, npcs[i]);
-        }
-    }
-
-    private Vector3 GetRailPosition(GameObject npc)
-    {
-        // Placeholder: Assign predefined positions for "on rails" movement
-        return new Vector3(51.6f, 0.2f, 47.8f); // Replace with actual logic for rail paths
-    }
+//             MoveTo(targetPosition, npcs[i]);
+//         }
+//     }
 
 }
