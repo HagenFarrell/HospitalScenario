@@ -3164,12 +3164,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7983885208073434826, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: speed
-      value: 20
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7983885208073434826, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: target
       value: 
       objectReference: {fileID: 975657307}
+    - target: {fileID: 7983885208073434826, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
+      propertyPath: maxForce
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7983885208073434826, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
+      propertyPath: maxSpeed
+      value: 10
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
 --- !u!1 &481843486
@@ -9624,6 +9632,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 160b46ab8a7ae6443af241796d029667, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  navMesh: {fileID: 0}
 --- !u!114 &1076378783
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15335,12 +15344,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7983885208073434826, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: speed
-      value: 20
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7983885208073434826, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: target
       value: 
       objectReference: {fileID: 975657307}
+    - target: {fileID: 7983885208073434826, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
+      propertyPath: maxForce
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7983885208073434826, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
+      propertyPath: maxSpeed
+      value: 10
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
 --- !u!1001 &1817156333
@@ -17327,12 +17344,20 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2421111042135651950, guid: 27ae42dd64de4a34c97731af80ea02d0, type: 3}
       propertyPath: speed
-      value: 15
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 2421111042135651950, guid: 27ae42dd64de4a34c97731af80ea02d0, type: 3}
       propertyPath: target
       value: 
       objectReference: {fileID: 975657307}
+    - target: {fileID: 2421111042135651950, guid: 27ae42dd64de4a34c97731af80ea02d0, type: 3}
+      propertyPath: maxForce
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2421111042135651950, guid: 27ae42dd64de4a34c97731af80ea02d0, type: 3}
+      propertyPath: maxSpeed
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 2743601294477954922, guid: 27ae42dd64de4a34c97731af80ea02d0, type: 3}
       propertyPath: m_RootOrder
       value: 3
@@ -17480,12 +17505,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7983885208073434826, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: speed
-      value: 20
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7983885208073434826, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: target
       value: 
       objectReference: {fileID: 975657307}
+    - target: {fileID: 7983885208073434826, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
+      propertyPath: maxForce
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7983885208073434826, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
+      propertyPath: maxSpeed
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 7983885208073434826, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: isAtDestination
       value: 0

@@ -7,9 +7,9 @@ public class npcMovement : MonoBehaviour
     private Camera mainCamera;
 
     [SerializeField] private float stoppingRadius = 2f;
-    [SerializeField] private float rowSpacing = 3f;
+    [SerializeField] private float rowSpacing = 4f;
     [SerializeField] private float colSpacing = 2f;
-    [SerializeField] private float formationUpdateInterval = 1f;
+    [SerializeField] private float formationUpdateInterval = 10f;
 
     //private bool isMovingSequence = false;
 
