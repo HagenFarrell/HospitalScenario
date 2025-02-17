@@ -68,7 +68,11 @@ public class Pathfinder : MonoBehaviour
             {
                 if (!neighbor.IsWalkable || closedSet.Contains(neighbor)) continue;
 
-                int tentativeGCost = currentNode.GCost + GetDistance(currentNode, neighbor);
+                // Add a wall penalty of 10 (changable if needed) if close to non-walkable surface.
+                int wallPenalty = 0;
+                if (isNearWall(neighbor)) wallPenalty = 10;
+
+                int tentativeGCost = currentNode.GCost + GetDistance(currentNode, neighbor) + wallPenalty;
                 if (tentativeGCost < neighbor.GCost || !openSet.Contains(neighbor))
                 {
                     cameFrom[neighbor] = currentNode;
@@ -122,6 +126,29 @@ public class Pathfinder : MonoBehaviour
             }
         }
         return neighbors;
+    }
+
+    bool isNearWall(GridNode node)
+    {
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                if (dx == 0 && dy == 0) continue;
+
+                int checkX = node.GridX + dx;
+                int checkY = node.GridY + dy;
+
+                if (checkX >= 0 && checkX < navMesh.GridSizeX && checkY >= 0 && checkY < navMesh.GridSizeY)
+                {
+                    if (!navMesh.Grid[checkX, checkY].IsWalkable)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     // Calculate Manhattan distance (for grid-based movement)
