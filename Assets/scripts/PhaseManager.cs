@@ -1,11 +1,15 @@
 using UnityEngine;
 using System.Collections.Generic;
 using PhaseLink;
+using System;
+using System.Collections;
+
 
 public class PhaseManager : MonoBehaviour
 {
+    
     private PhaseLinkedList phaseList;
-    public GameObject phaseTesterObject;
+    private npcMovement npcMove;
     private Stack<Vector3> NPCpositionHistory = new Stack<Vector3>();
     private Dictionary<GamePhase, Dictionary<string, Stack<Vector3>>> roleActionHistory; // Role-specific undo stacks per phase
     private Dictionary<GamePhase, int> roleTurnIndex; // Tracks turn indices for roles in each phase
@@ -13,10 +17,10 @@ public class PhaseManager : MonoBehaviour
 
     private void Start()
     {
-        if (phaseTesterObject == null)
-        {
-            phaseTesterObject = GameObject.Find("Robber");
-        }
+        // if (phaseTesterObject == null)
+        // {
+        //     phaseTesterObject = GameObject.Find("Robber");
+        // }
 
         phaseList = new PhaseLinkedList();
         roleActionHistory = new Dictionary<GamePhase, Dictionary<string, Stack<Vector3>>>();
@@ -53,7 +57,7 @@ public class PhaseManager : MonoBehaviour
 
         if (!isUndoing)
         {
-            NPCpositionHistory.Push(phaseTesterObject.transform.position);
+            // NPCpositionHistory.Push(phaseTesterObject.transform.position);
             MoveNPCsForPhase(phaseList.Current.Phase);
         }
 
@@ -81,7 +85,7 @@ public class PhaseManager : MonoBehaviour
             // Undo the movement: Reset the position
             if (NPCpositionHistory.Count > 0)
             {
-                phaseTesterObject.transform.position = NPCpositionHistory.Pop();
+                // phaseTesterObject.transform.position = NPCpositionHistory.Pop();
             }
             else
             {
@@ -129,33 +133,69 @@ public class PhaseManager : MonoBehaviour
     private void MoveNPCsForPhase(GamePhase phase)
     {
         Debug.Log($"Moving NPCs for phase: {phase}");
-        // Static movement for testing
-        Vector3 newPosition = phaseTesterObject.transform.position;
+        
+        GameObject[] npcs = GameObject.FindGameObjectsWithTag("Civilians");
+        npcMove = FindObjectOfType<npcMovement>();
+
         switch (phase)
         {
             case GamePhase.Phase1:
-                newPosition += Vector3.left; // Move left
+                StartCoroutine(npcMove.MoveNPCsRandomly(npcs, phase));
                 break;
             case GamePhase.Phase2:
-                newPosition += Vector3.up; // Move up
+                npcMove.MoveNPCsOnRails(npcs);
                 break;
-            case GamePhase.Phase3:
-                newPosition += Vector3.right; // Move right
-                break;
-            case GamePhase.Phase4:
-                newPosition += Vector3.forward; // Move forward
-                break;
-            case GamePhase.Phase5:
-                newPosition += Vector3.back; // Move back
-                break;
-            case GamePhase.Phase6:
-                newPosition += Vector3.down; // Move down
-                break;
-            case GamePhase.Phase7:
-                newPosition += Vector3.one; // Move diagonally
-                break;
+            // Add cases for other phases as needed
         }
-
-        phaseTesterObject.transform.position = newPosition;
     }
+
+//     private IEnumerator MoveNPCsRandomly(GameObject[] npcs)
+//     {
+//         npcMove = FindObjectOfType<npcMovement>();
+//         while(phaseList.Current.Phase == GamePhase.Phase1)
+//         {
+//             foreach (GameObject npc in npcs)
+//             {
+//                 // Only give new destination if NPC has reached its current one
+//                 if (npcAgents.ContainsKey(npc) && npcDestinationStatus[npc])
+//                 {
+//                     Vector3 randomDirection = new Vector3(UnityEngine.Random.Range(-5f, 5f), 0, UnityEngine.Random.Range(-5f, 5f));
+//                     Vector3 targetPosition = npc.transform.position + randomDirection;
+
+//                     if (Physics.Raycast(targetPosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f))
+//                     {
+//                         targetPosition = hit.point;
+//                     }
+
+//                     MoveTo(targetPosition, npc);
+//                 }
+//             }
+//             yield return new WaitForSeconds(UnityEngine.Random.Range(1, 3));
+//         }
+//     }
+
+//     private void MoveNPCsOnRails(GameObject[] npcs)
+//     {
+//         Vector3[] destinations = new Vector3[]
+//         {
+//             new Vector3(51.6f, 0.2f, 47.8f),
+//             new Vector3(60.0f, 0.2f, 40.0f),
+//             new Vector3(45.0f, 0.2f, 55.0f),
+//             // Add more positions as needed
+//         };
+
+//         for (int i = 0; i < npcs.Length; i++)
+//         {
+//             Vector3 targetPosition = destinations[i % destinations.Length];
+            
+//             if (Physics.Raycast(targetPosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f))
+//             {
+//                 targetPosition = hit.point;
+//             }
+
+//             MoveTo(targetPosition, npcs[i]);
+//         }
+//     }
+
+
 }
