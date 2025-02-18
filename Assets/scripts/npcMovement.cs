@@ -2,23 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
-public static class GameObjectExtensions
-{
-    public static T GetOrAddComponent<T>(this GameObject go) where T : Component
-    {
-        T component = go.GetComponent<T>();
-        if (component == null)
-        {
-            component = go.AddComponent<T>();
-        }
-        return component;
-    }
-}
 public class npcMovement : MonoBehaviour
 {
-    [SerializeField] private float randomMovementRadius = 20f;
-    [SerializeField] private float randomMovementInterval = 5f;
     private Camera mainCamera;
 
     [SerializeField] private float stoppingRadius = 2f;
@@ -34,13 +19,11 @@ public class npcMovement : MonoBehaviour
     private Dictionary<GameObject, bool> npcDestinationStatus = new Dictionary<GameObject, bool>();
     private Coroutine formationUpdateCoroutine;
 
-    private PhaseManager phaseManager;
     public DynamicNavMesh dynamicNavMesh;
 
     void Start()
     {
         mainCamera = Camera.main;
-        phaseManager = FindObjectOfType<PhaseManager>();
     }
 
     public void refreshCamera()
@@ -201,79 +184,98 @@ public class npcMovement : MonoBehaviour
         }
     }
 
-    public IEnumerator MoveCiviliansRandomly(GamePhase currentPhase)
+    [SerializeField] private Vector3 randomMovementArea = new Vector3(20f, 0f, 20f); // Define the area size
+    [SerializeField] private float minMoveDistance = 5f; // Minimum distance to move
+    [SerializeField] private float maxMoveDistance = 15f; // Maximum distance to move
+    [SerializeField] private float randomMovementInterval = 3f; // Time between random movements
+    [SerializeField] private LayerMask groundLayer; // Layer to raycast against to find valid positions
+
+    // Dictionary to track coroutines for each phase so we can stop them when needed
+    private Dictionary<GamePhase, Coroutine> activeCoroutines = new Dictionary<GamePhase, Coroutine>();
+
+    // Function to start random movement for civilians
+    public void StartRandomMovementForCivilians(GamePhase currentPhase)
     {
-        Debug.Log("Starting MoveCiviliansRandomly coroutine");
-        
-        // Find all civilians
-        GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
-        
-        if (civilians.Length == 0)
+        if (activeCoroutines.ContainsKey(currentPhase))
         {
-            Debug.LogError("No civilians found with tag 'Civilian'");
-            yield break;
+            StopCoroutine(activeCoroutines[currentPhase]);
         }
         
-        Debug.Log($"Found {civilians.Length} civilians");
-        
-        // Main movement loop
-        float timer = 0;
-        while (true)
+        activeCoroutines[currentPhase] = StartCoroutine(MoveCiviliansRandomly(currentPhase));
+    }
+
+    // Stop random movement when changing phases
+    public void StopRandomMovement(GamePhase phase)
+    {
+        if (activeCoroutines.ContainsKey(phase))
         {
-            // Move each civilian to a random position
+            StopCoroutine(activeCoroutines[phase]);
+            activeCoroutines.Remove(phase);
+        }
+    }
+
+    // Coroutine to handle random civilian movement
+    private IEnumerator MoveCiviliansRandomly(GamePhase currentPhase)
+    {
+        while (true) // Keep moving civilians until coroutine is stopped
+        {
+            // Find all civilian NPCs
+            GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
+            
             foreach (GameObject civilian in civilians)
             {
-                if (civilian == null) continue;
-                
-                AIMover mover = civilian.GetOrAddComponent<AIMover>();
-                
-                // Only move NPCs that have reached their destination or don't have one yet
-                if (mover.isAtDestination)
+                AIMover mover = civilian.GetComponent<AIMover>();
+                if (mover != null)
                 {
-                    // Generate random direction within a circle
-                    Vector2 randomDirection2D = Random.insideUnitCircle * randomMovementRadius;
-                    Vector3 randomDirection = new Vector3(randomDirection2D.x, 0, randomDirection2D.y);
-                    Vector3 targetPosition = civilian.transform.position + randomDirection;
+                    // Generate random position within defined area
+                    Vector3 randomOffset = new Vector3(
+                        Random.Range(-randomMovementArea.x/2, randomMovementArea.x/2),
+                        0, // Keep y-axis movement at 0
+                        Random.Range(-randomMovementArea.z/2, randomMovementArea.z/2)
+                    );
                     
-                    // Ensure the target is on valid ground
-                    if (Physics.Raycast(targetPosition + Vector3.up * 20f, Vector3.down, out RaycastHit hit, 40f))
+                    // Limit minimum and maximum movement distance
+                    if (randomOffset.magnitude < minMoveDistance)
                     {
-                        targetPosition = hit.point;
-                        
-                        // Verify the position is within the navmesh
-                        GridNode node = dynamicNavMesh.GetNodeFromWorldPoint(targetPosition);
-                        if (node != null && node.IsWalkable)
-                        {
-                            Debug.Log($"Moving {civilian.name} to {targetPosition}");
-                            
-                            // Save starting position for the phase (only once per phase)
-                            if (phaseManager != null && timer < 0.1f)
-                            {
-                                phaseManager.LogAction(civilian.name, civilian.transform.position);
-                            }
-                            
-                            // Set up movement
-                            mover.SetTargetPosition(targetPosition);
-                            StartCoroutine(mover.UpdatePath());
-                            
-                            // Activate animation if available
-                            Animator animator = civilian.GetComponent<Animator>();
-                            if (animator != null)
-                            {
-                                animator.SetBool("IsWalking", true);
-                            }
-                        }
-                        else
-                        {
-                            Debug.LogWarning($"Invalid navmesh position for {civilian.name} at {targetPosition}");
-                        }
+                        randomOffset = randomOffset.normalized * minMoveDistance;
+                    }
+                    else if (randomOffset.magnitude > maxMoveDistance)
+                    {
+                        randomOffset = randomOffset.normalized * maxMoveDistance;
+                    }
+                    
+                    // Calculate world position relative to the civilian's current position
+                    Vector3 targetWorldPos = civilian.transform.position + randomOffset;
+                    
+                    // Raycast to find ground height at this position
+                    if (Physics.Raycast(targetWorldPos + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f, groundLayer))
+                    {
+                        targetWorldPos.y = hit.point.y; // Set y position to ground level
+                    }
+                    
+                    // Set the target position for the NPC
+                    if (IsPositionWalkable(targetWorldPos))
+                    {
+                        mover.SetTargetPosition(targetWorldPos);
+                        StartCoroutine(mover.UpdatePath());
                     }
                 }
             }
             
-            // Wait before the next round of movements
-            timer += randomMovementInterval;
-            yield return new WaitForSeconds(randomMovementInterval);
+            // Wait before moving NPCs again
+            yield return new WaitForSeconds(randomMovementInterval + Random.Range(-1f, 1f)); // Add slight variation
         }
+    }
+    
+    // Check if a position is walkable using the NavMesh
+    private bool IsPositionWalkable(Vector3 position)
+    {
+        DynamicNavMesh navMesh = GetComponent<DynamicNavMesh>();
+        if (navMesh != null)
+        {
+            GridNode node = navMesh.GetNodeFromWorldPoint(position);
+            return node != null && node.IsWalkable;
+        }
+        return true; // Default to true if navmesh not available
     }
 }
