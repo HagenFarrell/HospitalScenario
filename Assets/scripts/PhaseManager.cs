@@ -161,32 +161,25 @@ public class PhaseManager : MonoBehaviour
     {
         Debug.Log($"Moving NPCs for phase: {phase}");
         
-        if (npcMove == null)
-        {
-            npcMove = FindObjectOfType<npcMovement>();
-            if (npcMove == null)
-            {
-                Debug.LogError("No npcMovement component found in the scene!");
-                return;
-            }
-        }
-
+        npcMove = FindObjectOfType<npcMovement>();
+        
+        // // Stop any previous movement
+        // if (npcMove != null && prevPhase != GamePhase.None)
+        // {
+        //     npcMove.StopRandomMovement(prevPhase);
+        // }
+        
         switch (phase)
         {
             case GamePhase.Phase1:
-                // move civilians randomly within a given space
-                currentPhaseCoroutine = StartCoroutine(npcMove.MoveCiviliansRandomly(phase));
+                // Start random movement for civilians
+                npcMove.StartRandomMovementForCivilians(phase);
                 break;
             case GamePhase.Phase2:
-                // Your Phase2 logic here
+                // Other movement logic...
                 break;
             // Add cases for other phases as needed
         }
-    }
-
-    // Get the current phase (for external classes to check)
-    public GamePhase GetCurrentPhase()
-    {
-        return phaseList.Current.Phase;
+        
     }
 }
