@@ -2,15 +2,30 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+public static class GameObjectExtensions
+{
+    public static T GetOrAddComponent<T>(this GameObject go) where T : Component
+    {
+        T component = go.GetComponent<T>();
+        if (component == null)
+        {
+            component = go.AddComponent<T>();
+        }
+        return component;
+    }
+}
 public class npcMovement : MonoBehaviour
 {
+    [SerializeField] private float randomMovementRadius = 20f;
+    [SerializeField] private float randomMovementInterval = 5f;
     private Camera mainCamera;
 
     [SerializeField] private float stoppingRadius = 2f;
     [SerializeField] private float rowSpacing = 4f;
     [SerializeField] private float colSpacing = 2f;
     [SerializeField] private float formationUpdateInterval = 10f;
-
+    
     //private bool isMovingSequence = false;
 
     // Store references to all active NPCs
@@ -19,11 +34,13 @@ public class npcMovement : MonoBehaviour
     private Dictionary<GameObject, bool> npcDestinationStatus = new Dictionary<GameObject, bool>();
     private Coroutine formationUpdateCoroutine;
 
+    private PhaseManager phaseManager;
     public DynamicNavMesh dynamicNavMesh;
 
     void Start()
     {
         mainCamera = Camera.main;
+        phaseManager = FindObjectOfType<PhaseManager>();
     }
 
     public void refreshCamera()
@@ -184,81 +201,79 @@ public class npcMovement : MonoBehaviour
         }
     }
 
-    public void MoveTo(Vector3 targetPosition, GameObject npc)
+    public IEnumerator MoveCiviliansRandomly(GamePhase currentPhase)
     {
-        if (!npcAgents.ContainsKey(npc))
-        {
-            npcAgents[npc] = npc.GetComponent<AIMover>();
-            npcAnimators[npc] = npc.GetComponent<Animator>();
-            npcDestinationStatus[npc] = true;
-            
-            // Create a unique target object for this NPC if it doesn't exist
-            if (npcAgents[npc].target == null)
-            {
-                GameObject targetObj = new GameObject($"{npc.name}_Target");
-                targetObj.transform.parent = npc.transform; // Parent it to the NPC for easy cleanup
-                npcAgents[npc].target = targetObj.transform;
-            }
-        }
-
-        AIMover agent = npcAgents[npc];
-        Animator animator = npcAnimators[npc];
+        Debug.Log("Starting MoveCiviliansRandomly coroutine");
         
-        if (agent != null && animator != null)
+        // Find all civilians
+        GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
+        
+        if (civilians.Length == 0)
         {
-            // Update this NPC's unique target position
-            agent.target.position = targetPosition;
-            npcDestinationStatus[npc] = false;
-            animator.SetBool("IsWalking", true);
-            
-            StartCoroutine(agent.UpdatePath());
+            Debug.LogError("No civilians found with tag 'Civilian'");
+            yield break;
         }
-    }
-
-    public IEnumerator MoveNPCsRandomly(GameObject[] npcs, GamePhase currentPhase)
-    {
-        while(currentPhase == GamePhase.Phase1)
+        
+        Debug.Log($"Found {civilians.Length} civilians");
+        
+        // Main movement loop
+        float timer = 0;
+        while (true)
         {
-            foreach (GameObject npc in npcs)
+            // Move each civilian to a random position
+            foreach (GameObject civilian in civilians)
             {
-                // Now we have access to npcAgents and npcDestinationStatus
-                if (npcAgents.ContainsKey(npc) && npcDestinationStatus[npc])
+                if (civilian == null) continue;
+                
+                AIMover mover = civilian.GetOrAddComponent<AIMover>();
+                
+                // Only move NPCs that have reached their destination or don't have one yet
+                if (mover.isAtDestination)
                 {
-                    Vector3 randomDirection = new Vector3(UnityEngine.Random.Range(-5f, 5f), 0, UnityEngine.Random.Range(-5f, 5f));
-                    Vector3 targetPosition = npc.transform.position + randomDirection;
-
-                    if (Physics.Raycast(targetPosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f))
+                    // Generate random direction within a circle
+                    Vector2 randomDirection2D = Random.insideUnitCircle * randomMovementRadius;
+                    Vector3 randomDirection = new Vector3(randomDirection2D.x, 0, randomDirection2D.y);
+                    Vector3 targetPosition = civilian.transform.position + randomDirection;
+                    
+                    // Ensure the target is on valid ground
+                    if (Physics.Raycast(targetPosition + Vector3.up * 20f, Vector3.down, out RaycastHit hit, 40f))
                     {
                         targetPosition = hit.point;
+                        
+                        // Verify the position is within the navmesh
+                        GridNode node = dynamicNavMesh.GetNodeFromWorldPoint(targetPosition);
+                        if (node != null && node.IsWalkable)
+                        {
+                            Debug.Log($"Moving {civilian.name} to {targetPosition}");
+                            
+                            // Save starting position for the phase (only once per phase)
+                            if (phaseManager != null && timer < 0.1f)
+                            {
+                                phaseManager.LogAction(civilian.name, civilian.transform.position);
+                            }
+                            
+                            // Set up movement
+                            mover.SetTargetPosition(targetPosition);
+                            StartCoroutine(mover.UpdatePath());
+                            
+                            // Activate animation if available
+                            Animator animator = civilian.GetComponent<Animator>();
+                            if (animator != null)
+                            {
+                                animator.SetBool("IsWalking", true);
+                            }
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"Invalid navmesh position for {civilian.name} at {targetPosition}");
+                        }
                     }
-
-                    MoveTo(targetPosition, npc);
                 }
             }
-            yield return new WaitForSeconds(UnityEngine.Random.Range(1, 3));
-        }
-    }
-
-    public void MoveNPCsOnRails(GameObject[] npcs)
-    {
-        Vector3[] destinations = new Vector3[]
-        {
-            new Vector3(51.6f, 0.2f, 47.8f),
-            new Vector3(60.0f, 0.2f, 40.0f),
-            new Vector3(45.0f, 0.2f, 55.0f),
-            // Add more positions as needed
-        };
-
-        for (int i = 0; i < npcs.Length; i++)
-        {
-            Vector3 targetPosition = destinations[i % destinations.Length];
             
-            if (Physics.Raycast(targetPosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f))
-            {
-                targetPosition = hit.point;
-            }
-
-            MoveTo(targetPosition, npcs[i]);
+            // Wait before the next round of movements
+            timer += randomMovementInterval;
+            yield return new WaitForSeconds(randomMovementInterval);
         }
     }
 }

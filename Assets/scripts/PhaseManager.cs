@@ -4,24 +4,19 @@ using PhaseLink;
 using System;
 using System.Collections;
 
-
 public class PhaseManager : MonoBehaviour
 {
-    
     private PhaseLinkedList phaseList;
     private npcMovement npcMove;
     private Stack<Vector3> NPCpositionHistory = new Stack<Vector3>();
     private Dictionary<GamePhase, Dictionary<string, Stack<Vector3>>> roleActionHistory; // Role-specific undo stacks per phase
     private Dictionary<GamePhase, int> roleTurnIndex; // Tracks turn indices for roles in each phase
     private bool isUndoing = false;
+    
+    private Coroutine currentPhaseCoroutine;
 
     private void Start()
     {
-        // if (phaseTesterObject == null)
-        // {
-        //     phaseTesterObject = GameObject.Find("Robber");
-        // }
-
         phaseList = new PhaseLinkedList();
         roleActionHistory = new Dictionary<GamePhase, Dictionary<string, Stack<Vector3>>>();
         roleTurnIndex = new Dictionary<GamePhase, int>();
@@ -38,26 +33,12 @@ public class PhaseManager : MonoBehaviour
         StartPhase();
     }
 
-    private void Update()
-    {
-        // if (Input.GetKeyDown(KeyCode.Alpha0)) // Next phase
-        // {
-        //     NextPhase();
-        // }
-
-        // if (Input.GetKeyDown(KeyCode.Alpha9)) // Previous phase
-        // {
-        //     PreviousPhase();
-        // }
-    }
-
     private void StartPhase()
     {
         Debug.Log($"Entering Phase: {phaseList.Current.Phase}");
 
         if (!isUndoing)
         {
-            // NPCpositionHistory.Push(phaseTesterObject.transform.position);
             MoveNPCsForPhase(phaseList.Current.Phase);
         }
 
@@ -66,6 +47,13 @@ public class PhaseManager : MonoBehaviour
 
     public void NextPhase()
     {
+        // Stop any ongoing coroutines from the current phase
+        if (currentPhaseCoroutine != null)
+        {
+            StopCoroutine(currentPhaseCoroutine);
+            currentPhaseCoroutine = null;
+        }
+
         if (phaseList.MoveNext())
         {
             Debug.Log("Moving to next phase.");
@@ -79,19 +67,19 @@ public class PhaseManager : MonoBehaviour
 
     public void PreviousPhase()
     {
+        // Stop any ongoing coroutines
+        if (currentPhaseCoroutine != null)
+        {
+            StopCoroutine(currentPhaseCoroutine);
+            currentPhaseCoroutine = null;
+        }
+
         if (phaseList.MovePrevious())
         {
             Debug.Log("Moving to previous phase.");
-            // Undo the movement: Reset the position
-            if (NPCpositionHistory.Count > 0)
-            {
-                // phaseTesterObject.transform.position = NPCpositionHistory.Pop();
-            }
-            else
-            {
-                Debug.Log("No previous positions to undo!");
-            }
-
+            // Undo the movement: Reset the position using the role action history
+            UndoAllActionsInCurrentPhase();
+            
             // Set flag to prevent a follow-up movement
             isUndoing = true;
 
@@ -100,6 +88,45 @@ public class PhaseManager : MonoBehaviour
         else
         {
             Debug.Log("Already at the first phase!");
+        }
+    }
+
+    private void UndoAllActionsInCurrentPhase()
+    {
+        GamePhase currentPhase = phaseList.Current.Phase;
+        
+        if (roleActionHistory.ContainsKey(currentPhase))
+        {
+            foreach (var rolePair in roleActionHistory[currentPhase])
+            {
+                string roleName = rolePair.Key;
+                Stack<Vector3> positions = rolePair.Value;
+                
+                if (positions.Count > 0)
+                {
+                    // Find the NPC by name
+                    GameObject npc = GameObject.Find(roleName);
+                    if (npc != null)
+                    {
+                        Vector3 originalPosition = positions.Pop();
+                        npc.transform.position = originalPosition;
+                        
+                        // Reset animator if available
+                        Animator animator = npc.GetComponent<Animator>();
+                        if (animator != null)
+                        {
+                            animator.SetBool("IsWalking", false);
+                        }
+                        
+                        // Reset AIMover state
+                        AIMover mover = npc.GetComponent<AIMover>();
+                        if (mover != null)
+                        {
+                            mover.SetTargetPosition(originalPosition);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -134,68 +161,32 @@ public class PhaseManager : MonoBehaviour
     {
         Debug.Log($"Moving NPCs for phase: {phase}");
         
-        GameObject[] npcs = GameObject.FindGameObjectsWithTag("Civilians");
-        npcMove = FindObjectOfType<npcMovement>();
+        if (npcMove == null)
+        {
+            npcMove = FindObjectOfType<npcMovement>();
+            if (npcMove == null)
+            {
+                Debug.LogError("No npcMovement component found in the scene!");
+                return;
+            }
+        }
 
         switch (phase)
         {
             case GamePhase.Phase1:
-                StartCoroutine(npcMove.MoveNPCsRandomly(npcs, phase));
+                // move civilians randomly within a given space
+                currentPhaseCoroutine = StartCoroutine(npcMove.MoveCiviliansRandomly(phase));
                 break;
             case GamePhase.Phase2:
-                npcMove.MoveNPCsOnRails(npcs);
+                // Your Phase2 logic here
                 break;
             // Add cases for other phases as needed
         }
     }
 
-//     private IEnumerator MoveNPCsRandomly(GameObject[] npcs)
-//     {
-//         npcMove = FindObjectOfType<npcMovement>();
-//         while(phaseList.Current.Phase == GamePhase.Phase1)
-//         {
-//             foreach (GameObject npc in npcs)
-//             {
-//                 // Only give new destination if NPC has reached its current one
-//                 if (npcAgents.ContainsKey(npc) && npcDestinationStatus[npc])
-//                 {
-//                     Vector3 randomDirection = new Vector3(UnityEngine.Random.Range(-5f, 5f), 0, UnityEngine.Random.Range(-5f, 5f));
-//                     Vector3 targetPosition = npc.transform.position + randomDirection;
-
-//                     if (Physics.Raycast(targetPosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f))
-//                     {
-//                         targetPosition = hit.point;
-//                     }
-
-//                     MoveTo(targetPosition, npc);
-//                 }
-//             }
-//             yield return new WaitForSeconds(UnityEngine.Random.Range(1, 3));
-//         }
-//     }
-
-//     private void MoveNPCsOnRails(GameObject[] npcs)
-//     {
-//         Vector3[] destinations = new Vector3[]
-//         {
-//             new Vector3(51.6f, 0.2f, 47.8f),
-//             new Vector3(60.0f, 0.2f, 40.0f),
-//             new Vector3(45.0f, 0.2f, 55.0f),
-//             // Add more positions as needed
-//         };
-
-//         for (int i = 0; i < npcs.Length; i++)
-//         {
-//             Vector3 targetPosition = destinations[i % destinations.Length];
-            
-//             if (Physics.Raycast(targetPosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f))
-//             {
-//                 targetPosition = hit.point;
-//             }
-
-//             MoveTo(targetPosition, npcs[i]);
-//         }
-//     }
-
-
+    // Get the current phase (for external classes to check)
+    public GamePhase GetCurrentPhase()
+    {
+        return phaseList.Current.Phase;
+    }
 }
