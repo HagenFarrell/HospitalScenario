@@ -11,6 +11,28 @@ public class PhaseMovementHelper : MonoBehaviour
     [SerializeField] private float randomMovementInterval = 3f; // Time between random movements
     [SerializeField] private LayerMask groundLayer; // Layer to raycast against to find valid positions
 
+    private Vector3 GetEdgePosition()
+    {
+        Vector3 edgePosition = new Vector3(61f, 0f, Random.Range(40f, 140f));
+
+        if (Physics.Raycast(edgePosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f, groundLayer))
+        {
+            edgePosition.y = hit.point.y; // Ensure NPC is on the ground
+        }
+
+        return edgePosition;
+    }
+
+    private void MoveNPCToTarget(GameObject npc, Vector3 targetPosition)
+    {
+        AIMover mover = npc.GetComponent<AIMover>();
+        if (mover != null)
+        {
+            mover.SetTargetPosition(targetPosition);
+            StartCoroutine(mover.UpdatePath()); // Start movement coroutine
+        }
+    }
+
     // Coroutine to handle random civilian movement
     public IEnumerator MoveCiviliansRandomly(GamePhase currentPhase)
     {
@@ -39,44 +61,32 @@ public class PhaseMovementHelper : MonoBehaviour
                 MoveList.AddRange(medicals);
             } else Debug.Log("Moving all");
             
-            foreach (GameObject MoveMe in MoveList)
+            foreach (GameObject npc in MoveList)
             {
-                AIMover mover = MoveMe.GetComponent<AIMover>();
-                if (mover != null)
-                {
-                    // Generate random position within defined area
-                    Vector3 randomOffset = new Vector3(
-                        Random.Range(-randomMovementArea.x/2, randomMovementArea.x/2),
-                        0, // Keep y-axis movement at 0
-                        Random.Range(-randomMovementArea.z/2, randomMovementArea.z/2)
-                    );
-                    
-                    // Limit minimum and maximum movement distance
-                    if (randomOffset.magnitude < minMoveDistance)
-                    {
-                        randomOffset = randomOffset.normalized * minMoveDistance;
-                    }
-                    else if (randomOffset.magnitude > maxMoveDistance)
-                    {
-                        randomOffset = randomOffset.normalized * maxMoveDistance;
-                    }
-                    
-                    // Calculate world position relative to the civilian's current position
-                    Vector3 targetWorldPos = MoveMe.transform.position + randomOffset;
-                    
-                    // Raycast to find ground height at this position
-                    if (Physics.Raycast(targetWorldPos + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f, groundLayer))
-                    {
-                        targetWorldPos.y = hit.point.y; // Set y position to ground level
-                    }
-                    
-                    // Set the target position for the NPC
-                    // if (IsPositionWalkable(targetWorldPos))
-                    // {
-                    mover.SetTargetPosition(targetWorldPos);
-                    StartCoroutine(mover.UpdatePath());
-                    // }
+                // Generate random position within defined area
+                Vector3 randomOffset = new Vector3(
+                    Random.Range(-randomMovementArea.x/2, randomMovementArea.x/2),
+                    0, 
+                    Random.Range(-randomMovementArea.z/2, randomMovementArea.z/2)
+                );
+                
+                // Limit minimum and maximum movement distance
+                if (randomOffset.magnitude < minMoveDistance) {
+                    randomOffset = randomOffset.normalized * minMoveDistance;
+                } else if (randomOffset.magnitude > maxMoveDistance) {
+                    randomOffset = randomOffset.normalized * maxMoveDistance;
                 }
+                
+                // Calculate world position relative to the civilian's current position
+                Vector3 targetPosition = npc.transform.position + randomOffset;
+                
+                // Raycast to find ground height at this position
+                if (Physics.Raycast(targetPosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f, groundLayer))
+                {
+                    targetPosition.y = hit.point.y; // Set y position to ground level
+                }
+
+                MoveNPCToTarget(npc, targetPosition);
             }
             
             // Wait before moving NPCs again
@@ -84,16 +94,51 @@ public class PhaseMovementHelper : MonoBehaviour
         }
         yield return null;
     }
-    
-    // Check if a position is walkable using the NavMesh
-    private bool IsPositionWalkable(Vector3 position)
+
+    public IEnumerator MoveToEdgeAndDespawn()
     {
-        DynamicNavMesh navMesh = GetComponent<DynamicNavMesh>();
-        if (navMesh != null)
+        GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
+        GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
+
+        List<GameObject> MoveList = new List<GameObject>(civilians);
+        MoveList.AddRange(medicals);
+
+        Dictionary<GameObject, Vector3> targetPositions = new Dictionary<GameObject, Vector3>();
+
+        foreach (GameObject npc in MoveList)
         {
-            GridNode node = navMesh.GetNodeFromWorldPoint(position);
-            return node != null && node.IsWalkable;
+            Vector3 targetPosition = GetEdgePosition();
+            targetPositions[npc] = targetPosition;
+            MoveNPCToTarget(npc, targetPosition);
         }
-        return true; // Default to true if navmesh not available
+
+        while (MoveList.Count > 0)
+        {
+            for (int i = MoveList.Count - 1; i >= 0; i--)
+            {
+                GameObject npc = MoveList[i];
+
+                if (npc == null)
+                {
+                    MoveList.RemoveAt(i);
+                    continue;
+                }
+
+                if (Vector3.Distance(npc.transform.position, targetPositions[npc]) <= 0.5f)
+                {
+                    AIMover mover = npc.GetComponent<AIMover>();
+                    if (mover != null)
+                    {
+                        mover.StopAllMovement(); // Stop movement coroutine inside AIMover
+                    }
+
+                    MoveList.RemoveAt(i);
+                    Destroy(npc);
+                }
+            }
+
+            yield return null;
+        }
+
     }
 }

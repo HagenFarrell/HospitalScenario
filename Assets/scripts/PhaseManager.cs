@@ -155,7 +155,7 @@ public class PhaseManager : MonoBehaviour
     {
         Debug.Log($"Moving NPCs for phase: {phase}");
         
-        npcMove = FindObjectOfType<PhaseMover>();
+        npcMove = FindObjectOfType<PhaseMovementHelper>();
         
         // // Stop any previous movement
         // if (npcMove != null && prevPhase != GamePhase.None)
@@ -178,7 +178,7 @@ public class PhaseManager : MonoBehaviour
                     StopCoroutine(currentPhaseCoroutine);
                     currentPhaseCoroutine = null;
                 }
-                
+                currentPhaseCoroutine = StartCoroutine(npcMove.MoveToEdgeAndDespawn());
                 break;
             // Add cases for other phases as needed
         }
