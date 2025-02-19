@@ -13,6 +13,7 @@ public class Pathfinder : MonoBehaviour
     public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos)
     {
         //Debug.Log(startPos + " " + targetPos);
+        if(navMesh == null) return null;
         GridNode startNode = navMesh.GetNodeFromWorldPoint(startPos);
         GridNode targetNode = navMesh.GetNodeFromWorldPoint(targetPos);
 
@@ -27,7 +28,7 @@ public class Pathfinder : MonoBehaviour
         }
         if (targetNode == null || !targetNode.IsWalkable)
         {
-            Debug.LogError("Target node is unwalkable or null!");
+            // Debug.LogError("Target node is unwalkable or null!");
             return null;
         }
 

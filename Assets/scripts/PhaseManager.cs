@@ -7,7 +7,7 @@ using System.Collections;
 public class PhaseManager : MonoBehaviour
 {
     private PhaseLinkedList phaseList;
-    private npcMovement npcMove;
+    private PhaseMovementHelper npcMove;
     private Stack<Vector3> NPCpositionHistory = new Stack<Vector3>();
     private Dictionary<GamePhase, Dictionary<string, Stack<Vector3>>> roleActionHistory; // Role-specific undo stacks per phase
     private Dictionary<GamePhase, int> roleTurnIndex; // Tracks turn indices for roles in each phase
@@ -36,13 +36,7 @@ public class PhaseManager : MonoBehaviour
     private void StartPhase()
     {
         Debug.Log($"Entering Phase: {phaseList.Current.Phase}");
-
-        if (!isUndoing)
-        {
-            MoveNPCsForPhase(phaseList.Current.Phase);
-        }
-
-        isUndoing = false;
+        MoveNPCsForPhase(phaseList.Current.Phase);
     }
 
     public void NextPhase()
@@ -161,7 +155,7 @@ public class PhaseManager : MonoBehaviour
     {
         Debug.Log($"Moving NPCs for phase: {phase}");
         
-        npcMove = FindObjectOfType<npcMovement>();
+        npcMove = FindObjectOfType<PhaseMover>();
         
         // // Stop any previous movement
         // if (npcMove != null && prevPhase != GamePhase.None)
@@ -173,13 +167,25 @@ public class PhaseManager : MonoBehaviour
         {
             case GamePhase.Phase1:
                 // Start random movement for civilians
-                npcMove.StartRandomMovementForCivilians(phase);
+                if (currentPhaseCoroutine != null) {
+                    StopCoroutine(currentPhaseCoroutine);
+                    currentPhaseCoroutine = null;
+                }
+                currentPhaseCoroutine = StartCoroutine(npcMove.MoveCiviliansRandomly(GetCurrentPhase()));
                 break;
             case GamePhase.Phase2:
-                // Other movement logic...
+                if (currentPhaseCoroutine != null) {
+                    StopCoroutine(currentPhaseCoroutine);
+                    currentPhaseCoroutine = null;
+                }
+                
                 break;
             // Add cases for other phases as needed
         }
         
+    }
+
+    public GamePhase GetCurrentPhase(){
+        return phaseList.Current.Phase;
     }
 }
