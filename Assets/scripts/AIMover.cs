@@ -83,6 +83,10 @@ public class AIMover : MonoBehaviour
 
     public IEnumerator UpdatePath()
     {
+        if (this == null || gameObject == null)
+        {
+            yield break; // Exit the coroutine safely
+        }
         while (!isAtDestination)
         {
             if (target != null)
@@ -338,4 +342,10 @@ public class AIMover : MonoBehaviour
             }
         }
     }
+
+    public void StopAllMovement()
+    {
+        StopAllCoroutines(); // Stop all active coroutines in a specific NPC (for cleanup when despawning)
+    }
+
 }
