@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Pathfinder : MonoBehaviour
 {
-    private DynamicNavMesh navMesh;
+    public DynamicNavMesh navMesh;
 
     void Start()
     {
