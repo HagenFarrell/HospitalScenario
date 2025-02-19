@@ -7,7 +7,9 @@ TagManager:
   - FireDepartment
   - LawEnforcement
   - Civilians
-  - Medical
+  - Hostages
+  - Medicals
+  - Villains
   layers:
   - Default
   - TransparentFX
