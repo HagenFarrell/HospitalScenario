@@ -1141,7 +1141,7 @@ GameObject:
   - component: {fileID: 65660992}
   - component: {fileID: 65660991}
   m_Layer: 0
-  m_Name: Camera
+  m_Name: PreCharCamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9272,7 +9272,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &995635509
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15987,7 +15987,7 @@ MonoBehaviour:
   disconnectInactiveConnections: 0
   disconnectInactiveTimeout: 60
   authenticator: {fileID: 0}
-  playerPrefab: {fileID: 1646195778560424930, guid: 9a4a04827d4cf244c905b9de6c585d1d, type: 3}
+  playerPrefab: {fileID: 8354175857166024509, guid: 350d67e4461f4ad499cff71d83faf272, type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
   spawnPrefabs: []
