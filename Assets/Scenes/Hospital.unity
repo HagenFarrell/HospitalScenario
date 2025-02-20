@@ -5558,7 +5558,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   showDebugVisual: 0
   debugMaterial: {fileID: 2100000, guid: fac6997ebfb39364db1173ae4a1c49e6, type: 2}
-  triggerAreaColor: {r: 1, g: 0, b: 0, a: 0.3}
+  triggerAreaColor: {r: 1, g: 0, b: 0, a: 0.11764706}
 --- !u!65 &603175225
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -19824,7 +19824,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   showDebugVisual: 0
   debugMaterial: {fileID: 2100000, guid: fac6997ebfb39364db1173ae4a1c49e6, type: 2}
-  triggerAreaColor: {r: 1, g: 0, b: 0, a: 0.3}
+  triggerAreaColor: {r: 1, g: 0, b: 0, a: 0.11764706}
 --- !u!1001 &1806149823
 PrefabInstance:
   m_ObjectHideFlags: 0
