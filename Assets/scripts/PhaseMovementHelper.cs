@@ -117,6 +117,11 @@ public class PhaseMovementHelper : MonoBehaviour
             npcUpdateQueue.Clear();
             foreach (GameObject npc in MoveList)
             {
+                // GameObject VisualRing = npc.transform.GetChild(2).gameObject;
+                // VisualRing.SetActive(true);
+                // Vector3 newPosition = VisualRing.transform.localPosition;
+                // newPosition.y = 1f; 
+                // VisualRing.transform.localPosition = newPosition;
                 if (npc != null && npc.activeInHierarchy)
                 {
                     npcUpdateQueue.Enqueue(npc);

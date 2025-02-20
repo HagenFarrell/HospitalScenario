@@ -7,11 +7,11 @@ TagManager:
   - FireDepartment
   - LawEnforcement
   - Civilians
-  - Hostages
+  - Receptionist
   - Medicals
   - Villains
-  - Receptionist
   - PhysicianHostage
+  - Hostages
   layers:
   - Default
   - TransparentFX
