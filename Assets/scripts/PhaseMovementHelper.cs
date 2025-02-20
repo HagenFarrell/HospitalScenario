@@ -28,6 +28,8 @@ public class PhaseMovementHelper : MonoBehaviour
         AIMover mover = npc.GetComponent<AIMover>();
         if (mover != null)
         {
+            npc.SetActive(true);
+            mover.enabled = true;
             mover.SetTargetPosition(targetPosition);
             StartCoroutine(mover.UpdatePath()); // Start movement coroutine
         }
@@ -44,7 +46,6 @@ public class PhaseMovementHelper : MonoBehaviour
         }
         while (current.GetCurrentPhase() == GamePhase.Phase1) // Keep moving civilians until coroutine is stopped
         {
-            
             // Find all civilian NPCs
             GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
             GameObject[] hostages = GameObject.FindGameObjectsWithTag("Hostages");
@@ -105,6 +106,7 @@ public class PhaseMovementHelper : MonoBehaviour
 
         Dictionary<GameObject, Vector3> targetPositions = new Dictionary<GameObject, Vector3>();
 
+        // Set target positions for all NPCs
         foreach (GameObject npc in MoveList)
         {
             Vector3 targetPosition = GetEdgePosition();
@@ -112,33 +114,38 @@ public class PhaseMovementHelper : MonoBehaviour
             MoveNPCToTarget(npc, targetPosition);
         }
 
+        // Check if NPCs have reached the target and clean up when they do
         while (MoveList.Count > 0)
         {
             for (int i = MoveList.Count - 1; i >= 0; i--)
             {
                 GameObject npc = MoveList[i];
 
-                if (npc == null)
+                if (npc == null || !npc.activeInHierarchy)
                 {
-                    MoveList.RemoveAt(i);
+                    MoveList.RemoveAt(i); // Remove from list if inactive
                     continue;
                 }
 
+                // Check if NPC has reached the target position
                 if (Vector3.Distance(npc.transform.position, targetPositions[npc]) <= 0.5f)
                 {
+                    // Stop movement and clean up NPC
                     AIMover mover = npc.GetComponent<AIMover>();
                     if (mover != null)
                     {
-                        mover.StopAllMovement(); // Stop movement coroutine inside AIMover
+                        mover.StopAllMovement(); // Stop movement coroutine
+                        mover.enabled = false; // Disable movement script
                     }
 
-                    MoveList.RemoveAt(i);
-                    Destroy(npc);
+                    npc.SetActive(false); // Disable NPC instead of destroying
+                    MoveList.RemoveAt(i); // Remove NPC from movement list
                 }
             }
 
+            // Yield to avoid overloading frame updates
             yield return null;
         }
-
     }
+
 }
