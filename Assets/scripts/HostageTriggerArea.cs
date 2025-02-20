@@ -7,7 +7,7 @@ public class HostageTriggerArea : MonoBehaviour
     private PhaseManager phaseManager;
     
     // temporary visual indicator
-    [SerializeField] private bool showDebugVisual = false;
+    [SerializeField] private bool showDebugVisual = true;
     
     [SerializeField] private Material debugMaterial;
     
