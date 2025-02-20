@@ -167,15 +167,15 @@ public class playerController : MonoBehaviour
 
     private void UndoLastAction()
     {
-        foreach (var charObj in selectedChars)
-        {
-            Vector3 lastPosition = phaseManager.UndoAction(playerRole.ToString());
-            if (lastPosition != Vector3.zero)
-            {
-                Debug.Log($"Undo action for {charObj.name}. Moving to {lastPosition}");
-                charObj.transform.position = lastPosition;
-            }
-        }
+        // foreach (var charObj in selectedChars)
+        // {
+        //     Vector3 lastPosition = phaseManager.UndoAction(playerRole.ToString());
+        //     if (lastPosition != Vector3.zero)
+        //     {
+        //         Debug.Log($"Undo action for {charObj.name}. Moving to {lastPosition}");
+        //         charObj.transform.position = lastPosition;
+        //     }
+        // }
     }
 
 }

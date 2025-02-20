@@ -1,36 +1,56 @@
 using UnityEngine;
 using System.Collections.Generic;
 using PhaseLink;
-using System;
 using System.Collections;
 
 public class PhaseManager : MonoBehaviour
 {
     private PhaseLinkedList phaseList;
     private PhaseMovementHelper npcMove;
-    private Stack<Vector3> NPCpositionHistory = new Stack<Vector3>();
-    private Dictionary<GamePhase, Dictionary<string, Stack<Vector3>>> roleActionHistory; // Role-specific undo stacks per phase
-    private Dictionary<GamePhase, int> roleTurnIndex; // Tracks turn indices for roles in each phase
-    private bool isUndoing = false;
-    
+    private Dictionary<string, Vector3> initialPositions = new Dictionary<string, Vector3>(); // Store initial positions of NPCs
     private Coroutine currentPhaseCoroutine;
 
     private void Start()
     {
         phaseList = new PhaseLinkedList();
-        roleActionHistory = new Dictionary<GamePhase, Dictionary<string, Stack<Vector3>>>();
-        roleTurnIndex = new Dictionary<GamePhase, int>();
 
         // Define the phases
         foreach (GamePhase phase in System.Enum.GetValues(typeof(GamePhase)))
         {
             phaseList.AddPhase(phase);
-            roleActionHistory[phase] = new Dictionary<string, Stack<Vector3>>();
-            roleTurnIndex[phase] = 0; // Initialize turn index
         }
+
+        // Store initial positions of all NPCs
+        StoreInitialPositions();
 
         phaseList.SetCurrentToHead();
         StartPhase();
+    }
+
+    private void StoreInitialPositions()
+    {
+        // Store civilians' initial positions
+        GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
+        foreach (GameObject civilian in civilians)
+        {
+            initialPositions[civilian.name] = civilian.transform.position;
+        }
+
+        // Store medicals' initial positions
+        GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
+        foreach (GameObject medical in medicals)
+        {
+            initialPositions[medical.name] = medical.transform.position;
+        }
+
+        // Store hostages' initial positions
+        GameObject[] hostages = GameObject.FindGameObjectsWithTag("Hostages");
+        foreach (GameObject hostage in hostages)
+        {
+            initialPositions[hostage.name] = hostage.transform.position;
+        }
+
+        Debug.Log($"Stored initial positions for {initialPositions.Count} NPCs");
     }
 
     private void StartPhase()
@@ -71,12 +91,6 @@ public class PhaseManager : MonoBehaviour
         if (phaseList.MovePrevious())
         {
             Debug.Log("Moving to previous phase.");
-            // Undo the movement: Reset the position using the role action history
-            UndoAllActionsInCurrentPhase();
-            
-            // Set flag to prevent a follow-up movement
-            isUndoing = true;
-
             StartPhase();
         }
         else
@@ -85,69 +99,62 @@ public class PhaseManager : MonoBehaviour
         }
     }
 
-    private void UndoAllActionsInCurrentPhase()
+    private void ResetNPCsToInitialPositions()
     {
-        GamePhase currentPhase = phaseList.Current.Phase;
+        Debug.Log("Resetting NPCs to initial positions for Phase 1");
         
-        if (roleActionHistory.ContainsKey(currentPhase))
+        // Get references to NPCs by tag - whether active or inactive
+        List<string> npcTags = new List<string> { "Civilians", "Medicals", "Hostages" };
+        
+        foreach (string tag in npcTags)
         {
-            foreach (var rolePair in roleActionHistory[currentPhase])
+            // Find active NPCs with this tag
+            GameObject[] activeNPCs = GameObject.FindGameObjectsWithTag(tag);
+            foreach (GameObject npc in activeNPCs)
             {
-                string roleName = rolePair.Key;
-                Stack<Vector3> positions = rolePair.Value;
-                
-                if (positions.Count > 0)
+                ResetNPC(npc);
+            }
+            
+            // Also check for inactive NPCs that might need to be reactivated
+            Transform[] allTransforms = Resources.FindObjectsOfTypeAll<Transform>();
+            foreach (Transform transform in allTransforms)
+            {
+                if (transform.gameObject.CompareTag(tag) && !transform.gameObject.activeInHierarchy)
                 {
-                    // Find the NPC by name
-                    GameObject npc = GameObject.Find(roleName);
-                    if (npc != null)
+                    GameObject inactiveNPC = transform.gameObject;
+                    if (initialPositions.ContainsKey(inactiveNPC.name))
                     {
-                        Vector3 originalPosition = positions.Pop();
-                        npc.transform.position = originalPosition;
-                        
-                        // Reset animator if available
-                        Animator animator = npc.GetComponent<Animator>();
-                        if (animator != null)
-                        {
-                            animator.SetBool("IsWalking", false);
-                        }
-                        
-                        // Reset AIMover state
-                        AIMover mover = npc.GetComponent<AIMover>();
-                        if (mover != null)
-                        {
-                            mover.SetTargetPosition(originalPosition);
-                        }
+                        // Re-enable and reset the NPC
+                        inactiveNPC.SetActive(true);
+                        ResetNPC(inactiveNPC);
                     }
                 }
             }
         }
     }
-
-    public void LogAction(string role, Vector3 position)
+    
+    private void ResetNPC(GameObject npc)
     {
-        GamePhase currentPhase = phaseList.Current.Phase;
-
-        if (!roleActionHistory[currentPhase].ContainsKey(role))
+        if (initialPositions.ContainsKey(npc.name))
         {
-            roleActionHistory[currentPhase][role] = new Stack<Vector3>();
-        }
-
-        roleActionHistory[currentPhase][role].Push(position);
-    }
-
-    public Vector3 UndoAction(string role)
-    {
-        GamePhase currentPhase = phaseList.Current.Phase;
-
-        if (roleActionHistory[currentPhase].ContainsKey(role) && roleActionHistory[currentPhase][role].Count > 0)
-        {
-            return roleActionHistory[currentPhase][role].Pop();
-        }
-        else
-        {
-            Debug.Log($"{role} has no actions to undo!");
-            return Vector3.zero; // Default no undo position
+            // Reset position to initial
+            npc.transform.position = initialPositions[npc.name];
+            
+            // Reset animator if available
+            Animator animator = npc.GetComponent<Animator>();
+            if (animator != null)
+            {
+                animator.SetBool("IsWalking", false);
+            }
+            
+            // Reset and enable AIMover
+            AIMover mover = npc.GetComponent<AIMover>();
+            if (mover != null)
+            {
+                mover.enabled = true;
+                mover.SetTargetPosition(initialPositions[npc.name]);
+                mover.StopAllMovement(); // Stop any ongoing movement
+            }
         }
     }
 
@@ -157,22 +164,22 @@ public class PhaseManager : MonoBehaviour
         
         npcMove = FindObjectOfType<PhaseMovementHelper>();
         
-        // // Stop any previous movement
-        // if (npcMove != null && prevPhase != GamePhase.None)
-        // {
-        //     npcMove.StopRandomMovement(prevPhase);
-        // }
-        
         switch (phase)
         {
             case GamePhase.Phase1:
-                // Start random movement for civilians
+                // If coming back to Phase1, reset NPCs to initial positions
                 if (currentPhaseCoroutine != null) {
                     StopCoroutine(currentPhaseCoroutine);
                     currentPhaseCoroutine = null;
                 }
+                
+                // Reset NPCs to their initial positions when returning to Phase 1
+                ResetNPCsToInitialPositions();
+                
+                // Start random movement for civilians
                 currentPhaseCoroutine = StartCoroutine(npcMove.MoveCiviliansRandomly(GetCurrentPhase()));
                 break;
+                
             case GamePhase.Phase2:
                 if (currentPhaseCoroutine != null) {
                     StopCoroutine(currentPhaseCoroutine);
@@ -182,7 +189,6 @@ public class PhaseManager : MonoBehaviour
                 break;
             // Add cases for other phases as needed
         }
-        
     }
 
     public GamePhase GetCurrentPhase(){
