@@ -1,13 +1,37 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Mirror;
 
 public class Player : NetworkBehaviour
 {
-    public float moveSpeed = 5f; // Speed for forward/backward and strafing movement
+    public float moveSpeed = 10f; // Horizontal movement speed
+    public float verticalSpeed = 5f; // Vertical movement speed
     public float mouseSensitivity = 100f; // Sensitivity for mouse look
+    public float smoothingSpeed = 0.1f; // Determines how smooth the movement is
 
-    private float yaw = 0f; // Horizontal rotation (Y-axis)
-    private float pitch = 0f; // Vertical rotation (X-axis)
+    private Vector3 moveDirection = Vector3.zero;
+    private Vector3 currentVelocity = Vector3.zero; // Used for SmoothDamp
+    private float yaw = 0f;
+    private float pitch = 0f;
+    public enum Roles
+    {
+        None,
+        LawEnforcement,
+        FireDepartment,
+        OnSiteSecurity,
+        RadiationSafety,
+        Dispatch,
+        Spectator,
+        Instructor,
+    }
+
+    [SerializeField] private Roles playerRole;
+    private npcMovement npcs;
+    private PhaseManager phaseManager;
+
+    private GameObject[] moveableChars; // Array of gameobjects that this player is allowed to interact with
+    private List<GameObject> selectedChars = new List<GameObject>();
 
     [SerializeField] private Camera playerCamera; // Assign the camera in the Inspector
 
@@ -33,6 +57,29 @@ public class Player : NetworkBehaviour
         {
             playerCamera.enabled = true;
         }
+
+        // Find and initialize necessary objects
+        InitializeSceneObjects();
+    }
+
+    private void InitializeSceneObjects()
+    {
+        // Find npcMovement in the scene
+        npcs = FindObjectOfType<npcMovement>();
+        if (npcs == null)
+        {
+            Debug.LogError("npcMovement not found in the scene!");
+        }
+
+        // Find PhaseManager in the scene
+        phaseManager = FindObjectOfType<PhaseManager>();
+        if (phaseManager == null)
+        {
+            Debug.LogError("PhaseManager not found in the scene!");
+        }
+
+        // Log success
+        Debug.Log("Scene objects initialized successfully.");
     }
 
     [Client]
@@ -45,6 +92,12 @@ public class Player : NetworkBehaviour
 
         // Handle movement
         HandleMovement();
+
+        // Handle NPC selection and interaction
+        HandleNPCInteraction();
+
+        // Handle phase management (for Instructor role)
+        HandlePhaseManagement();
     }
 
     private void HandleMouseLook()
@@ -70,7 +123,7 @@ public class Player : NetworkBehaviour
         float moveZ = Input.GetAxis("Vertical");   // Move forward/backward
 
         // Create movement vector relative to the camera's facing direction
-        Vector3 moveDirection = (playerCamera.transform.right * moveX + playerCamera.transform.forward * moveZ).normalized;
+        moveDirection = (playerCamera.transform.right * moveX + playerCamera.transform.forward * moveZ).normalized;
         Vector3 movement = moveDirection * moveSpeed * Time.deltaTime;
 
         // Apply movement locally
@@ -97,6 +150,134 @@ public class Player : NetworkBehaviour
         if (!isLocalPlayer)
         {
             transform.position = newPosition;
+        }
+    }
+
+    private void HandleNPCInteraction()
+    {
+        if (Input.GetMouseButtonDown(0) && playerRole != Roles.None)
+        {
+            Debug.Log("Left-click detected.");
+
+            Camera mainCamera = playerCamera;
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+
+            Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red, 2f); // Draws a debug ray in Scene View
+
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                GameObject hitObj = hit.collider.gameObject;
+                Debug.Log($"Raycast hit: {hitObj.name} (Tag: {hitObj.tag}, Layer: {LayerMask.LayerToName(hitObj.layer)})");
+
+                if (hitObj.tag == playerRole.ToString() || (playerRole == Roles.Instructor && hitObj.tag != "Untagged"))
+                {
+                    Debug.Log($"NPC {hitObj.name} selected!");
+
+                    if (hitObj.transform.childCount > 2)
+                    {
+                        GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
+                        moveToolRing.SetActive(true);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"{hitObj.name} does not have a child at index 2.");
+                    }
+
+                    selectedChars.Add(hitObj);
+                    return;
+                }
+                else
+                {
+                    Debug.LogWarning("NPC does not match role requirements.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Raycast did not hit any object.");
+            }
+        }
+    }
+
+
+
+
+    private void HandlePhaseManagement()
+    {
+        if (phaseManager == null) return;
+
+        if (Input.GetKeyDown(KeyCode.Alpha0) && playerRole == Roles.Instructor) // Next phase
+        {
+            phaseManager.NextPhase();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha9) && playerRole == Roles.Instructor) // Previous phase
+        {
+            phaseManager.PreviousPhase();
+        }
+
+        if (Input.GetKeyDown(KeyCode.U)) // Undo last action
+        {
+            UndoLastAction();
+        }
+    }
+
+    private GameObject[] GetNpcs(string role)
+    {
+        if (role != "Instructor")
+        {
+            Debug.Log("Not instructor");
+            return GameObject.FindGameObjectsWithTag(role);
+        }
+        else
+        {
+            GameObject[] Fire = GameObject.FindGameObjectsWithTag("FireDepartment");
+            GameObject[] Law = GameObject.FindGameObjectsWithTag("LawEnforcement");
+
+            List<GameObject> npcs = new List<GameObject>(Fire);
+            npcs.AddRange(Law);
+
+            return npcs.ToArray();
+        }
+    }
+
+    public void onButtonClick(Button button)
+    {
+        string npcRole = "";
+        switch (button.name)
+        {
+            case "LawEnfButton":
+                npcRole = "LawEnforcement";
+                playerRole = Roles.LawEnforcement;
+                break;
+            case "FireDeptButton":
+                npcRole = "FireDepartment";
+                playerRole = Roles.FireDepartment;
+                break;
+            case "InstructorButton":
+                npcRole = "Instructor";
+                playerRole = Roles.Instructor;
+                break;
+        }
+
+        moveableChars = GetNpcs(npcRole);
+
+        // Hide UI
+        GameObject buttonUI = button.gameObject.transform.parent.gameObject;
+        buttonUI.gameObject.SetActive(false);
+    }
+
+    private void UndoLastAction()
+    {
+        if (phaseManager == null) return;
+
+        foreach (var charObj in selectedChars)
+        {
+            Vector3 lastPosition = phaseManager.UndoAction(playerRole.ToString());
+            if (lastPosition != Vector3.zero)
+            {
+                Debug.Log($"Undo action for {charObj.name}. Moving to {lastPosition}");
+                charObj.transform.position = lastPosition;
+            }
         }
     }
 }
