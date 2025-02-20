@@ -10,7 +10,10 @@ public class PhaseMovementHelper : MonoBehaviour
     [SerializeField] private float maxMoveDistance = 15f; // Maximum distance to move
     [SerializeField] private float randomMovementInterval = 3f; // Time between random movements
     [SerializeField] private LayerMask groundLayer; // Layer to raycast against to find valid positions
+    [SerializeField] private int npcsToMovePerFrame = 3; // Amount of npcs to move per frame 
 
+    private readonly Queue<GameObject> npcUpdateQueue = new Queue<GameObject>();
+    private bool isProcessingUpdates = false;
     private Vector3 GetEdgePosition()
     {
         Vector3 edgePosition = new Vector3(61f, 0f, Random.Range(40f, 140f));
@@ -33,6 +36,54 @@ public class PhaseMovementHelper : MonoBehaviour
             mover.SetTargetPosition(targetPosition);
             StartCoroutine(mover.UpdatePath()); // Start movement coroutine
         }
+    }
+
+    // Process NPC movements in small batches for better performance
+    private IEnumerator ProcessNPCUpdates()
+    {
+        isProcessingUpdates = true;
+
+        while (npcUpdateQueue.Count > 0)
+        {
+            // Process only a few NPCs each frame to prevent performance spikes
+            for (int i = 0; i < npcsToMovePerFrame && npcUpdateQueue.Count > 0; i++)
+            {
+                GameObject npc = npcUpdateQueue.Dequeue();
+                if (npc != null && npc.activeInHierarchy)
+                {
+                    // Generate random position within defined area
+                    Vector3 randomOffset = new Vector3(
+                        Random.Range(-randomMovementArea.x/2, randomMovementArea.x/2),
+                        0, 
+                        Random.Range(-randomMovementArea.z/2, randomMovementArea.z/2)
+                    );
+                    
+                    // Limit minimum and maximum movement distance
+                    if (randomOffset.magnitude < minMoveDistance)
+                    {
+                        randomOffset = randomOffset.normalized * minMoveDistance;
+                    }
+                    else if (randomOffset.magnitude > maxMoveDistance)
+                    {
+                        randomOffset = randomOffset.normalized * maxMoveDistance;
+                    }
+                    
+                    // Calculate world position relative to the NPC's current position
+                    Vector3 targetPosition = npc.transform.position + randomOffset;
+                    
+                    // Raycast to find ground height at this position
+                    if (Physics.Raycast(targetPosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f, groundLayer))
+                    {
+                        targetPosition.y = hit.point.y; // Set y position to ground level
+                    }
+
+                    MoveNPCToTarget(npc, targetPosition);
+                }
+            }
+            yield return null;  // Wait a frame between batches to spread out processing
+        }
+
+        isProcessingUpdates = false;
     }
 
     // Coroutine to handle random civilian movement
@@ -61,39 +112,26 @@ public class PhaseMovementHelper : MonoBehaviour
                 Debug.Log("Moving medicals");
                 MoveList.AddRange(medicals);
             } else Debug.Log("Moving all");
-            
+
+            // Queue up NPCs for batch processing
+            npcUpdateQueue.Clear();
             foreach (GameObject npc in MoveList)
             {
-                // Generate random position within defined area
-                Vector3 randomOffset = new Vector3(
-                    Random.Range(-randomMovementArea.x/2, randomMovementArea.x/2),
-                    0, 
-                    Random.Range(-randomMovementArea.z/2, randomMovementArea.z/2)
-                );
-                
-                // Limit minimum and maximum movement distance
-                if (randomOffset.magnitude < minMoveDistance) {
-                    randomOffset = randomOffset.normalized * minMoveDistance;
-                } else if (randomOffset.magnitude > maxMoveDistance) {
-                    randomOffset = randomOffset.normalized * maxMoveDistance;
-                }
-                
-                // Calculate world position relative to the civilian's current position
-                Vector3 targetPosition = npc.transform.position + randomOffset;
-                
-                // Raycast to find ground height at this position
-                if (Physics.Raycast(targetPosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f, groundLayer))
+                if (npc != null && npc.activeInHierarchy)
                 {
-                    targetPosition.y = hit.point.y; // Set y position to ground level
+                    npcUpdateQueue.Enqueue(npc);
                 }
-
-                MoveNPCToTarget(npc, targetPosition);
             }
-            
+
+            // Process NPCs in smaller batches
+            if (!isProcessingUpdates && npcUpdateQueue.Count > 0)
+            {
+                StartCoroutine(ProcessNPCUpdates());
+            }
+
             // Wait before moving NPCs again
             yield return new WaitForSeconds(randomMovementInterval + Random.Range(-1f, 1f)); // Add slight variation
         }
-        yield return null;
     }
 
     public IEnumerator MoveToEdgeAndDespawn()
