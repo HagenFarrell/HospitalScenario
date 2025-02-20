@@ -10,6 +10,8 @@ TagManager:
   - Hostages
   - Medicals
   - Villains
+  - Receptionist
+  - PhysicianHostage
   layers:
   - Default
   - TransparentFX
