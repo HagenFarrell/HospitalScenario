@@ -149,6 +149,12 @@ public class PhaseMovementHelper : MonoBehaviour
         {
             Vector3 targetPosition = GetEdgePosition();
             targetPositions[npc] = targetPosition;
+            Rigidbody rb = npc.GetComponent<Rigidbody>();
+            if (rb == null)
+            {
+                rb = npc.gameObject.AddComponent<Rigidbody>();
+                rb.isKinematic = true; // Prevents physics movement but allows trigger detection
+            }
             MoveNPCToTarget(npc, targetPosition);
         }
 

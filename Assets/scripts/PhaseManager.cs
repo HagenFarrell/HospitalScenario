@@ -8,7 +8,22 @@ public class PhaseManager : MonoBehaviour
     private PhaseLinkedList phaseList;
     private PhaseMovementHelper npcMove;
     private Dictionary<string, Vector3> initialPositions = new Dictionary<string, Vector3>(); // Store initial positions of NPCs
+    private Dictionary<string, string> initialTags = new Dictionary<string, string>(); // Store initial tags of NPCs
     private Coroutine currentPhaseCoroutine;
+    
+    [Tooltip("Optional: Use coordinate-based hostage area instead of trigger collider")]
+    [SerializeField] private bool useCoordinateCheck = false;
+    
+    [Tooltip("Center of hostage area (if using coordinate check)")]
+    [SerializeField] private Vector3 hostageAreaCenter = Vector3.zero;
+    
+    [Tooltip("Size of hostage area (if using coordinate check)")]
+    [SerializeField] private Vector3 hostageAreaSize = new Vector3(10f, 5f, 10f);
+    
+    [Tooltip("How often to check for NPCs in the hostage area")]
+    [SerializeField] private float hostageCheckInterval = 1.0f;
+    
+    private HostageTriggerArea hostageArea;
 
     private void Start()
     {
@@ -20,37 +35,134 @@ public class PhaseManager : MonoBehaviour
             phaseList.AddPhase(phase);
         }
 
-        // Store initial positions of all NPCs
-        StoreInitialPositions();
+        // Store initial positions and tags of all NPCs
+        StoreInitialNPCState();
+        
+        // Find or create hostage trigger area
+        SetupHostageArea();
 
         phaseList.SetCurrentToHead();
         StartPhase();
     }
-
-    private void StoreInitialPositions()
+    
+    private void SetupHostageArea()
     {
-        // Store civilians' initial positions
+        hostageArea = FindObjectOfType<HostageTriggerArea>();
+        
+        // If no hostage area exists and we're using coordinate check, start the check coroutine
+        if (hostageArea == null && useCoordinateCheck)
+        {
+            StartCoroutine(PeriodicHostageCheck());
+        }
+    }
+    
+    private IEnumerator PeriodicHostageCheck()
+    {
+        while (true)
+        {
+            // Only check in Phase 2 or later
+            if (phaseList.Current.Phase >= GamePhase.Phase2)
+            {
+                CheckNPCsInHostageArea();
+            }
+            yield return new WaitForSeconds(hostageCheckInterval);
+        }
+    }
+    
+    private void CheckNPCsInHostageArea()
+    {
+        if (hostageArea != null)
+        {
+            // Use the existing hostage area component
+            hostageArea.CheckNPCsInArea(hostageAreaCenter, hostageAreaSize);
+        }
+        else
+        {
+            // Direct coordinate-based check
+            GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
+            GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
+            
+            List<GameObject> npcsToCheck = new List<GameObject>(civilians);
+            npcsToCheck.AddRange(medicals);
+            
+            foreach (GameObject npc in npcsToCheck)
+            {
+                Vector3 npcPos = npc.transform.position;
+                if (npcPos.x >= hostageAreaCenter.x - hostageAreaSize.x/2 && 
+                    npcPos.x <= hostageAreaCenter.x + hostageAreaSize.x/2 &&
+                    npcPos.y >= hostageAreaCenter.y - hostageAreaSize.y/2 && 
+                    npcPos.y <= hostageAreaCenter.y + hostageAreaSize.y/2 &&
+                    npcPos.z >= hostageAreaCenter.z - hostageAreaSize.z/2 && 
+                    npcPos.z <= hostageAreaCenter.z + hostageAreaSize.z/2)
+                {
+                    // Convert to hostage
+                    ConvertToHostage(npc);
+                }
+            }
+        }
+    }
+    
+    private void ConvertToHostage(GameObject npc)
+    {
+        // Skip if already a hostage
+        if (npc.CompareTag("Hostages"))
+            return;
+            
+        // Store original tag if not already stored
+        if (!initialTags.ContainsKey(npc.name))
+        {
+            initialTags[npc.name] = npc.tag;
+        }
+        
+        // Log the conversion
+        Debug.Log($"Converting {npc.name} from {npc.tag} to Hostage");
+        
+        // Change tag to Hostage
+        npc.tag = "Hostages";
+        
+        // Optional: Modify behavior
+        AIMover mover = npc.GetComponent<AIMover>();
+        if (mover != null)
+        {
+            mover.StopAllMovement();
+        }
+        
+        // Optional: Change animation
+        Animator animator = npc.GetComponent<Animator>();
+        if (animator != null)
+        {
+            animator.SetBool("IsHostage", true);
+            animator.SetBool("IsWalking", false);
+        }
+    }
+
+    private void StoreInitialNPCState()
+    {
+        // Store civilians' initial state
         GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
         foreach (GameObject civilian in civilians)
         {
             initialPositions[civilian.name] = civilian.transform.position;
+            initialTags[civilian.name] = civilian.tag;
         }
 
-        // Store medicals' initial positions
+        // Store medicals' initial state
         GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
         foreach (GameObject medical in medicals)
         {
             initialPositions[medical.name] = medical.transform.position;
+            initialTags[medical.name] = medical.tag;
         }
 
-        // Store hostages' initial positions
+        // Store hostages' initial state
         GameObject[] hostages = GameObject.FindGameObjectsWithTag("Hostages");
         foreach (GameObject hostage in hostages)
         {
             initialPositions[hostage.name] = hostage.transform.position;
+            initialTags[hostage.name] = hostage.tag;
         }
 
-        Debug.Log($"Stored initial positions for {initialPositions.Count} NPCs");
+        Debug.Log($"Stored initial state for {initialPositions.Count} NPCs");
     }
 
     private void StartPhase()
@@ -103,32 +215,28 @@ public class PhaseManager : MonoBehaviour
     {
         Debug.Log("Resetting NPCs to initial positions for Phase 1");
         
-        // Get references to NPCs by tag - whether active or inactive
-        List<string> npcTags = new List<string> { "Civilians", "Medicals", "Hostages" };
-        
-        foreach (string tag in npcTags)
+        // Get references to all NPCs - whether active or inactive
+        Transform[] allTransforms = Resources.FindObjectsOfTypeAll<Transform>();
+        foreach (Transform transform in allTransforms)
         {
-            // Find active NPCs with this tag
-            GameObject[] activeNPCs = GameObject.FindGameObjectsWithTag(tag);
-            foreach (GameObject npc in activeNPCs)
-            {
-                ResetNPC(npc);
-            }
+            GameObject npc = transform.gameObject;
             
-            // Also check for inactive NPCs that might need to be reactivated
-            Transform[] allTransforms = Resources.FindObjectsOfTypeAll<Transform>();
-            foreach (Transform transform in allTransforms)
+            // Check if this is one of our tracked NPCs
+            if (initialPositions.ContainsKey(npc.name))
             {
-                if (transform.gameObject.CompareTag(tag) && !transform.gameObject.activeInHierarchy)
+                // Re-enable if inactive
+                if (!npc.activeInHierarchy)
                 {
-                    GameObject inactiveNPC = transform.gameObject;
-                    if (initialPositions.ContainsKey(inactiveNPC.name))
-                    {
-                        // Re-enable and reset the NPC
-                        inactiveNPC.SetActive(true);
-                        ResetNPC(inactiveNPC);
-                    }
+                    npc.SetActive(true);
                 }
+                
+                // Reset tag to original
+                if (initialTags.ContainsKey(npc.name))
+                {
+                    npc.tag = initialTags[npc.name];
+                }
+                
+                ResetNPC(npc);
             }
         }
     }
@@ -145,6 +253,7 @@ public class PhaseManager : MonoBehaviour
             if (animator != null)
             {
                 animator.SetBool("IsWalking", false);
+                animator.SetBool("IsHostage", npc.CompareTag("Hostages")); // Set hostage animation state based on tag
             }
             
             // Reset and enable AIMover
