@@ -25,8 +25,14 @@ public class Player : NetworkBehaviour
         Spectator,
         Instructor,
     }
-
+    
+    [SyncVar(hook = nameof(OnRoleChanged))]
     [SerializeField] private Roles playerRole;
+    private void OnRoleChanged(Roles oldRole, Roles newRole)
+    {
+        Debug.Log($"Role changed from {oldRole} to {newRole}");
+    }
+
     private npcMovement npcs;
     private PhaseManager phaseManager;
 
@@ -34,6 +40,8 @@ public class Player : NetworkBehaviour
     private List<GameObject> selectedChars = new List<GameObject>();
 
     [SerializeField] private Camera playerCamera; // Assign the camera in the Inspector
+
+    public static Player LocalPlayerInstance {get; private set; }
 
     [Client]
     void Start()
@@ -48,6 +56,7 @@ public class Player : NetworkBehaviour
             return;
         }
 
+        LocalPlayerInstance = this;
         // Ensure the cursor is visible and not locked
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -60,6 +69,49 @@ public class Player : NetworkBehaviour
 
         // Find and initialize necessary objects
         InitializeSceneObjects();
+
+        AssignButtonOnClick();
+    }
+
+     private void AssignButtonOnClick()
+    {
+        // Find the buttons in the scene
+        Button lawEnfButton = GameObject.Find("LawEnfButton")?.GetComponent<Button>();
+        Button fireDeptButton = GameObject.Find("FireDeptButton")?.GetComponent<Button>();
+        Button instructorButton = GameObject.Find("InstructorButton")?.GetComponent<Button>();
+
+        // Debug: Check if buttons are found
+        if (lawEnfButton == null)
+        {
+            Debug.LogError("LawEnfButton not found!");
+        }
+        if (fireDeptButton == null)
+        {
+            Debug.LogError("FireDeptButton not found!");
+        }
+        if (instructorButton == null)
+        {
+            Debug.LogError("InstructorButton not found!");
+        }
+
+        // Assign the onClick event for each button
+        if (lawEnfButton != null)
+        {
+            lawEnfButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(lawEnfButton));
+            Debug.Log("LawEnfButton onClick assigned.");
+        }
+
+        if (fireDeptButton != null)
+        {
+            fireDeptButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(fireDeptButton));
+            Debug.Log("FireDeptButton onClick assigned.");
+        }
+
+        if (instructorButton != null)
+        {
+            instructorButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(instructorButton));
+            Debug.Log("InstructorButton onClick assigned.");
+        }
     }
 
     private void InitializeSceneObjects()
@@ -242,6 +294,33 @@ public class Player : NetworkBehaviour
 
     public void onButtonClick(Button button)
     {
+        if (!isLocalPlayer)
+        {
+            Debug.LogError("onButtonClick called on a non-local player!");
+            return;
+        }
+
+        // Debug: Check if the button is null
+        if (button == null)
+        {
+            Debug.LogError("Button is null!");
+            return;
+        }
+
+        // Debug: Check if the button's name is valid
+        if (string.IsNullOrEmpty(button.name))
+        {
+            Debug.LogError("Button name is null or empty!");
+            return;
+        }
+
+        // Debug: Check if the button's parent is null
+        if (button.gameObject.transform.parent == null)
+        {
+            Debug.LogError("Button has no parent!");
+            return;
+        }
+
         string npcRole = "";
         switch (button.name)
         {
@@ -257,13 +336,24 @@ public class Player : NetworkBehaviour
                 npcRole = "Instructor";
                 playerRole = Roles.Instructor;
                 break;
+            default:
+                Debug.LogWarning($"Unknown button clicked: {button.name}");
+                return;
         }
 
+        CmdSetRole(playerRole);
         moveableChars = GetNpcs(npcRole);
 
         // Hide UI
         GameObject buttonUI = button.gameObject.transform.parent.gameObject;
-        buttonUI.gameObject.SetActive(false);
+        if (buttonUI != null)
+        {
+            buttonUI.gameObject.SetActive(false);
+        }
+        else
+        {
+            Debug.LogError("Button UI is null!");
+        }
     }
 
     private void UndoLastAction()
@@ -279,5 +369,22 @@ public class Player : NetworkBehaviour
                 charObj.transform.position = lastPosition;
             }
         }
+    }
+    
+    [Command]
+    private void CmdSetRole(Roles role)
+    {
+        // Set the role on the server
+        playerRole = role;
+
+        // Sync the role with all clients
+        RpcSetRole(role);
+    }
+
+    [ClientRpc]
+    private void RpcSetRole(Roles role)
+    {
+        // Set the role on all clients
+        playerRole = role;
     }
 }
