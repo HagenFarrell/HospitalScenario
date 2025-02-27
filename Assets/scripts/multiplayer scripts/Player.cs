@@ -14,6 +14,14 @@ public class Player : NetworkBehaviour
     private Vector3 currentVelocity = Vector3.zero; // Used for SmoothDamp
     private float yaw = 0f;
     private float pitch = 0f;
+
+
+    [SerializeField] private GameObject radeyePrefab; // Reference to the Radeye prefab
+    private GameObject radeyeInstance; // Holds the instantiated Radeye tool
+
+    
+    [SerializeField] private GameObject radeyeCircleTool;
+
     public enum Roles
     {
         None,
@@ -67,13 +75,45 @@ public class Player : NetworkBehaviour
             playerCamera.enabled = true;
         }
 
+        if(radeyeInstance ==null)
+        {
+            radeyeInstance = transform.Find("playerRadeye")?.gameObject;
+            if(radeyeInstance == null)
+            {
+                Debug.LogError("radeye tool not found on player prefab");
+            }
+        }
+        if(radeyeCircleTool == null)
+        {
+            radeyeCircleTool = GameObject.Find("radeyeCircle");
+            if(radeyeCircleTool == null)
+            {
+                Debug.LogError("radeyeCircle GameObject not found");
+            }
+        }
+        
+
         // Find and initialize necessary objects
         InitializeSceneObjects();
 
         AssignButtonOnClick();
+
+        Collider circleCollider = radeyeCircleTool?.GetComponent<Collider>();
+        if (circleCollider != null)
+        {
+            Collider[] allColliders = FindObjectsOfType<Collider>();
+            foreach (Collider col in allColliders)
+            {
+                if (col != circleCollider)
+                {
+                    Physics.IgnoreCollision(circleCollider, col);
+                }
+            }
+        }
     }
 
-     private void AssignButtonOnClick()
+
+    private void AssignButtonOnClick()
     {
         // Find the buttons in the scene
         Button lawEnfButton = GameObject.Find("LawEnfButton")?.GetComponent<Button>();
@@ -150,6 +190,15 @@ public class Player : NetworkBehaviour
 
         // Handle phase management (for Instructor role)
         HandlePhaseManagement();
+
+        if (radeyeInstance != null && radeyeInstance.activeInHierarchy && radeyeCircleTool != null)
+        {
+            MoveCircleToMousePosition();
+        }
+        else
+        {
+            //Debug.LogWarning("Radeye is not active or radeyeCircleTool is null");
+        }
     }
 
     private void HandleMouseLook()
@@ -249,9 +298,6 @@ public class Player : NetworkBehaviour
             }
         }
     }
-
-
-
 
     private void HandlePhaseManagement()
     {
@@ -371,7 +417,7 @@ public class Player : NetworkBehaviour
         }
     }
     
-    [Command]
+    [Command(requiresAuthority = true)]
     private void CmdSetRole(Roles role)
     {
         // Set the role on the server
@@ -387,4 +433,44 @@ public class Player : NetworkBehaviour
         // Set the role on all clients
         playerRole = role;
     }
+
+    private void MoveCircleToMousePosition()
+    {
+        // Get the current active camera
+        Camera activeCam = playerCamera;
+
+        // Get the mouse position in screen space
+        Vector3 mousePosition = Input.mousePosition;
+
+        // Convert the mouse position to a ray
+        Ray ray = activeCam.ScreenPointToRay(mousePosition);
+        RaycastHit hit;
+
+        // LayerMask to exclude radeyeCircleTool (IgnoreRaycast layer)
+        int layerMask = ~LayerMask.GetMask("IgnoreRaycast"); // Exclude the IgnoreRaycast layer
+
+        // Perform the raycast with the layer mask
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
+        {
+            // Move the circle to the hit point
+            radeyeCircleTool.transform.position = hit.point;
+        }
+        else
+        {
+            // Default position in front of the camera
+            radeyeCircleTool.transform.position = ray.origin + ray.direction * 10f;
+        }
+    }
+
+
+    public override void OnStopClient()
+    {
+        if (isLocalPlayer && radeyeInstance != null)
+        {
+            Destroy(radeyeInstance);
+        }
+    }
+
+
+
 }
