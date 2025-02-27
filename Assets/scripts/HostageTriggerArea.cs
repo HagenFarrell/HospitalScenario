@@ -128,7 +128,7 @@ public class HostageTriggerArea : MonoBehaviour
         }
         
         // Phase 2: NPCs who are now hostages should lie down
-        Debug.Log($"{npc.name} has become a hostage and lies down.");
+        // Debug.Log($"{npc.name} has become a hostage and lies down.");
     }
 
     private void ToggleYellowRing(GameObject npc)

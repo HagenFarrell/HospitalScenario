@@ -23,6 +23,7 @@ public class PhaseManager : MonoBehaviour
     private GameObject superVillain;
     private GameObject receptionist;
     private int egress;
+    private bool egressPhaseSelected = false;
 
     private void Start()
     {
@@ -50,59 +51,47 @@ public class PhaseManager : MonoBehaviour
         StartPhase();
     }
 
-    private void SelectEgressPhase()
+    private IEnumerator WaitForEgressSelection()
     {
-        egress = -1;
+        // Wait until the instructor selects an egress phase
+        Debug.Log("Awaiting egress selection...");
+        egressPhaseSelected = false;  // Ensure it's false when we start waiting
+
+        while (!egressPhaseSelected)
+        {
+            egress = SetEgressPhase();
+            if (egress != 0)  // If an egress phase is selected
+            {
+                egressPhaseSelected = true;  // Allow the game to continue
+                Debug.Log($"Egress phase {egress} selected");
+            }
+
+            yield return null; // Wait until next frame to check again
+        }
+    }
+
+
+    private int SetEgressPhase()
+    {
         playerRole = FindObjectOfType<playerController>();
         if (playerRole.getPlayerRole() == playerController.Roles.Instructor)
         {
-            // For simplicity, we could add a UI option here to choose the phase,
-            // but for now we'll just randomize or let the instructor pick.
-            egress = Random.Range(1, 4); // Randomized by default
-            
+            if (Input.GetKeyDown(KeyCode.A)) return 1;
+            if (Input.GetKeyDown(KeyCode.S)) return 2;
+            if (Input.GetKeyDown(KeyCode.D)) return 3;
+            if (Input.GetKeyDown(KeyCode.F)) return 4;
+            if (Input.GetKeyDown(KeyCode.G)) return Random.Range(1, 5);  // Randomize between 1-4
+
+            return 0;  // No valid key pressed, no selection made
         }
         else
         {
             Debug.Log("Only the instructor can select the egress phase.");
+            return 0;  // No valid selection if not instructor
         }
     }
 
-    // Step 3: Randomly select an egress phase from 4 options
-    // private GamePhase RandomizeEgressPhase()
-    // {
-    //     // Create an array of 4 possible egress phases
-    //     GamePhase[] egressOptions = new GamePhase[] {
-    //         Egress.Egress1, // Egress Option 1
-    //         Egress.Egress2, // Egress Option 2
-    //         Egress.Egress3, // Egress Option 3
-    //         Egress.Egress4  // Egress Option 4
-    //     };
 
-    //     int randomIndex = Random.Range(0, egressOptions.Length);
-    //     return egressOptions[randomIndex];
-    // }
-
-    // // Step 4: Add the selected egress phase to the linked list
-    // private void AddEgressPhaseToList(GamePhase selectedPhase)
-    // {
-    //     // Create the egress phase node and link it to the list
-    //     PhaseNode egressPhaseNode = new PhaseNode(selectedPhase);
-        
-    //     // Add the egress phase node as the last phase
-    //     if (phaseList.Tail != null)
-    //     {
-    //         phaseList.Tail.Next = egressPhaseNode;
-    //         egressPhaseNode.Previous = phaseList.Tail;
-    //         phaseList.Tail = egressPhaseNode;
-    //     }
-    //     else
-    //     {
-    //         phaseList.Head = egressPhaseNode;
-    //         phaseList.Tail = egressPhaseNode;
-    //     }
-
-    //     Debug.Log("Egress Phase Selected: " + selectedPhase.ToString());
-    // }
     
     private void FindKeyNPCs()
     {
@@ -516,48 +505,40 @@ public class PhaseManager : MonoBehaviour
                         npcMove.MoveNPCToTarget(villainsOutside[i%2], GetRandomPointInRadius(youMoveHere, radius));
                     }
                 }
-
-                // if (villainsOutside != null && villainsInside.Length >= 2) {
-                //     // Move two inside villains with the hostage
-                //     Vector3 gammaKnifePosition = gammaKnifeObject.transform.position;
-                    
-                //     // First villain moves with hostage
-                //     Vector3 NPCPosition = new Vector3(3.3f, 0, 73.3f);
-                //     npcMove.MoveNPCToTarget(villainsOutside[0], NPCPosition);
-                    
-                //     // Second villain moves with hostage
-                //     NPCPosition = new Vector3(-8.3f, 0, 95.3f);
-                //     npcMove.MoveNPCToTarget(villainsOutside[1], NPCPosition);
-                    
-                //     // Move hostage to gamma knife
-                //     NPCPosition = new Vector3(-6.8f, 0, 112.3f);
-                //     npcMove.MoveNPCToTarget(villainsInside[2], NPCPosition);
-                    
-                //     Debug.Log($"Two villains are taking {physicianHostage.name} to the gamma knife room");
-                // }
                 break;
             case GamePhase.Phase7:
-                SelectEgressPhase();
-                switch(egress){
+                if (currentPhaseCoroutine != null) 
+                {
+                    StopCoroutine(currentPhaseCoroutine);
+                    currentPhaseCoroutine = null;
+                }
+                currentPhaseCoroutine = StartCoroutine(WaitForEgressSelection());
+                
+                // Proceed with specific egress logic based on the selected phase
+                switch(egress)
+                {
                     case 1:
-                        // Phase Egress 1: Adversaries move to the front emergency exit and stop 6-10 feet outside.
+                        // Phase Egress 1: Adversaries move to the front emergency exit
+                        Debug.Log("Phase Egress: " + egress);
                         break;
                     case 2:
-                        // Phase Egress 2: Adversaries move to the rear emergency exit and stop 6-10 feet outside.
+                        // Phase Egress 2: Adversaries move to the rear emergency exit
+                        Debug.Log("Phase Egress: " + egress);
                         break;
                     case 3:
-                        // Phase Egress 3: Adversaries move to the lobby via the front entrance and wait at the entrance.
+                        // Phase Egress 3: Adversaries move to the lobby via the front entrance
+                        Debug.Log("Phase Egress: " + egress);
                         break;
                     case 4:
-                        // Phase Egress 4: Adversaries move to the rear exit, stop in the patio area, and wait 6-10 feet outside.
+                        // Phase Egress 4: Adversaries move to the rear exit
+                        Debug.Log("Phase Egress: " + egress);
                         break;
                     default:
                         Debug.LogError("Invalid egress phase!");
-
-                    
+                        break;
                 }
-                
                 break;
+
         }
     }
 
