@@ -23,7 +23,7 @@ public class npcMovement : MonoBehaviour
 
     void Start()
     {
-        mainCamera = Camera.main;
+        //mainCamera = Camera.main;
     }
 
     public void refreshCamera()
@@ -35,6 +35,7 @@ public class npcMovement : MonoBehaviour
     public void moveFormation(GameObject[] npcs)
     {
         // You know what this does ;)
+        Debug.Log($"NPCs length = {npcs.Length}");
         if (npcs.Length == 0) return;
 
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -182,5 +183,11 @@ public class npcMovement : MonoBehaviour
             count += row + 1;
             row++;
         }
+    }
+
+    public void SetCamera(Camera playerCamera)
+    {
+        mainCamera = playerCamera;
+        Debug.Log("npcMovement: Camera assigned dynamically: "+mainCamera.name);
     }
 }

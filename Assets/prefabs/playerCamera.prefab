@@ -27,8 +27,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7765352948610102434}
-  m_LocalRotation: {x: 0.09229593, y: -0.7010574, z: 0.09229593, w: 0.7010574}
-  m_LocalPosition: {x: 31.110748, y: 29.804276, z: 145.15344}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 43.5, y: 10, z: 30}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 5699695605553373223}
@@ -124,7 +124,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sceneId: 0
-  _assetId: 222432741
+  _assetId: 637566990
   serverOnly: 0
   visibility: 0
   hasSpawned: 0
@@ -147,9 +147,7 @@ MonoBehaviour:
   verticalSpeed: 5
   mouseSensitivity: 100
   smoothingSpeed: 0.1
-  Radeye: {fileID: 4923193437495065245}
-  radeyePositions: []
-  radeyeRotations: []
+  radeyePrefab: {fileID: 0}
   radeyeCircleTool: {fileID: 0}
   playerRole: 0
   playerCamera: {fileID: 7765352948610102445}
@@ -210,11 +208,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0d790631aafc64d43951ee56277974c5, type: 3}
---- !u!1 &4923193437495065245 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2758788875245161504, guid: 0d790631aafc64d43951ee56277974c5, type: 3}
-  m_PrefabInstance: {fileID: 7069417236341257917}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5699695605553373223 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3243435542959478426, guid: 0d790631aafc64d43951ee56277974c5, type: 3}

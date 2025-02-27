@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
+using System.Linq;
 
 public class Player : NetworkBehaviour
 {
@@ -41,8 +42,8 @@ public class Player : NetworkBehaviour
         Debug.Log($"Role changed from {oldRole} to {newRole}");
     }
 
-    private npcMovement npcs;
-    private PhaseManager phaseManager;
+    [SerializeField] private npcMovement npcs;
+    [SerializeField] private PhaseManager phaseManager;
 
     private GameObject[] moveableChars; // Array of gameobjects that this player is allowed to interact with
     private List<GameObject> selectedChars = new List<GameObject>();
@@ -162,7 +163,10 @@ public class Player : NetworkBehaviour
         {
             Debug.LogError("npcMovement not found in the scene!");
         }
-
+        if( npcs != null)
+        {
+            npcs.SetCamera(playerCamera);
+        }
         // Find PhaseManager in the scene
         phaseManager = FindObjectOfType<PhaseManager>();
         if (phaseManager == null)
@@ -263,38 +267,73 @@ public class Player : NetworkBehaviour
             Camera mainCamera = playerCamera;
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
 
-            Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red, 2f); // Draws a debug ray in Scene View
+            //Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red, 2f); // Draws a debug ray in Scene View
 
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 GameObject hitObj = hit.collider.gameObject;
-                Debug.Log($"Raycast hit: {hitObj.name} (Tag: {hitObj.tag}, Layer: {LayerMask.LayerToName(hitObj.layer)})");
+                Debug.Log($"Raycast hit: {hitObj.name} (Tag: {hitObj.tag})");
 
                 if (hitObj.tag == playerRole.ToString() || (playerRole == Roles.Instructor && hitObj.tag != "Untagged"))
                 {
                     Debug.Log($"NPC {hitObj.name} selected!");
-
-                    if (hitObj.transform.childCount > 2)
-                    {
-                        GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
-                        moveToolRing.SetActive(true);
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"{hitObj.name} does not have a child at index 2.");
-                    }
-
+                    GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
+                    moveToolRing.SetActive(true);
                     selectedChars.Add(hitObj);
-                    return;
+                    Debug.Log($"Added {hitObj.name} to selectedChars");
+
+                    /*npcs.moveFormation(selectedChars.ToArray());
+
+                    Vector3[] npcPositions = new Vector3[selectedChars.Count];
+                    for(int i = 0; i<selectedChars.Count;i++)
+                    {
+                        npcPositions[i] = selectedChars[i].transform.position;
+                    }
+                    CmdMoveNPCs(npcPositions);
+                    return;*/ 
+                }
+                if(selectedChars.Count > 0)
+                {
+                    Debug.Log("Calling CmdMoveNPCs with selected npcs");
+                    //npcs.moveFormation(selectedChars.ToArray());
+                    Vector3 targetPosition = hit.point;
+                    uint[] npcNetIds = new uint[selectedChars.Count];
+                    for (int i = 0; i < selectedChars.Count; i++)
+                    {
+                        NetworkIdentity identity = selectedChars[i].GetComponent<NetworkIdentity>();
+                        if (identity != null)
+                        {
+                            npcNetIds[i] = identity.netId;
+                        }
+                    }
+                    CmdMoveNPCs(npcNetIds, targetPosition);
+
+
                 }
                 else
                 {
-                    Debug.LogWarning("NPC does not match role requirements.");
+                    Debug.LogWarning("No NPCs selected, skipping moveFormation().");
                 }
             }
             else
             {
                 Debug.LogWarning("Raycast did not hit any object.");
+            }
+        }
+        if (Input.GetMouseButtonDown(1) && playerRole != Roles.None)
+        {
+            Camera mainCamera = playerCamera;
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if(Physics.Raycast(ray, out RaycastHit hit))
+            {
+                GameObject hitObj = hit.collider.gameObject;
+                if (hitObj.tag == playerRole.ToString() || (playerRole == Roles.Instructor && hitObj.tag != "Untagged"))
+                {
+                    GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
+                    moveToolRing.SetActive(false);
+                    selectedChars.Remove(hitObj);
+                    return;
+                }
             }
         }
     }
@@ -471,6 +510,91 @@ public class Player : NetworkBehaviour
         }
     }
 
+    [Command]
+    private void CmdMoveNPCs(uint[] npcNetIds, Vector3 targetPosition)
+    {
+        if (npcNetIds == null || npcNetIds.Length == 0)
+        {
+            Debug.LogError("CmdMoveNPCs: No NPCs received for movement.");
+            return;
+        }
 
+        Debug.Log($"Server: Moving {npcNetIds.Length} NPCs to {targetPosition}");
+
+        List<GameObject> npcObjects = new List<GameObject>();
+
+        foreach (uint netId in npcNetIds)
+        {
+            if (NetworkServer.spawned.TryGetValue(netId, out NetworkIdentity identity))
+            {
+                npcObjects.Add(identity.gameObject);
+            }
+            else
+            {
+                Debug.LogWarning($"CmdMoveNPCs: NetworkIdentity with netId {netId} not found on server.");
+            }
+        }
+
+        if (npcObjects.Count > 0)
+        {
+            Debug.Log($"Server: Moving {npcObjects.Count} NPCs");
+
+            // Instead of looking for npcMovement on the NPC, find it on the parent object
+            npcMovement movementScript = FindObjectOfType<npcMovement>();
+            if (movementScript != null)
+            {
+                movementScript.moveFormation(npcObjects.ToArray());
+            }
+            else
+            {
+                Debug.LogError("npcMovement script is missing on the NPC parent object!");
+            }
+
+            // Send the update to clients
+            RpcMoveNPCs(npcNetIds, targetPosition);
+        }
+    }
+
+    [ClientRpc]
+    private void RpcMoveNPCs(uint[] npcNetIds, Vector3 targetPosition)
+    {
+        if (npcNetIds == null || npcNetIds.Length == 0)
+        {
+            Debug.LogError("RpcMoveNPCs: No NPCs received for movement.");
+            return;
+        }
+
+        Debug.Log("Client: Updating NPCs positions");
+
+        List<GameObject> npcObjects = new List<GameObject>();
+
+        foreach (uint netId in npcNetIds)
+        {
+            if (NetworkClient.spawned.TryGetValue(netId, out NetworkIdentity identity))
+            {
+                npcObjects.Add(identity.gameObject);
+            }
+            else
+            {
+                Debug.LogWarning($"RpcMoveNPCs: NetworkIdentity with netId {netId} not found on client.");
+            }
+        }
+
+        if (npcObjects.Count > 0)
+        {
+            Debug.Log($"Client: Moving {npcObjects.Count} NPCs");
+
+            // Find the parent object with npcMovement
+            npcMovement movementScript = FindObjectOfType<npcMovement>();
+            if (movementScript != null)
+            {
+                movementScript.moveFormation(npcObjects.ToArray());
+            }
+            else
+            {
+                Debug.LogError("npcMovement script is missing on the NPC parent object!");
+            }
+        }
+    }
 
 }
