@@ -166,6 +166,10 @@ public class playerController : MonoBehaviour
 
     }
 
+    public Roles getPlayerRole(){
+        return playerRole;
+    }
+
     private void UndoLastAction()
     {
         // foreach (var charObj in selectedChars)

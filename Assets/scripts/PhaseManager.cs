@@ -7,6 +7,7 @@ public class PhaseManager : MonoBehaviour
 {
     private PhaseLinkedList phaseList;
     private PhaseMovementHelper npcMove;
+    private playerController playerRole;
     private Coroutine currentPhaseCoroutine;
     private HostageTriggerArea hostageArea;
     
@@ -21,6 +22,7 @@ public class PhaseManager : MonoBehaviour
     private GameObject[] villainsOutside;
     private GameObject superVillain;
     private GameObject receptionist;
+    private int egress;
 
     private void Start()
     {
@@ -47,6 +49,60 @@ public class PhaseManager : MonoBehaviour
         phaseList.SetCurrentToHead();
         StartPhase();
     }
+
+    private void SelectEgressPhase()
+    {
+        egress = -1;
+        playerRole = FindObjectOfType<playerController>();
+        if (playerRole.getPlayerRole() == playerController.Roles.Instructor)
+        {
+            // For simplicity, we could add a UI option here to choose the phase,
+            // but for now we'll just randomize or let the instructor pick.
+            egress = Random.Range(1, 4); // Randomized by default
+            
+        }
+        else
+        {
+            Debug.Log("Only the instructor can select the egress phase.");
+        }
+    }
+
+    // Step 3: Randomly select an egress phase from 4 options
+    // private GamePhase RandomizeEgressPhase()
+    // {
+    //     // Create an array of 4 possible egress phases
+    //     GamePhase[] egressOptions = new GamePhase[] {
+    //         Egress.Egress1, // Egress Option 1
+    //         Egress.Egress2, // Egress Option 2
+    //         Egress.Egress3, // Egress Option 3
+    //         Egress.Egress4  // Egress Option 4
+    //     };
+
+    //     int randomIndex = Random.Range(0, egressOptions.Length);
+    //     return egressOptions[randomIndex];
+    // }
+
+    // // Step 4: Add the selected egress phase to the linked list
+    // private void AddEgressPhaseToList(GamePhase selectedPhase)
+    // {
+    //     // Create the egress phase node and link it to the list
+    //     PhaseNode egressPhaseNode = new PhaseNode(selectedPhase);
+        
+    //     // Add the egress phase node as the last phase
+    //     if (phaseList.Tail != null)
+    //     {
+    //         phaseList.Tail.Next = egressPhaseNode;
+    //         egressPhaseNode.Previous = phaseList.Tail;
+    //         phaseList.Tail = egressPhaseNode;
+    //     }
+    //     else
+    //     {
+    //         phaseList.Head = egressPhaseNode;
+    //         phaseList.Tail = egressPhaseNode;
+    //     }
+
+    //     Debug.Log("Egress Phase Selected: " + selectedPhase.ToString());
+    // }
     
     private void FindKeyNPCs()
     {
@@ -395,7 +451,7 @@ public class PhaseManager : MonoBehaviour
                 // Outside villains move inside to reinforce
                 if (villainsOutside != null) {
                     Vector3 lobbyPosition1 = new Vector3(2.3f, 0, 105.8f);
-                    Vector3 lobbyPosition2 = new Vector3(-5.8f, 0, 110.3f);
+                    Vector3 lobbyPosition2 = new Vector3(5.8f, 0, 110.3f);
                     
                     if (villainsOutside.Length > 0) {
                         npcMove.MoveNPCToTarget(villainsOutside[0], lobbyPosition1);
@@ -448,29 +504,71 @@ public class PhaseManager : MonoBehaviour
                 // VFD pulls up
                 // source goes into canister into backpack
                 // all adversaries and physicianhostage group up & get ready to leave
-                if (villainsOutside != null && villainsInside.Length >= 2) {
-                    // Move two inside villains with the hostage
-                    Vector3 gammaKnifePosition = gammaKnifeObject.transform.position;
-                    
-                    // First villain moves with hostage
-                    Vector3 NPCPosition = new Vector3(3.3f, 0, 73.3f);
-                    npcMove.MoveNPCToTarget(villainsOutside[0], NPCPosition);
-                    
-                    // Second villain moves with hostage
-                    NPCPosition = new Vector3(-8.3f, 0, 95.3f);
-                    npcMove.MoveNPCToTarget(villainsOutside[1], NPCPosition);
-                    
-                    // Move hostage to gamma knife
-                    NPCPosition = new Vector3(-6.8f, 0, 112.3f);
-                    npcMove.MoveNPCToTarget(villainsInside[2], NPCPosition);
-                    
-                    Debug.Log($"Two villains are taking {physicianHostage.name} to the gamma knife room");
+                Vector3 youMoveHere = new Vector3(0f, 0, 113f);
+                float radius = 3.5f;
+                npcMove.MoveNPCToTarget(villainsInside[0], youMoveHere);
+                for(int i=0; i<villainsInside.Length + villainsOutside.Length + 1; i++){
+                    if(i==0){
+                        npcMove.MoveNPCToTarget(physicianHostage, GetRandomPointInRadius(youMoveHere, radius));
+                    } else if(i < 3){
+                        npcMove.MoveNPCToTarget(villainsInside[i], GetRandomPointInRadius(youMoveHere, radius));
+                    } else {
+                        npcMove.MoveNPCToTarget(villainsOutside[i%2], GetRandomPointInRadius(youMoveHere, radius));
+                    }
                 }
+
+                // if (villainsOutside != null && villainsInside.Length >= 2) {
+                //     // Move two inside villains with the hostage
+                //     Vector3 gammaKnifePosition = gammaKnifeObject.transform.position;
+                    
+                //     // First villain moves with hostage
+                //     Vector3 NPCPosition = new Vector3(3.3f, 0, 73.3f);
+                //     npcMove.MoveNPCToTarget(villainsOutside[0], NPCPosition);
+                    
+                //     // Second villain moves with hostage
+                //     NPCPosition = new Vector3(-8.3f, 0, 95.3f);
+                //     npcMove.MoveNPCToTarget(villainsOutside[1], NPCPosition);
+                    
+                //     // Move hostage to gamma knife
+                //     NPCPosition = new Vector3(-6.8f, 0, 112.3f);
+                //     npcMove.MoveNPCToTarget(villainsInside[2], NPCPosition);
+                    
+                //     Debug.Log($"Two villains are taking {physicianHostage.name} to the gamma knife room");
+                // }
                 break;
             case GamePhase.Phase7:
-                // egress options
+                SelectEgressPhase();
+                switch(egress){
+                    case 1:
+                        // Phase Egress 1: Adversaries move to the front emergency exit and stop 6-10 feet outside.
+                        break;
+                    case 2:
+                        // Phase Egress 2: Adversaries move to the rear emergency exit and stop 6-10 feet outside.
+                        break;
+                    case 3:
+                        // Phase Egress 3: Adversaries move to the lobby via the front entrance and wait at the entrance.
+                        break;
+                    case 4:
+                        // Phase Egress 4: Adversaries move to the rear exit, stop in the patio area, and wait 6-10 feet outside.
+                        break;
+                    default:
+                        Debug.LogError("Invalid egress phase!");
+
+                    
+                }
+                
                 break;
         }
+    }
+
+    private Vector3 GetRandomPointInRadius(Vector3 center, float radius){
+        float angle = Random.Range(0f, Mathf.PI * 2); // Random angle in radians
+        float distance = Random.Range(0f, radius);    // Random distance within radius
+
+        float x = center.x + Mathf.Cos(angle) * distance;
+        float z = center.z + Mathf.Sin(angle) * distance;
+
+        return new Vector3(x, center.y, z);
     }
     
     private IEnumerator WorkOnGammaKnife()
