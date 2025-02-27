@@ -20,10 +20,14 @@ public class PhaseManager : MonoBehaviour
     // References to different NPC groups
     private GameObject[] villainsInside;
     private GameObject[] villainsOutside;
-    private GameObject superVillain;
+    private List<GameObject> villains;
+    // private GameObject superVillain;
     private GameObject receptionist;
     private int egress;
     private bool egressPhaseSelected = false;
+    public delegate void EgressSelectedHandler(int egressPhase);
+    public static event EgressSelectedHandler OnEgressSelected;
+
 
     private void Start()
     {
@@ -46,29 +50,39 @@ public class PhaseManager : MonoBehaviour
         
         // Create temporary gamma knife object
         CreateTemporaryGammaKnife();
+        
 
         phaseList.SetCurrentToHead();
+        OnEgressSelected += ExecuteEgressPhase;
         StartPhase();
     }
 
-    private IEnumerator WaitForEgressSelection()
+    private void Update()
     {
-        // Wait until the instructor selects an egress phase
-        Debug.Log("Awaiting egress selection...");
-        egressPhaseSelected = false;  // Ensure it's false when we start waiting
-
-        while (!egressPhaseSelected)
+        if (phaseList.Current.Phase == GamePhase.Phase7)
         {
-            egress = SetEgressPhase();
-            if (egress != 0)  // If an egress phase is selected
-            {
-                egressPhaseSelected = true;  // Allow the game to continue
-                Debug.Log($"Egress phase {egress} selected");
-            }
-
-            yield return null; // Wait until next frame to check again
+            SetEgressPhase();
         }
     }
+
+    // private IEnumerator WaitForEgressSelection()
+    // {
+    //     // Wait until the instructor selects an egress phase
+    //     Debug.Log("Awaiting egress selection...");
+    //     egressPhaseSelected = false;  // Ensure it's false when we start waiting
+
+    //     while (!egressPhaseSelected)
+    //     {
+    //         egress = SetEgressPhase();
+    //         if (egress != 0)  // If an egress phase is selected
+    //         {
+    //             egressPhaseSelected = true;  // Allow the game to continue
+    //             Debug.Log($"Egress phase {egress} selected");
+    //         }
+
+    //         yield return null;
+    //     }
+    // }
 
 
     private int SetEgressPhase()
@@ -76,20 +90,38 @@ public class PhaseManager : MonoBehaviour
         playerRole = FindObjectOfType<playerController>();
         if (playerRole.getPlayerRole() == playerController.Roles.Instructor)
         {
-            if (Input.GetKeyDown(KeyCode.A)) return 1;
-            if (Input.GetKeyDown(KeyCode.S)) return 2;
-            if (Input.GetKeyDown(KeyCode.D)) return 3;
-            if (Input.GetKeyDown(KeyCode.F)) return 4;
-            if (Input.GetKeyDown(KeyCode.G)) return Random.Range(1, 5);  // Randomize between 1-4
+            if (Input.GetKeyDown(KeyCode.A)) return TriggerEgressSelected(1);
+            if (Input.GetKeyDown(KeyCode.S)) return TriggerEgressSelected(2);
+            if (Input.GetKeyDown(KeyCode.D)) return TriggerEgressSelected(3);
+            if (Input.GetKeyDown(KeyCode.F)) return TriggerEgressSelected(4);
+            if (Input.GetKeyDown(KeyCode.G)) return TriggerEgressSelected(Random.Range(1, 5));
 
-            return 0;  // No valid key pressed, no selection made
+            return 0;
         }
         else
         {
             Debug.Log("Only the instructor can select the egress phase.");
-            return 0;  // No valid selection if not instructor
+            return 0;
         }
     }
+
+    private int TriggerEgressSelected(int phase)
+    {
+        Debug.Log($"TriggerEgressSelected called with phase {phase}");
+
+        if (OnEgressSelected != null)
+        {
+            Debug.Log("Triggering OnEgressSelected event");
+            OnEgressSelected.Invoke(phase);
+        }
+        else
+        {
+            Debug.LogError("OnEgressSelected is NULL! No subscribers.");
+        }
+        
+        return phase;
+    }
+
 
 
     
@@ -97,11 +129,14 @@ public class PhaseManager : MonoBehaviour
     {
         villainsInside = GameObject.FindGameObjectsWithTag("Villains");
         villainsOutside = GameObject.FindGameObjectsWithTag("OutsideVillains");
-        superVillain = GameObject.FindGameObjectWithTag("SuperVillain");
+        // superVillain = GameObject.FindGameObjectWithTag("SuperVillain");
         receptionist = GameObject.FindGameObjectWithTag("Receptionist");
         
+        villains = new List<GameObject>(villainsInside);
+        villains.AddRange(villainsOutside);
+        
         Debug.Log($"Found {villainsInside.Length} inside villains, {villainsOutside.Length} outside villains");
-        if (superVillain != null) Debug.Log("Found SuperVillain");
+        // if (superVillain != null) Debug.Log("Found SuperVillain");
         if (receptionist != null) Debug.Log("Found Receptionist");
     }
     
@@ -377,21 +412,8 @@ public class PhaseManager : MonoBehaviour
                 }
                 
                 // Select a medical NPC to be the physician hostage
-                GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
-                if (medicals.Length > 0) {
-                    physicianHostage = medicals[0]; // Take the first medical as hostage
-                    physicianHostage.tag = "PhysicianHostage";
-                    
-                    Debug.Log($"The villains have taken {physicianHostage.name} hostage!");
-                    
-                    // Move the physician hostage to a villain
-                    if (villainsInside != null && villainsInside.Length > 0) {
-                        Vector3 hostagePosition = villainsInside[0].transform.position + new Vector3(1f, 0, 0);
-                        npcMove.MoveNPCToTarget(physicianHostage, hostagePosition);
-                    }
-                } else {
-                    // If no medicals are available, check for hostages that were originally medicals
-                    GameObject[] hostages = GameObject.FindGameObjectsWithTag("Hostages");
+                GameObject[] hostages = GameObject.FindGameObjectsWithTag("Hostages");
+                if (hostages.Length > 0) {
                     foreach (GameObject hostage in hostages) {
                         OriginalTag originalTag = hostage.GetComponent<OriginalTag>();
                         if (originalTag != null && originalTag.originalTag == "Medicals") {
@@ -440,7 +462,7 @@ public class PhaseManager : MonoBehaviour
                 // Outside villains move inside to reinforce
                 if (villainsOutside != null) {
                     Vector3 lobbyPosition1 = new Vector3(2.3f, 0, 105.8f);
-                    Vector3 lobbyPosition2 = new Vector3(5.8f, 0, 110.3f);
+                    Vector3 lobbyPosition2 = new Vector3(5.8f, 0, 112.3f);
                     
                     if (villainsOutside.Length > 0) {
                         npcMove.MoveNPCToTarget(villainsOutside[0], lobbyPosition1);
@@ -495,15 +517,9 @@ public class PhaseManager : MonoBehaviour
                 // all adversaries and physicianhostage group up & get ready to leave
                 Vector3 youMoveHere = new Vector3(0f, 0, 113f);
                 float radius = 3.5f;
-                npcMove.MoveNPCToTarget(villainsInside[0], youMoveHere);
-                for(int i=0; i<villainsInside.Length + villainsOutside.Length + 1; i++){
-                    if(i==0){
-                        npcMove.MoveNPCToTarget(physicianHostage, GetRandomPointInRadius(youMoveHere, radius));
-                    } else if(i < 3){
-                        npcMove.MoveNPCToTarget(villainsInside[i], GetRandomPointInRadius(youMoveHere, radius));
-                    } else {
-                        npcMove.MoveNPCToTarget(villainsOutside[i%2], GetRandomPointInRadius(youMoveHere, radius));
-                    }
+                npcMove.MoveNPCToTarget(physicianHostage, youMoveHere);
+                foreach(GameObject villain in villains){
+                    npcMove.MoveNPCToTarget(villain, GetRandomPointInRadius(youMoveHere, radius));
                 }
                 break;
             case GamePhase.Phase7:
@@ -512,33 +528,59 @@ public class PhaseManager : MonoBehaviour
                     StopCoroutine(currentPhaseCoroutine);
                     currentPhaseCoroutine = null;
                 }
-                currentPhaseCoroutine = StartCoroutine(WaitForEgressSelection());
-                
-                // Proceed with specific egress logic based on the selected phase
-                switch(egress)
-                {
-                    case 1:
-                        // Phase Egress 1: Adversaries move to the front emergency exit
-                        Debug.Log("Phase Egress: " + egress);
-                        break;
-                    case 2:
-                        // Phase Egress 2: Adversaries move to the rear emergency exit
-                        Debug.Log("Phase Egress: " + egress);
-                        break;
-                    case 3:
-                        // Phase Egress 3: Adversaries move to the lobby via the front entrance
-                        Debug.Log("Phase Egress: " + egress);
-                        break;
-                    case 4:
-                        // Phase Egress 4: Adversaries move to the rear exit
-                        Debug.Log("Phase Egress: " + egress);
-                        break;
-                    default:
-                        Debug.LogError("Invalid egress phase!");
-                        break;
-                }
+                // currentPhaseCoroutine = StartCoroutine(WaitForEgressSelection());
+                OnEgressSelected += ExecuteEgressPhase;
                 break;
 
+        }
+    }
+
+    private void ExecuteEgressPhase(int selectedEgress)
+    {
+        OnEgressSelected -= ExecuteEgressPhase; // Unsubscribe to prevent multiple calls
+
+        Debug.Log($"Egress phase {selectedEgress} selected!");
+        egress = selectedEgress;
+
+        switch(egress) // g = random
+        {
+            case 1: // a
+                // Phase Egress 1: Adversaries move to the front emergency exit
+                Debug.Log("Phase Egress: " + egress);
+                Vector3 youMoveHere = new Vector3(21.8f, 0, 72.3f);
+                float radius = 2f;
+                moveEgress(youMoveHere, radius);
+                break;
+            case 2: // s
+                // Phase Egress 2: Adversaries move to the rear emergency exit
+                Debug.Log("Phase Egress: " + egress);
+                youMoveHere = new Vector3(-12.3f, 0, 95.8f);
+                radius = 3f;
+                moveEgress(youMoveHere, radius);
+                break;
+            case 3: // d
+                // Phase Egress 3: Adversaries move to the lobby exit
+                Debug.Log("Phase Egress: " + egress);
+                youMoveHere = new Vector3(20.8f, 0, 113.3f);
+                radius = 3f;
+                moveEgress(youMoveHere, radius);
+                break;
+            case 4: // f
+                // Phase Egress 4: Adversaries move to the rear exit
+                Debug.Log("Phase Egress: " + egress);
+                youMoveHere = new Vector3(-12.8f, 0, 112.3f);
+                radius = 3f;
+                moveEgress(youMoveHere, radius);
+                break;
+            default:
+                Debug.LogWarning("Invalid egress phase!");
+                break;
+        }
+    }
+
+    private void moveEgress(Vector3 move, float radius){
+        foreach(GameObject villain in villains){
+            npcMove.MoveNPCToTarget(villain, GetRandomPointInRadius(move, radius));
         }
     }
 
