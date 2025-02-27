@@ -14,6 +14,26 @@ public class PhaseMovementHelper : MonoBehaviour
 
     private readonly Queue<GameObject> npcUpdateQueue = new Queue<GameObject>();
     private bool isProcessingUpdates = false;
+    
+    // Make the method public so PhaseManager can use it directly
+    public void MoveNPCToTarget(GameObject npc, Vector3 targetPosition)
+    {
+        if (npc == null) return;
+        
+        AIMover mover = npc.GetComponent<AIMover>();
+        if (mover != null)
+        {
+            npc.SetActive(true);
+            mover.enabled = true;
+            mover.SetTargetPosition(targetPosition);
+            StartCoroutine(mover.UpdatePath()); // Start movement coroutine
+        }
+        else
+        {
+            Debug.LogWarning($"No AIMover component found on {npc.name}");
+        }
+    }
+
     private Vector3 GetEdgePosition()
     {
         Vector3 edgePosition = new Vector3(61f, 0f, Random.Range(40f, 140f));
@@ -26,17 +46,6 @@ public class PhaseMovementHelper : MonoBehaviour
         return edgePosition;
     }
 
-    private void MoveNPCToTarget(GameObject npc, Vector3 targetPosition)
-    {
-        AIMover mover = npc.GetComponent<AIMover>();
-        if (mover != null)
-        {
-            npc.SetActive(true);
-            mover.enabled = true;
-            mover.SetTargetPosition(targetPosition);
-            StartCoroutine(mover.UpdatePath()); // Start movement coroutine
-        }
-    }
 
     // Process NPC movements in small batches for better performance
     private IEnumerator ProcessNPCUpdates()
@@ -105,13 +114,14 @@ public class PhaseMovementHelper : MonoBehaviour
             // I want civilians to be more active, etc. etc.
             int rand = UnityEngine.Random.Range(0, 3);
             if(rand == 0){
-                Debug.Log("moving medicals and hostages");
+                // Debug.Log("moving medicals and hostages");
                 MoveList.AddRange(medicals);
                 MoveList.AddRange(hostages);
             } else if(rand <= 1) {
-                Debug.Log("Moving medicals");
+                // Debug.Log("Moving medicals");
                 MoveList.AddRange(medicals);
-            } else Debug.Log("Moving all");
+            } 
+            // else Debug.Log("Moving all");
 
             // Queue up NPCs for batch processing
             npcUpdateQueue.Clear();

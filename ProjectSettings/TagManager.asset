@@ -12,6 +12,8 @@ TagManager:
   - Villains
   - PhysicianHostage
   - Hostages
+  - OutsideVillains
+  - SuperVillain
   layers:
   - Default
   - TransparentFX

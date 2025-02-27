@@ -2552,7 +2552,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2400439129582445820, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: m_TagString
-      value: Villains
+      value: OutsideVillains
       objectReference: {fileID: 0}
     - target: {fileID: 2400439130266841364, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: m_IsActive
@@ -11350,7 +11350,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2400439129582445820, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: m_TagString
-      value: Villains
+      value: OutsideVillains
       objectReference: {fileID: 0}
     - target: {fileID: 2400439130266841364, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: m_IsActive
@@ -12114,10 +12114,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7df47dadfdc4e0f449f8f412e93b9b31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useCoordinateCheck: 0
-  hostageAreaCenter: {x: 0, y: 0, z: 0}
-  hostageAreaSize: {x: 10, y: 5, z: 10}
-  hostageCheckInterval: 1
 --- !u!4 &995635510
 Transform:
   m_ObjectHideFlags: 0
@@ -19085,7 +19081,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3034232109503217222, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 14.519528
+      value: 23.75
       objectReference: {fileID: 0}
     - target: {fileID: 3034232109503217222, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: m_LocalPosition.y
@@ -19093,7 +19089,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3034232109503217222, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 29.029945
+      value: 27.29
       objectReference: {fileID: 0}
     - target: {fileID: 3034232109503217222, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: m_LocalRotation.w
@@ -22219,11 +22215,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2400439129582445820, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: m_TagString
-      value: PhysicianHostage
+      value: Medicals
       objectReference: {fileID: 0}
     - target: {fileID: 2400439130266841364, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3034232109503217222, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
       propertyPath: m_RootOrder

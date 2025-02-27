@@ -23,7 +23,7 @@ public class HostageTriggerArea : MonoBehaviour
         {
             Debug.LogError("PhaseManager not found in the scene!");
         }
-        Debug.Log("Loaded!");
+        // Debug.Log("Loaded!");
         
         if (showDebugVisual)
         {
@@ -77,7 +77,6 @@ public class HostageTriggerArea : MonoBehaviour
         if (phaseManager == null || phaseManager.GetCurrentPhase() < GamePhase.Phase2)
             return;
 
-        // Debug.Log($"OnTriggerEnter called: {npc.name}");
         // Check if this is a Civilian or Medical
         if ((npc.CompareTag("Civilians") || npc.CompareTag("Medicals")) && !convertedNPCs.Contains(npc.gameObject))
         {
@@ -91,7 +90,7 @@ public class HostageTriggerArea : MonoBehaviour
         if (phaseManager == null || phaseManager.GetCurrentPhase() < GamePhase.Phase2)
             return;
         // Debug.Log($"OnTriggerStay called: {npc.name}");
-        if ((npc.CompareTag("Civilians") || npc.CompareTag("Medicals")) && !convertedNPCs.Contains(npc.gameObject))
+        if ((npc.CompareTag("Civilians") || npc.CompareTag("Medicals") || npc.CompareTag("Receptionist")) && !convertedNPCs.Contains(npc.gameObject))
         {
             ConvertToHostage(npc.gameObject);
         }
@@ -100,7 +99,7 @@ public class HostageTriggerArea : MonoBehaviour
     private void ConvertToHostage(GameObject npc)
     {
         // Log the conversion
-        Debug.Log($"Converting {npc.name} from {npc.tag} to Hostage");
+        // Debug.Log($"Converting {npc.name} from {npc.tag} to Hostage");
 
         // Store original tag for debugging/reference
         string originalTag = npc.tag;
@@ -127,11 +126,14 @@ public class HostageTriggerArea : MonoBehaviour
             mover.StopAllMovement();
             mover.SetTargetPosition(transform.position);
         }
+        
+        // Phase 2: NPCs who are now hostages should lie down
+        Debug.Log($"{npc.name} has become a hostage and lies down.");
     }
 
     private void ToggleYellowRing(GameObject npc)
     {
-        Debug.Log("Toggling the ring");
+        // Debug.Log("Toggling the ring");
 
         // Find the 'ui_disk_02' ring prefab as a child of the NPC
         GameObject HostageRing = npc.transform.GetChild(2).gameObject;
@@ -139,7 +141,7 @@ public class HostageTriggerArea : MonoBehaviour
         // Check if the ring object exists
         if (HostageRing != null)
         {
-            Debug.Log("Toggling the ring to true");
+            // Debug.Log("Toggling the ring to true");
             HostageRing.SetActive(true);
             Vector3 newPosition = HostageRing.transform.localPosition;
             newPosition.y = 1f; 
