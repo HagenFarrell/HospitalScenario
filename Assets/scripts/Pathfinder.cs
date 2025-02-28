@@ -1,8 +1,88 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
+
+
+// Custom priority queue implementation for A* pathfinding
+public class PathPriorityQueue
+{
+    private List<GridNode> nodes = new List<GridNode>();
+    
+    public int Count => nodes.Count;
+    
+    public void Enqueue(GridNode node)
+    {
+        nodes.Add(node);
+        
+        // Simple insertion sort to maintain queue order
+        int i = nodes.Count - 1;
+        while (i > 0)
+        {
+            int j = i - 1;
+            if (CompareNodes(nodes[i], nodes[j]) < 0)
+            {
+                // Swap nodes
+                GridNode temp = nodes[i];
+                nodes[i] = nodes[j];
+                nodes[j] = temp;
+                i = j;
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+    
+    public GridNode Dequeue()
+    {
+        if (nodes.Count == 0)
+            return null;
+            
+        GridNode node = nodes[0];
+        nodes.RemoveAt(0);
+        return node;
+    }
+    
+    public bool Contains(GridNode node)
+    {
+        return nodes.Contains(node);
+    }
+    
+    public void Remove(GridNode node)
+    {
+        nodes.Remove(node);
+    }
+    
+    private int CompareNodes(GridNode a, GridNode b)
+    {
+        // Compare by FCost first, then by HCost if equal
+        int result = a.FCost.CompareTo(b.FCost);
+        if (result == 0)
+            result = a.HCost.CompareTo(b.HCost);
+        return result;
+    }
+}
+
 
 public class Pathfinder : MonoBehaviour
 {
+    // Path caching to stunt pathfinding lag across long distances.
+    private Dictionary<string, List<Vector3>> pathCache = new Dictionary<string, List<Vector3>>();
+    private const int CACHE_MAX_SIZE = 50;
+
+    // Helper method to create cache key
+    private string GetPathKey(Vector3 start, Vector3 end)
+    {
+        // Round to reduce number of unique paths
+        int startX = Mathf.RoundToInt(start.x);
+        int startZ = Mathf.RoundToInt(start.z);
+        int endX = Mathf.RoundToInt(end.x);
+        int endZ = Mathf.RoundToInt(end.z);
+    
+        return $"{startX},{startZ}_{endX},{endZ}";
+    }
+    
     private DynamicNavMesh navMesh;
 
     void Start()
@@ -12,67 +92,68 @@ public class Pathfinder : MonoBehaviour
 
     public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos)
     {
-        //Debug.Log(startPos + " " + targetPos);
+        
+        string pathKey = GetPathKey(startPos, targetPos);
+        // Check if the path is already contained in the cache.
+        if (pathCache.ContainsKey(pathKey))
+        {
+            // If so, return a copy of the path.
+            return new List<Vector3>(pathCache[pathKey]);
+        }
+        
+        
         GridNode startNode = navMesh.GetNodeFromWorldPoint(startPos);
         GridNode targetNode = navMesh.GetNodeFromWorldPoint(targetPos);
 
-        //Debug.Log($"Start Node: {startNode?.WorldPosition} (Walkable: {startNode?.IsWalkable})");
-        //Debug.Log($"Target Node: {targetNode?.WorldPosition} (Walkable: {targetNode?.IsWalkable})");
-
-        // Debug statements, needed to see if path is actually being generated.
-        if (startNode == null || !startNode.IsWalkable)
-        {
-            Debug.LogError("Start node is unwalkable or null!");
-            return null;
-        }
-        if (targetNode == null || !targetNode.IsWalkable)
-        {
-            Debug.LogError("Target node is unwalkable or null!");
-            return null;
-        }
-
         // Initialize open/closed sets
-        List<GridNode> openSet = new List<GridNode>();
+        PathPriorityQueue openSet = new PathPriorityQueue();
         HashSet<GridNode> closedSet = new HashSet<GridNode>();
+        
+        
         startNode.GCost = 0; // Reset start node's cost
         startNode.HCost = GetDistance(startNode, targetNode);
-        openSet.Add(startNode);
+        openSet.Enqueue(startNode);
 
         Dictionary<GridNode, GridNode> cameFrom = new Dictionary<GridNode, GridNode>();
 
         while (openSet.Count > 0)
         {
-            GridNode currentNode = openSet[0];
-
-            // Find the node with the lowest FCost (and HCost as a tiebreaker)
-            for (int i = 1; i < openSet.Count; i++)
-            {
-                if (openSet[i].FCost < currentNode.FCost ||
-                    (openSet[i].FCost == currentNode.FCost && openSet[i].HCost < currentNode.HCost))
-                {
-                    currentNode = openSet[i];
-                }
-            }
-
-            openSet.Remove(currentNode);
+            // Get node with lowest FCost
+            GridNode currentNode = openSet.Dequeue();
             closedSet.Add(currentNode);
 
             // Path found!
             if (currentNode == targetNode)
             {
-                return RetracePath(startNode, targetNode, cameFrom);
-            }
+                List<Vector3> path = RetracePath(startNode, targetNode, cameFrom);
 
+                // If path found, add to cache
+                if (path != null && path.Count > 0)
+                {
+                    // Manage cache size
+                    if (pathCache.Count >= CACHE_MAX_SIZE)
+                    {
+                        // Remove oldest entry
+                        var firstKey = pathCache.Keys.First();
+                        pathCache.Remove(firstKey);
+                    }
+                    
+                    // Store a copy
+                    pathCache[pathKey] = new List<Vector3>(path); 
+                }
+                
+                return path; 
+            }
+            
             // Explore neighbors
             foreach (GridNode neighbor in GetNeighbors(currentNode))
             {
-                if (!neighbor.IsWalkable || closedSet.Contains(neighbor)) continue;
+                if (!neighbor.IsWalkable || closedSet.Contains(neighbor)) 
+                    continue;
 
-                // Add a wall penalty of 10 (changable if needed) if close to non-walkable surface.
-                int wallPenalty = 0;
-                if (isNearWall(neighbor)) wallPenalty = 10;
-
+                int wallPenalty = isNearWall(neighbor) ? 10 : 0;
                 int tentativeGCost = currentNode.GCost + GetDistance(currentNode, neighbor) + wallPenalty;
+            
                 if (tentativeGCost < neighbor.GCost || !openSet.Contains(neighbor))
                 {
                     cameFrom[neighbor] = currentNode;
@@ -81,7 +162,13 @@ public class Pathfinder : MonoBehaviour
 
                     if (!openSet.Contains(neighbor))
                     {
-                        openSet.Add(neighbor);
+                        openSet.Enqueue(neighbor);
+                    }
+                    else
+                    {
+                        // Re-sort the node with updated costs
+                        openSet.Remove(neighbor);
+                        openSet.Enqueue(neighbor);
                     }
                 }
             }

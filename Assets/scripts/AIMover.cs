@@ -7,16 +7,16 @@ public class AIMover : MonoBehaviour
     private Animator animator;
 
     // ---- Variables for the BOIDS algorithm. ----
-    [SerializeField] private float speed = 4f;
-    [SerializeField] private float maxSpeed = 5f;
-    [SerializeField] private float maxForce = 4f;
-    [SerializeField] private float slowingRadius = 2f;
+    [SerializeField] private float speed = 13f;
+    [SerializeField] private float maxSpeed = 15f;
+    [SerializeField] private float maxForce = 15f;
+    [SerializeField] private float slowingRadius = 1f;
     [SerializeField] private float seperationRadius = 1f;
-    [SerializeField] private float lookAheadDistance = 0.3f;
+    [SerializeField] private float lookAheadDistance = 1f;
 
 
     // ---- Movement based variables ----
-    [SerializeField] private float movementThreshhold = 0.01f;
+    [SerializeField] private float movementThreshhold = 0.1f;
     [SerializeField] private float animationDampTime = 0.1f;
 
     // Animation parameter hashes for efficiency
@@ -26,15 +26,13 @@ public class AIMover : MonoBehaviour
 
     // ---- Pathingfinding variables ----
     [SerializeField] private float pathWeight = 0.4f;
-    [SerializeField] private float pathUpdateInterval = 8f;
+    [SerializeField] private float pathUpdateInterval = 0.5f;
     private Pathfinder pathfinder;
     private List<Vector3> path;
     private int currentWaypoint = 0;
 
 
     private Vector3 previousSteering = Vector3.zero;
-
-
 
     /* For anyone reading this that doesnt understand.
      * get: means other classes can read the value
@@ -87,16 +85,12 @@ public class AIMover : MonoBehaviour
         {
             if (target != null)
             {
-                // Debug.Log($"Finding path from {transform.position} to {target.position}");
+                //Debug.Log($"Finding path from {transform.position} to {target.position}");
                 path = pathfinder.FindPath(transform.position, target.position);
                 if (path != null && path.Count > 0)
                 {
-                    // Debug.Log($"Path found with {path.Count} waypoints");
+                    //Debug.Log($"Path found with {path.Count} waypoints");
                     currentWaypoint = 0;
-                }
-                else
-                {
-                    // Debug.Log("No path found!");
                 }
             }
             yield return new WaitForSeconds(pathUpdateInterval);
@@ -119,17 +113,17 @@ public class AIMover : MonoBehaviour
 
         // Call the compute steering force function.
         Vector3 steering = ComputeSteeringForce(waypointTarget);
-        // Debug.Log($"{gameObject.name} steering force: {steering.magnitude}");
+        Debug.Log($"{gameObject.name} steering force: {steering.magnitude}");
         applyMovement(steering);
 
         float distToWaypoint = Vector3.Distance(transform.position, waypointTarget);
-        // Debug.Log($"Distance to waypoint: {distToWaypoint}");
+        Debug.Log($"Distance to waypoint: {distToWaypoint}");
 
 
         // We need to check if the NPC is close the next waypoint.
         if (distToWaypoint < 0.5f)
         {
-            // Debug.Log($"Reached waypoint {currentWaypoint}, moving to next");
+            Debug.Log($"Reached waypoint {currentWaypoint}, moving to next");
             currentWaypoint++;
             if (currentWaypoint >= path.Count)
             {
@@ -155,7 +149,7 @@ public class AIMover : MonoBehaviour
         Vector3 pathOffset = nearestPathPoint - transform.position;
 
         // Calculate path influence - but keep it minimal
-        float pathInfluence = Mathf.Clamp01(pathOffset.magnitude / 5f) * 0.1f;
+        float pathInfluence = Mathf.Clamp01(pathOffset.magnitude / 5f) * 0.2f;
         Vector3 pathCorrection = pathOffset.normalized * maxSpeed;
 
         // Heavily favor direct movement
@@ -176,10 +170,10 @@ public class AIMover : MonoBehaviour
         Vector3 steeringForce = (blendedDesiredVelocity - currentVelocity) * 2f; // Multiplier for stronger steering
 
         // Minimal separation only when absolutely necessary
-        steeringForce += calculateSeperation() * 0.05f;
+        steeringForce += calculateSeperation() * 0.2f;
 
         // Allow stronger forces for quicker acceleration
-        return Vector3.ClampMagnitude(steeringForce, maxForce * 1.2f);
+        return Vector3.ClampMagnitude(steeringForce, maxForce * 2f);
     }
 
     private Vector3 FindNearestPointOnPath(Vector3 position)
@@ -256,14 +250,13 @@ public class AIMover : MonoBehaviour
     private void applyMovement(Vector3 steering)
     {
         // Update the currentVelocity with the steering force previously calculated.
-        Vector3 smoothedSteering = Vector3.Lerp(previousSteering, steering, 0.15f);
+        Vector3 smoothedSteering = Vector3.Lerp(previousSteering, steering, 0.5f);
         previousSteering = smoothedSteering;
 
         currentVelocity.y = 0;
         smoothedSteering.y = 0;
 
-        // More direct velocity application
-        currentVelocity = Vector3.Lerp(currentVelocity, currentVelocity + smoothedSteering, Time.deltaTime * 6f);
+        currentVelocity += smoothedSteering * Time.deltaTime;
         currentVelocity = Vector3.ClampMagnitude(currentVelocity, maxSpeed);
 
         // Update the agents position based on the new velocity calculated.
@@ -315,7 +308,7 @@ public class AIMover : MonoBehaviour
         if (currentVelocity.magnitude > 0.1f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(currentVelocity.normalized);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 8f);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 0.5f);
         }
     }
 
