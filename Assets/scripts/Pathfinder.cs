@@ -1,28 +1,28 @@
-using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 
 // Custom priority queue implementation for A* pathfinding
 public class PathPriorityQueue
 {
-    private List<GridNode> nodes = new List<GridNode>();
-    
+    private readonly List<GridNode> nodes = new List<GridNode>();
+
     public int Count => nodes.Count;
-    
+
     public void Enqueue(GridNode node)
     {
         nodes.Add(node);
-        
+
         // Simple insertion sort to maintain queue order
-        int i = nodes.Count - 1;
+        var i = nodes.Count - 1;
         while (i > 0)
         {
-            int j = i - 1;
+            var j = i - 1;
             if (CompareNodes(nodes[i], nodes[j]) < 0)
             {
                 // Swap nodes
-                GridNode temp = nodes[i];
+                var temp = nodes[i];
                 nodes[i] = nodes[j];
                 nodes[j] = temp;
                 i = j;
@@ -33,31 +33,31 @@ public class PathPriorityQueue
             }
         }
     }
-    
+
     public GridNode Dequeue()
     {
         if (nodes.Count == 0)
             return null;
-            
-        GridNode node = nodes[0];
+
+        var node = nodes[0];
         nodes.RemoveAt(0);
         return node;
     }
-    
+
     public bool Contains(GridNode node)
     {
         return nodes.Contains(node);
     }
-    
+
     public void Remove(GridNode node)
     {
         nodes.Remove(node);
     }
-    
+
     private int CompareNodes(GridNode a, GridNode b)
     {
         // Compare by FCost first, then by HCost if equal
-        int result = a.FCost.CompareTo(b.FCost);
+        var result = a.FCost.CompareTo(b.FCost);
         if (result == 0)
             result = a.HCost.CompareTo(b.HCost);
         return result;
@@ -67,65 +67,86 @@ public class PathPriorityQueue
 
 public class Pathfinder : MonoBehaviour
 {
-    // Path caching to stunt pathfinding lag across long distances.
-    private Dictionary<string, List<Vector3>> pathCache = new Dictionary<string, List<Vector3>>();
     private const int CACHE_MAX_SIZE = 50;
+
+    // Path caching to stunt pathfinding lag across long distances.
+    private readonly Dictionary<string, List<Vector3>> pathCache = new Dictionary<string, List<Vector3>>();
+
+    private DynamicNavMesh navMesh;
+
+    private void Start()
+    {
+        navMesh = GetComponent<DynamicNavMesh>();
+    }
 
     // Helper method to create cache key
     private string GetPathKey(Vector3 start, Vector3 end)
     {
         // Round to reduce number of unique paths
-        int startX = Mathf.RoundToInt(start.x);
-        int startZ = Mathf.RoundToInt(start.z);
-        int endX = Mathf.RoundToInt(end.x);
-        int endZ = Mathf.RoundToInt(end.z);
-    
+        var startX = Mathf.RoundToInt(start.x);
+        var startZ = Mathf.RoundToInt(start.z);
+        var endX = Mathf.RoundToInt(end.x);
+        var endZ = Mathf.RoundToInt(end.z);
+
         return $"{startX},{startZ}_{endX},{endZ}";
     }
-    
-    private DynamicNavMesh navMesh;
 
-    void Start()
+    public List<Vector3> FindLongDistancePath(Vector3 startPos, Vector3 targetPos)
     {
-        navMesh = GetComponent<DynamicNavMesh>();
+        // For long distances, create an extremely simple direct path
+        var simplePath = new List<Vector3>();
+
+        // Just use the start position
+        simplePath.Add(startPos);
+
+        // For very long paths, add at most ONE intermediate point
+        var distance = Vector3.Distance(startPos, targetPos);
+        if (distance > 100f)
+        {
+            // Add a single midpoint to help with navigation
+            var midpoint = Vector3.Lerp(startPos, targetPos, 0.5f);
+            simplePath.Add(midpoint);
+        }
+
+        // Add the target position
+        simplePath.Add(targetPos);
+
+        return simplePath;
     }
 
     public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos)
     {
-        
-        string pathKey = GetPathKey(startPos, targetPos);
+        var pathKey = GetPathKey(startPos, targetPos);
         // Check if the path is already contained in the cache.
         if (pathCache.ContainsKey(pathKey))
-        {
             // If so, return a copy of the path.
             return new List<Vector3>(pathCache[pathKey]);
-        }
-        
-        
-        GridNode startNode = navMesh.GetNodeFromWorldPoint(startPos);
-        GridNode targetNode = navMesh.GetNodeFromWorldPoint(targetPos);
+
+
+        var startNode = navMesh.GetNodeFromWorldPoint(startPos);
+        var targetNode = navMesh.GetNodeFromWorldPoint(targetPos);
 
         // Initialize open/closed sets
-        PathPriorityQueue openSet = new PathPriorityQueue();
-        HashSet<GridNode> closedSet = new HashSet<GridNode>();
-        
-        
+        var openSet = new PathPriorityQueue();
+        var closedSet = new HashSet<GridNode>();
+
+
         startNode.GCost = 0; // Reset start node's cost
         startNode.HCost = GetDistance(startNode, targetNode);
         openSet.Enqueue(startNode);
 
-        Dictionary<GridNode, GridNode> cameFrom = new Dictionary<GridNode, GridNode>();
+        var cameFrom = new Dictionary<GridNode, GridNode>();
 
         while (openSet.Count > 0)
         {
             // Get node with lowest FCost
-            GridNode currentNode = openSet.Dequeue();
+            var currentNode = openSet.Dequeue();
             closedSet.Add(currentNode);
 
             // Path found!
             if (currentNode == targetNode)
             {
-                List<Vector3> path = RetracePath(startNode, targetNode, cameFrom);
+                var path = RetracePath(startNode, targetNode, cameFrom);
 
                 // If path found, add to cache
                 if (path != null && path.Count > 0)
@@ -137,23 +158,23 @@ public class Pathfinder : MonoBehaviour
                         var firstKey = pathCache.Keys.First();
                         pathCache.Remove(firstKey);
                     }
-                    
+
                     // Store a copy
-                    pathCache[pathKey] = new List<Vector3>(path); 
+                    pathCache[pathKey] = new List<Vector3>(path);
                 }
-                
-                return path; 
+
+                return path;
             }
-            
+
             // Explore neighbors
-            foreach (GridNode neighbor in GetNeighbors(currentNode))
+            foreach (var neighbor in GetNeighbors(currentNode))
             {
-                if (!neighbor.IsWalkable || closedSet.Contains(neighbor)) 
+                if (!neighbor.IsWalkable || closedSet.Contains(neighbor))
                     continue;
 
-                int wallPenalty = isNearWall(neighbor) ? 10 : 0;
-                int tentativeGCost = currentNode.GCost + GetDistance(currentNode, neighbor) + wallPenalty;
-            
+                var wallPenalty = isNearWall(neighbor) ? 10 : 0;
+                var tentativeGCost = currentNode.GCost + GetDistance(currentNode, neighbor) + wallPenalty;
+
                 if (tentativeGCost < neighbor.GCost || !openSet.Contains(neighbor))
                 {
                     cameFrom[neighbor] = currentNode;
@@ -178,71 +199,64 @@ public class Pathfinder : MonoBehaviour
     }
 
     // Retrace the path from end to start
-    List<Vector3> RetracePath(GridNode startNode, GridNode endNode, Dictionary<GridNode, GridNode> cameFrom)
+    private List<Vector3> RetracePath(GridNode startNode, GridNode endNode, Dictionary<GridNode, GridNode> cameFrom)
     {
-        List<Vector3> path = new List<Vector3>();
-        GridNode currentNode = endNode;
+        var path = new List<Vector3>();
+        var currentNode = endNode;
 
         while (currentNode != startNode)
         {
             path.Add(currentNode.WorldPosition);
             currentNode = cameFrom[currentNode];
         }
+
         path.Reverse();
         return path;
     }
 
     // Get neighboring nodes (8-directional)
-    List<GridNode> GetNeighbors(GridNode node)
+    private List<GridNode> GetNeighbors(GridNode node)
     {
-        List<GridNode> neighbors = new List<GridNode>();
-        for (int x = -1; x <= 1; x++)
+        var neighbors = new List<GridNode>();
+        for (var x = -1; x <= 1; x++)
+        for (var y = -1; y <= 1; y++)
         {
-            for (int y = -1; y <= 1; y++)
-            {
-                if (x == 0 && y == 0) continue; // Skip self
+            if (x == 0 && y == 0) continue; // Skip self
 
-                int checkX = node.GridX + x;
-                int checkY = node.GridY + y;
+            var checkX = node.GridX + x;
+            var checkY = node.GridY + y;
 
-                if (checkX >= 0 && checkX < navMesh.GridSizeX &&
-                    checkY >= 0 && checkY < navMesh.GridSizeY)
-                {
-                    neighbors.Add(navMesh.Grid[checkX, checkY]);
-                }
-            }
+            if (checkX >= 0 && checkX < navMesh.GridSizeX &&
+                checkY >= 0 && checkY < navMesh.GridSizeY)
+                neighbors.Add(navMesh.Grid[checkX, checkY]);
         }
+
         return neighbors;
     }
 
-    bool isNearWall(GridNode node)
+    private bool isNearWall(GridNode node)
     {
-        for (int dx = -1; dx <= 1; dx++)
+        for (var dx = -1; dx <= 1; dx++)
+        for (var dy = -1; dy <= 1; dy++)
         {
-            for (int dy = -1; dy <= 1; dy++)
-            {
-                if (dx == 0 && dy == 0) continue;
+            if (dx == 0 && dy == 0) continue;
 
-                int checkX = node.GridX + dx;
-                int checkY = node.GridY + dy;
+            var checkX = node.GridX + dx;
+            var checkY = node.GridY + dy;
 
-                if (checkX >= 0 && checkX < navMesh.GridSizeX && checkY >= 0 && checkY < navMesh.GridSizeY)
-                {
-                    if (!navMesh.Grid[checkX, checkY].IsWalkable)
-                    {
-                        return true;
-                    }
-                }
-            }
+            if (checkX >= 0 && checkX < navMesh.GridSizeX && checkY >= 0 && checkY < navMesh.GridSizeY)
+                if (!navMesh.Grid[checkX, checkY].IsWalkable)
+                    return true;
         }
+
         return false;
     }
 
     // Calculate Manhattan distance (for grid-based movement)
-    int GetDistance(GridNode a, GridNode b)
+    private int GetDistance(GridNode a, GridNode b)
     {
-        int dstX = Mathf.Abs(a.GridX - b.GridX);
-        int dstY = Mathf.Abs(a.GridY - b.GridY);
+        var dstX = Mathf.Abs(a.GridX - b.GridX);
+        var dstY = Mathf.Abs(a.GridY - b.GridY);
         return dstX + dstY;
     }
 }
