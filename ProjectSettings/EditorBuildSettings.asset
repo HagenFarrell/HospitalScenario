@@ -6,21 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/MainMenuScene.unity
-    guid: 0ede9c74d206de342b955cbd5b61fcad
-  - enabled: 1
-    path: Assets/Scenes/OptionsMenu.unity
-    guid: cd07a2c3f9eb2e34a8e7aa8c9a670f19
-  - enabled: 1
-    path: Assets/Scenes/MultiplayerMenu.unity
-    guid: 7c8c658a3e02bda48adca07189df9cbb
-  - enabled: 1
-    path: Assets/Scenes/VolumeMenu.unity
-    guid: 461679499b374ba488a617e21d0071b7
-  - enabled: 1
-    path: Assets/Scenes/AboutUsScene.unity
-    guid: 50fb0eaabf0ae4a4fb8a5bf6527dbd5c
-  - enabled: 1
     path: Assets/Scenes/Hospital.unity
     guid: fa0da64bc09ce834da74b17cf8929985
   m_configObjects: {}
