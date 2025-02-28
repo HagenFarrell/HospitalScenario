@@ -65,26 +65,6 @@ public class PhaseManager : MonoBehaviour
         }
     }
 
-    // private IEnumerator WaitForEgressSelection()
-    // {
-    //     // Wait until the instructor selects an egress phase
-    //     Debug.Log("Awaiting egress selection...");
-    //     egressPhaseSelected = false;  // Ensure it's false when we start waiting
-
-    //     while (!egressPhaseSelected)
-    //     {
-    //         egress = SetEgressPhase();
-    //         if (egress != 0)  // If an egress phase is selected
-    //         {
-    //             egressPhaseSelected = true;  // Allow the game to continue
-    //             Debug.Log($"Egress phase {egress} selected");
-    //         }
-
-    //         yield return null;
-    //     }
-    // }
-
-
     private int SetEgressPhase()
     {
         playerRole = FindObjectOfType<playerController>();
@@ -122,9 +102,6 @@ public class PhaseManager : MonoBehaviour
         return phase;
     }
 
-
-
-    
     private void FindKeyNPCs()
     {
         villainsInside = GameObject.FindGameObjectsWithTag("Villains");
