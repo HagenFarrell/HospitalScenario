@@ -123,38 +123,37 @@ public class AIMover : MonoBehaviour
         while (!isAtDestination)
             if (target != null)
             {
+                // Add random offset to update times to prevent synchronized updates
+                var jitter = Random.Range(0f, 0.5f);
+
+                // Calculate distance-based interval
                 var distance = Vector3.Distance(transform.position, target.position);
+                var updateInterval = pathUpdateInterval;
 
-                // Adjust update interval based on distance - longer distances get LESS frequent updates
-                var adaptiveInterval = pathUpdateInterval;
+                // Less frequent updates for longer distances
+                if (distance > 100f) updateInterval *= 4f;
+                else if (distance > 50f) updateInterval *= 2f;
 
-                if (distance > 100f)
-                {
-                    // For very long distances, use simplified path and much longer update interval
-                    path = pathfinder.FindLongDistancePath(transform.position, target.position);
-                    adaptiveInterval = pathUpdateInterval * 4f;
-                }
-                else if (distance > 50f)
-                {
-                    // For medium-long distances, standard path but longer update interval
-                    path = pathfinder.FindPath(transform.position, target.position);
-                    adaptiveInterval = pathUpdateInterval * 2f; // Less frequent updates
-                }
-                else
-                {
-                    // For nearby paths, use standard pathfinding with normal update interval
-                    path = pathfinder.FindPath(transform.position, target.position);
-                }
+                // Queue path request instead of calculating directly
+                PathRequestManager.RequestPath(transform.position, target.position, OnPathFound);
 
-                if (path != null && path.Count > 0) currentWaypoint = 0;
-
-                // Wait using the adaptive interval before calculating path again
-                yield return new WaitForSeconds(adaptiveInterval);
+                // Wait longer before requesting another path
+                yield return new WaitForSeconds(updateInterval + jitter);
             }
             else
             {
                 yield return new WaitForSeconds(pathUpdateInterval);
             }
+    }
+
+    // Callback when path is ready
+    private void OnPathFound(List<Vector3> newPath)
+    {
+        if (newPath != null && newPath.Count > 0)
+        {
+            path = newPath;
+            currentWaypoint = 0;
+        }
     }
 
     private Vector3 ComputeSteeringForce(Vector3 waypointTarget)
