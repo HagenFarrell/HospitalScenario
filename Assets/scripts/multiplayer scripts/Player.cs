@@ -34,6 +34,10 @@ public class Player : NetworkBehaviour
         Spectator,
         Instructor,
     }
+
+    public Roles getPlayerRole(){
+        return playerRole;
+    }
     
     [SyncVar(hook = nameof(OnRoleChanged))]
     [SerializeField] private Roles playerRole;
@@ -443,17 +447,17 @@ public class Player : NetworkBehaviour
 
     private void UndoLastAction()
     {
-        if (phaseManager == null) return;
+        // if (phaseManager == null) return;
 
-        foreach (var charObj in selectedChars)
-        {
-            Vector3 lastPosition = phaseManager.UndoAction(playerRole.ToString());
-            if (lastPosition != Vector3.zero)
-            {
-                Debug.Log($"Undo action for {charObj.name}. Moving to {lastPosition}");
-                charObj.transform.position = lastPosition;
-            }
-        }
+        // foreach (var charObj in selectedChars)
+        // {
+        //     Vector3 lastPosition = phaseManager.UndoAction(playerRole.ToString());
+        //     if (lastPosition != Vector3.zero)
+        //     {
+        //         Debug.Log($"Undo action for {charObj.name}. Moving to {lastPosition}");
+        //         charObj.transform.position = lastPosition;
+        //     }
+        // }
     }
     
     [Command(requiresAuthority = true)]

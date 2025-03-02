@@ -143,13 +143,15 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  moveSpeed: 5
-  verticalSpeed: 5
+  moveSpeed: 25
+  verticalSpeed: 10
   mouseSensitivity: 100
   smoothingSpeed: 0.1
   radeyePrefab: {fileID: 0}
   radeyeCircleTool: {fileID: 0}
   playerRole: 0
+  npcs: {fileID: 0}
+  phaseManager: {fileID: 0}
   playerCamera: {fileID: 7765352948610102445}
 --- !u!1001 &7069417236341257917
 PrefabInstance:

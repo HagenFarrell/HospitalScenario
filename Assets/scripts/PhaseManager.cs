@@ -7,7 +7,7 @@ public class PhaseManager : MonoBehaviour
 {
     private PhaseLinkedList phaseList;
     private PhaseMovementHelper npcMove;
-    private playerController playerRole;
+    private Player playerRole;
     private Coroutine currentPhaseCoroutine;
     private HostageTriggerArea hostageArea;
     
@@ -67,14 +67,19 @@ public class PhaseManager : MonoBehaviour
 
     private int SetEgressPhase()
     {
-        playerRole = FindObjectOfType<playerController>();
-        if (playerRole.getPlayerRole() == playerController.Roles.Instructor)
+        // Debug.Log("Awaiting Egress Selection...");
+        playerRole = FindObjectOfType<Player>();
+        if(playerRole == null){
+            Debug.LogError("playerRole null");
+        }
+        if (playerRole.getPlayerRole() == Player.Roles.Instructor)
         {
-            if (Input.GetKeyDown(KeyCode.A)) return TriggerEgressSelected(1);
-            if (Input.GetKeyDown(KeyCode.S)) return TriggerEgressSelected(2);
-            if (Input.GetKeyDown(KeyCode.D)) return TriggerEgressSelected(3);
-            if (Input.GetKeyDown(KeyCode.F)) return TriggerEgressSelected(4);
-            if (Input.GetKeyDown(KeyCode.G)) return TriggerEgressSelected(Random.Range(1, 5));
+            Debug.Log("Instructor! Hi!!!");
+            if (Input.GetKeyDown(KeyCode.Z)) return TriggerEgressSelected(1);
+            if (Input.GetKeyDown(KeyCode.X)) return TriggerEgressSelected(2);
+            if (Input.GetKeyDown(KeyCode.C)) return TriggerEgressSelected(3);
+            if (Input.GetKeyDown(KeyCode.V)) return TriggerEgressSelected(4);
+            if (Input.GetKeyDown(KeyCode.B)) return TriggerEgressSelected(Random.Range(1, 5));
 
             return 0;
         }
