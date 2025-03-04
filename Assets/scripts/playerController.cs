@@ -78,12 +78,12 @@ public class playerController : MonoBehaviour
 
             }
         }
-        if (Input.GetKeyDown(KeyCode.Alpha1)) cameraswitch.SwitchCamera(0);
-        if (Input.GetKeyDown(KeyCode.Alpha2)) cameraswitch.SwitchCamera(1);
-        if (Input.GetKeyDown(KeyCode.Alpha3)) cameraswitch.SwitchCamera(2);
-        if (Input.GetKeyDown(KeyCode.Alpha4)) cameraswitch.SwitchCamera(3);
-        if (Input.GetKeyDown(KeyCode.Alpha5)) cameraswitch.SwitchCamera(4);
-        if (Input.GetKeyDown(KeyCode.Alpha6)) cameraswitch.SwitchCamera(5);
+        if (Input.GetKeyDown(KeyCode.Alpha1) && playerRole != Roles.Instructor) cameraswitch.SwitchCamera(0);
+        if (Input.GetKeyDown(KeyCode.Alpha2) && playerRole != Roles.Instructor) cameraswitch.SwitchCamera(1);
+        if (Input.GetKeyDown(KeyCode.Alpha3) && playerRole != Roles.Instructor) cameraswitch.SwitchCamera(2);
+        if (Input.GetKeyDown(KeyCode.Alpha4) && playerRole != Roles.Instructor) cameraswitch.SwitchCamera(3);
+        if (Input.GetKeyDown(KeyCode.Alpha5) && playerRole != Roles.Instructor) cameraswitch.SwitchCamera(4);
+        if (Input.GetKeyDown(KeyCode.Alpha6) && playerRole != Roles.Instructor) cameraswitch.SwitchCamera(5);
 
         if (Input.GetKeyDown(KeyCode.Alpha0) && playerRole == Roles.Instructor) // Next phase
         {
