@@ -162,7 +162,7 @@ public class PhaseManager : MonoBehaviour
         AIMover mover = npc.GetComponent<AIMover>();
         if (mover != null)
         {
-            mover.StopAllMovement();
+            // mover.StopAllMovement();
         }
         
         // Optional: Change animation
@@ -342,7 +342,7 @@ public class PhaseManager : MonoBehaviour
             {
                 mover.enabled = true;
                 mover.SetTargetPosition(node.NPCPositions[npc.name]);
-                mover.StopAllMovement(); // Stop any ongoing movement
+                // mover.StopAllMovement(); // Stop any ongoing movement
             }
         }
     }

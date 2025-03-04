@@ -140,7 +140,7 @@ public class playerController : MonoBehaviour
 
     public void onButtonClick(Button button)
     {
-
+        Debug.Log("Button");
         string npcRole = "";
         switch (button.name)
         {
