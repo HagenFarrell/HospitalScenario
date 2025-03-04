@@ -15,6 +15,7 @@ public class Player : NetworkBehaviour
     private Vector3 currentVelocity = Vector3.zero; // Used for SmoothDamp
     private float yaw = 0f;
     private float pitch = 0f;
+    private GameObject playerObject;
 
 
     [SerializeField] private GameObject radeyePrefab; // Reference to the Radeye prefab
@@ -124,6 +125,7 @@ public class Player : NetworkBehaviour
         Button lawEnfButton = GameObject.Find("LawEnfButton")?.GetComponent<Button>();
         Button fireDeptButton = GameObject.Find("FireDeptButton")?.GetComponent<Button>();
         Button instructorButton = GameObject.Find("InstructorButton")?.GetComponent<Button>();
+        Button dispatchButton = GameObject.Find("DispatchButton")?.GetComponent<Button>();
 
         // Debug: Check if buttons are found
         if (lawEnfButton == null)
@@ -156,6 +158,11 @@ public class Player : NetworkBehaviour
         {
             instructorButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(instructorButton));
             Debug.Log("InstructorButton onClick assigned.");
+        }
+        if (dispatchButton != null)
+        {
+            dispatchButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(dispatchButton));
+            Debug.Log("dispatchButton onClick assigned.");
         }
     }
 
@@ -222,7 +229,8 @@ public class Player : NetworkBehaviour
         // Rotate the camera vertically (pitch)
         pitch -= mouseY;
         pitch = Mathf.Clamp(pitch, -90f, 90f); // Prevent flipping
-        playerCamera.transform.localRotation = Quaternion.Euler(pitch, yaw, 0f);
+        playerCamera.transform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+        //playerCamera.transform.parent.localRotation = Quaternion.Euler(0f, yaw, 0f);
     }
 
     private void HandleMovement()
@@ -233,7 +241,7 @@ public class Player : NetworkBehaviour
         float moveY = Input.GetAxis("YAxis");
 
         // Create movement vector relative to the camera's facing direction
-        moveDirection = (playerCamera.transform.right * moveX + playerCamera.transform.forward * moveZ + playerCamera.transform.up * moveY).normalized;
+        moveDirection = (transform.right * moveX + transform.forward * moveZ + transform.up * moveY).normalized;
         Vector3 movement = moveDirection * moveSpeed * Time.deltaTime;
 
         // Apply movement locally
