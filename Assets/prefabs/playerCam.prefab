@@ -124,7 +124,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sceneId: 0
-  _assetId: 2215783746
+  _assetId: 222432741
   serverOnly: 0
   visibility: 0
   hasSpawned: 0
@@ -145,13 +145,13 @@ MonoBehaviour:
   syncInterval: 0
   moveSpeed: 5
   verticalSpeed: 5
-  mouseSensitivity: 100
+  mouseSensitivity: 1000
   smoothingSpeed: 0.1
-  Radeye: {fileID: 0}
-  radeyePositions: []
-  radeyeRotations: []
+  radeyePrefab: {fileID: 0}
   radeyeCircleTool: {fileID: 0}
   playerRole: 0
+  npcs: {fileID: 0}
+  phaseManager: {fileID: 0}
   playerCamera: {fileID: 6829420301044115122}
 --- !u!1001 &6276178724653655202
 PrefabInstance:
