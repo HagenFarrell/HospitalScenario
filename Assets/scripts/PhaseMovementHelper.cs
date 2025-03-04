@@ -193,7 +193,7 @@ public class PhaseMovementHelper : MonoBehaviour
                     AIMover mover = npc.GetComponent<AIMover>();
                     if (mover != null)
                     {
-                        mover.StopAllMovement(); // Stop movement coroutine
+                        // mover.StopAllMovement(); // Stop movement coroutine
                         mover.enabled = false; // Disable movement script
                     }
 

@@ -123,7 +123,7 @@ public class HostageTriggerArea : MonoBehaviour
         if (mover != null)
         {
             // Modify NPC's behavior for hostages
-            mover.StopAllMovement();
+            // mover.StopAllMovement();
             mover.SetTargetPosition(transform.position);
         }
         
