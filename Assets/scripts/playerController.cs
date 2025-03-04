@@ -66,6 +66,7 @@ public class playerController : MonoBehaviour
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
+                
                 GameObject hitObj = hit.collider.gameObject;
                 if (hitObj.tag == playerRole.ToString() || (playerRole == Roles.Instructor && hitObj.tag != "Untagged"))
                 {
@@ -77,10 +78,12 @@ public class playerController : MonoBehaviour
 
             }
         }
-        if (Input.GetKeyDown(KeyCode.Alpha1)) cameraswitch.SwitchCamera(0);
-        if (Input.GetKeyDown(KeyCode.Alpha2)) cameraswitch.SwitchCamera(1);
-        if (Input.GetKeyDown(KeyCode.Alpha3)) cameraswitch.SwitchCamera(2);
-        if (Input.GetKeyDown(KeyCode.Alpha4)) cameraswitch.SwitchCamera(3);
+        if (Input.GetKeyDown(KeyCode.Alpha1) && playerRole != Roles.Instructor) cameraswitch.SwitchCamera(0);
+        if (Input.GetKeyDown(KeyCode.Alpha2) && playerRole != Roles.Instructor) cameraswitch.SwitchCamera(1);
+        if (Input.GetKeyDown(KeyCode.Alpha3) && playerRole != Roles.Instructor) cameraswitch.SwitchCamera(2);
+        if (Input.GetKeyDown(KeyCode.Alpha4) && playerRole != Roles.Instructor) cameraswitch.SwitchCamera(3);
+        if (Input.GetKeyDown(KeyCode.Alpha5) && playerRole != Roles.Instructor) cameraswitch.SwitchCamera(4);
+        if (Input.GetKeyDown(KeyCode.Alpha6) && playerRole != Roles.Instructor) cameraswitch.SwitchCamera(5);
 
         if (Input.GetKeyDown(KeyCode.Alpha0) && playerRole == Roles.Instructor) // Next phase
         {
@@ -137,7 +140,7 @@ public class playerController : MonoBehaviour
 
     public void onButtonClick(Button button)
     {
-
+        Debug.Log("Button");
         string npcRole = "";
         switch (button.name)
         {
@@ -165,17 +168,21 @@ public class playerController : MonoBehaviour
 
     }
 
+    public Roles getPlayerRole(){
+        return playerRole;
+    }
+
     private void UndoLastAction()
     {
-        foreach (var charObj in selectedChars)
-        {
-            Vector3 lastPosition = phaseManager.UndoAction(playerRole.ToString());
-            if (lastPosition != Vector3.zero)
-            {
-                Debug.Log($"Undo action for {charObj.name}. Moving to {lastPosition}");
-                charObj.transform.position = lastPosition;
-            }
-        }
+        // foreach (var charObj in selectedChars)
+        // {
+        //     Vector3 lastPosition = phaseManager.UndoAction(playerRole.ToString());
+        //     if (lastPosition != Vector3.zero)
+        //     {
+        //         Debug.Log($"Undo action for {charObj.name}. Moving to {lastPosition}");
+        //         charObj.transform.position = lastPosition;
+        //     }
+        // }
     }
 
 }

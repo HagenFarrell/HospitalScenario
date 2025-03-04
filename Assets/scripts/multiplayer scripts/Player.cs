@@ -15,6 +15,7 @@ public class Player : NetworkBehaviour
     private Vector3 currentVelocity = Vector3.zero; // Used for SmoothDamp
     private float yaw = 0f;
     private float pitch = 0f;
+    private GameObject playerObject;
 
 
     [SerializeField] private GameObject radeyePrefab; // Reference to the Radeye prefab
@@ -33,6 +34,10 @@ public class Player : NetworkBehaviour
         Dispatch,
         Spectator,
         Instructor,
+    }
+
+    public Roles getPlayerRole(){
+        return playerRole;
     }
     
     [SyncVar(hook = nameof(OnRoleChanged))]
@@ -120,6 +125,7 @@ public class Player : NetworkBehaviour
         Button lawEnfButton = GameObject.Find("LawEnfButton")?.GetComponent<Button>();
         Button fireDeptButton = GameObject.Find("FireDeptButton")?.GetComponent<Button>();
         Button instructorButton = GameObject.Find("InstructorButton")?.GetComponent<Button>();
+        Button dispatchButton = GameObject.Find("DispatchButton")?.GetComponent<Button>();
 
         // Debug: Check if buttons are found
         if (lawEnfButton == null)
@@ -152,6 +158,11 @@ public class Player : NetworkBehaviour
         {
             instructorButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(instructorButton));
             Debug.Log("InstructorButton onClick assigned.");
+        }
+        if (dispatchButton != null)
+        {
+            dispatchButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(dispatchButton));
+            Debug.Log("dispatchButton onClick assigned.");
         }
     }
 
@@ -218,7 +229,8 @@ public class Player : NetworkBehaviour
         // Rotate the camera vertically (pitch)
         pitch -= mouseY;
         pitch = Mathf.Clamp(pitch, -90f, 90f); // Prevent flipping
-        playerCamera.transform.localRotation = Quaternion.Euler(pitch, yaw, 0f);
+        playerCamera.transform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+        //playerCamera.transform.parent.localRotation = Quaternion.Euler(0f, yaw, 0f);
     }
 
     private void HandleMovement()
@@ -226,9 +238,10 @@ public class Player : NetworkBehaviour
         // Get input for movement
         float moveX = Input.GetAxis("Horizontal"); // Strafe left/right
         float moveZ = Input.GetAxis("Vertical");   // Move forward/backward
+        float moveY = Input.GetAxis("YAxis");
 
         // Create movement vector relative to the camera's facing direction
-        moveDirection = (playerCamera.transform.right * moveX + playerCamera.transform.forward * moveZ).normalized;
+        moveDirection = (transform.right * moveX + transform.forward * moveZ + transform.up * moveY).normalized;
         Vector3 movement = moveDirection * moveSpeed * Time.deltaTime;
 
         // Apply movement locally
@@ -443,17 +456,17 @@ public class Player : NetworkBehaviour
 
     private void UndoLastAction()
     {
-        if (phaseManager == null) return;
+        // if (phaseManager == null) return;
 
-        foreach (var charObj in selectedChars)
-        {
-            Vector3 lastPosition = phaseManager.UndoAction(playerRole.ToString());
-            if (lastPosition != Vector3.zero)
-            {
-                Debug.Log($"Undo action for {charObj.name}. Moving to {lastPosition}");
-                charObj.transform.position = lastPosition;
-            }
-        }
+        // foreach (var charObj in selectedChars)
+        // {
+        //     Vector3 lastPosition = phaseManager.UndoAction(playerRole.ToString());
+        //     if (lastPosition != Vector3.zero)
+        //     {
+        //         Debug.Log($"Undo action for {charObj.name}. Moving to {lastPosition}");
+        //         charObj.transform.position = lastPosition;
+        //     }
+        // }
     }
     
     [Command(requiresAuthority = true)]

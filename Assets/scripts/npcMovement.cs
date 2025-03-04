@@ -1,27 +1,27 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static GamePhase;
 
 public class npcMovement : MonoBehaviour
 {
-    private Camera mainCamera;
-
     [SerializeField] private float stoppingRadius = 2f;
     [SerializeField] private float rowSpacing = 4f;
     [SerializeField] private float colSpacing = 2f;
     [SerializeField] private float formationUpdateInterval = 10f;
 
+    public DynamicNavMesh dynamicNavMesh;
+
     //private bool isMovingSequence = false;
 
     // Store references to all active NPCs
-    private Dictionary<GameObject, AIMover> npcAgents = new Dictionary<GameObject, AIMover>();
-    private Dictionary<GameObject, Animator> npcAnimators = new Dictionary<GameObject, Animator>();
-    private Dictionary<GameObject, bool> npcDestinationStatus = new Dictionary<GameObject, bool>();
+    private readonly Dictionary<GameObject, AIMover> npcAgents = new Dictionary<GameObject, AIMover>();
+    private readonly Dictionary<GameObject, Animator> npcAnimators = new Dictionary<GameObject, Animator>();
+    private readonly Dictionary<GameObject, bool> npcDestinationStatus = new Dictionary<GameObject, bool>();
     private Coroutine formationUpdateCoroutine;
+    private Camera mainCamera;
 
-    public DynamicNavMesh dynamicNavMesh;
-
-    void Start()
+    private void Start()
     {
         //mainCamera = Camera.main;
     }
@@ -38,11 +38,11 @@ public class npcMovement : MonoBehaviour
         Debug.Log($"NPCs length = {npcs.Length}");
         if (npcs.Length == 0) return;
 
-        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit))
+        var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out var hit))
         {
             // We need to create a commander, this way we can have the group offset from the commanders position.
-            AIMover commanderAI = npcs[0].GetComponent<AIMover>();
+            var commanderAI = npcs[0].GetComponent<AIMover>();
 
             // Early exit to prevent crashing.
             if (commanderAI == null)
@@ -56,21 +56,18 @@ public class npcMovement : MonoBehaviour
             npcDestinationStatus.Clear();
             npcAnimators.Clear();
 
-            foreach (GameObject npc in npcs)
+            foreach (var npc in npcs)
             {
                 // Grab the AIMover and Animator components for each NPC.
-                AIMover mover = npc.GetComponent<AIMover>();
-                Animator animator = npc.GetComponent<Animator>();
+                var mover = npc.GetComponent<AIMover>();
+                var animator = npc.GetComponent<Animator>();
 
                 if (mover != null)
                 {
                     npcAgents[npc] = mover;
                     npcDestinationStatus[npc] = false;
 
-                    if (animator != null)
-                    {
-                        npcAnimators[npc] = animator;
-                    }
+                    if (animator != null) npcAnimators[npc] = animator;
                 }
             }
 
@@ -78,10 +75,7 @@ public class npcMovement : MonoBehaviour
             StartCoroutine(commanderAI.UpdatePath());
 
             // If a formation corutine is already running, halt.
-            if (formationUpdateCoroutine != null)
-            {
-                StopCoroutine(formationUpdateCoroutine);
-            }
+            if (formationUpdateCoroutine != null) StopCoroutine(formationUpdateCoroutine);
 
             formationUpdateCoroutine = StartCoroutine(updateFormationPositions(npcs));
         }
@@ -91,43 +85,37 @@ public class npcMovement : MonoBehaviour
     {
         while (!allNpcsAtDestination())
         {
-            AIMover commanderAI = npcs[0].GetComponent<AIMover>();
+            var commanderAI = npcs[0].GetComponent<AIMover>();
 
             if (commanderAI == null) yield break;
 
-            Vector3 commanderPosition = commanderAI.transform.position;
-            Vector3 commanderForward = commanderAI.transform.forward;
+            var commanderPosition = commanderAI.transform.position;
+            var commanderForward = commanderAI.transform.forward;
 
             // Update all NPCs including the commander
-            for (int i = 0; i < npcs.Length; i++)
+            for (var i = 0; i < npcs.Length; i++)
             {
-                GameObject npc = npcs[i];
-                AIMover agent = npc.GetComponent<AIMover>();
+                var npc = npcs[i];
+                var agent = npc.GetComponent<AIMover>();
 
                 if (agent != null)
                 {
                     // Skip commander.
                     if (i == 0) continue;
 
-                    else
-                    {
-                        Vector3 formationSlot = ComputeTriangleSlot(
-                            i,
-                            commanderPosition,
-                            commanderForward,
-                            rowSpacing,
-                            colSpacing
-                        );
+                    var formationSlot = ComputeTriangleSlot(
+                        i,
+                        commanderPosition,
+                        commanderForward,
+                        rowSpacing,
+                        colSpacing
+                    );
 
-                        // Only update if the NPC needs to move
-                        if (Vector3.Distance(npc.transform.position, formationSlot) > 0.5f)
-                        {
-                            agent.SetTargetPosition(formationSlot);
-                            if (!agent.isAtDestination)
-                            {
-                                StartCoroutine(agent.UpdatePath());
-                            }
-                        }
+                    // Only update if the NPC needs to move
+                    if (Vector3.Distance(npc.transform.position, formationSlot) > 0.5f)
+                    {
+                        agent.SetTargetPosition(formationSlot);
+                        if (!agent.isAtDestination) StartCoroutine(agent.UpdatePath());
                     }
                 }
             }
@@ -140,9 +128,8 @@ public class npcMovement : MonoBehaviour
     {
         // If any npcs are not at the final destination, return false; otherwise true.
         foreach (var status in npcDestinationStatus.Values)
-        {
-            if (!status) return false;
-        }
+            if (!status)
+                return false;
 
         return true;
     }
@@ -155,27 +142,27 @@ public class npcMovement : MonoBehaviour
      * rowSpacing: distance between sucessive rows.
      * colSpacing: horizontal spacing between each NPC in a row.
      */
-    Vector3 ComputeTriangleSlot(int index, Vector3 apex, Vector3 forward, float rowSpacing, float colSpacing)
+    private Vector3 ComputeTriangleSlot(int index, Vector3 apex, Vector3 forward, float rowSpacing, float colSpacing)
     {
-        int row = 0;
-        int count = 0;
+        var row = 0;
+        var count = 0;
 
         while (true)
         {
-            int rowCount = row + 1;
+            var rowCount = row + 1;
             if (index < count + rowCount)
             {
-                int col = index - count;
+                var col = index - count;
 
                 // The position for this row, from the apex of the formation backwards.
-                Vector3 rowPosition = apex - forward * (rowSpacing * row);
+                var rowPosition = apex - forward * (rowSpacing * row);
 
-                Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
+                var right = Vector3.Cross(Vector3.up, forward).normalized;
 
                 // Centering the row horizontally.
                 // In order to grab the center of the rowCount NPC we have to do (rowCount - 1)/2.0f <-- middle position.
-                float centerOffset = (rowCount - 1) / 2.0f;
-                float horizontalOffset = (col - centerOffset) * colSpacing;
+                var centerOffset = (rowCount - 1) / 2.0f;
+                var horizontalOffset = (col - centerOffset) * colSpacing;
 
                 return rowPosition + right * horizontalOffset;
             }

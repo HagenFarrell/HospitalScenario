@@ -42,9 +42,9 @@ public class cameraSwitch : MonoBehaviour
     void Update()
     {
         // Switch cameras based on key press
-        if (Input.GetKeyDown(KeyCode.Alpha1)) SwitchCamera(0); // Press "1" for camera 1
-        if (Input.GetKeyDown(KeyCode.Alpha2)) SwitchCamera(1); // Press "2" for camera 2
-        if (Input.GetKeyDown(KeyCode.Alpha3)) SwitchCamera(2); // Press "3" for camera 3
+        // if (Input.GetKeyDown(KeyCode.Alpha1)) SwitchCamera(0); // Press "1" for camera 1
+        // if (Input.GetKeyDown(KeyCode.Alpha2)) SwitchCamera(1); // Press "2" for camera 2
+        // if (Input.GetKeyDown(KeyCode.Alpha3)) SwitchCamera(2); // Press "3" for camera 3
 
         if (Radeye.activeInHierarchy && radeyeCircleTool != null)
         {

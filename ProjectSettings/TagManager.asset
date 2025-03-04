@@ -3,7 +3,17 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - FireDepartment
+  - LawEnforcement
+  - Civilians
+  - Receptionist
+  - Medicals
+  - Villains
+  - PhysicianHostage
+  - Hostages
+  - OutsideVillains
+  - SuperVillain
   layers:
   - Default
   - TransparentFX

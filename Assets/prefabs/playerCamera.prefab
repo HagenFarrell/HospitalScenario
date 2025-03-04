@@ -109,9 +109,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0
-  moveSpeed: 5
-  verticalSpeed: 5
-  mouseSensitivity: 100
+  moveSpeed: 25
+  verticalSpeed: 10
+  mouseSensitivity: 1000
   smoothingSpeed: 0.1
   radeyePrefab: {fileID: 0}
   radeyeCircleTool: {fileID: 0}
