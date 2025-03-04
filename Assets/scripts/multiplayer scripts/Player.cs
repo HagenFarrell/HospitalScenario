@@ -433,6 +433,8 @@ public class Player : NetworkBehaviour
             case "InstructorButton":
                 npcRole = "Instructor";
                 playerRole = Roles.Instructor;
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
                 break;
             default:
                 Debug.LogWarning($"Unknown button clicked: {button.name}");
