@@ -46,7 +46,7 @@ public class DynamicNavMesh : MonoBehaviour
                     }
                     else
                     {
-                        // Otherwise, assume it’s a floor.
+                        // Otherwise, assume itï¿½s a floor.
                         walkable = true;
                     }
                 }
