@@ -74,7 +74,7 @@ public class PhaseManager : MonoBehaviour
         }
         if (playerRole.getPlayerRole() == Player.Roles.Instructor)
         {
-            Debug.Log("Instructor! Hi!!!");
+            // Debug.Log("Instructor! Hi!!!");
             if (Input.GetKeyDown(KeyCode.Z)) return TriggerEgressSelected(1);
             if (Input.GetKeyDown(KeyCode.X)) return TriggerEgressSelected(2);
             if (Input.GetKeyDown(KeyCode.C)) return TriggerEgressSelected(3);

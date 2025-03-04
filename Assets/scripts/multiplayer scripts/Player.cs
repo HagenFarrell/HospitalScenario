@@ -230,9 +230,10 @@ public class Player : NetworkBehaviour
         // Get input for movement
         float moveX = Input.GetAxis("Horizontal"); // Strafe left/right
         float moveZ = Input.GetAxis("Vertical");   // Move forward/backward
+        float moveY = Input.GetAxis("YAxis");
 
         // Create movement vector relative to the camera's facing direction
-        moveDirection = (playerCamera.transform.right * moveX + playerCamera.transform.forward * moveZ).normalized;
+        moveDirection = (playerCamera.transform.right * moveX + playerCamera.transform.forward * moveZ + playerCamera.transform.up * moveY).normalized;
         Vector3 movement = moveDirection * moveSpeed * Time.deltaTime;
 
         // Apply movement locally
