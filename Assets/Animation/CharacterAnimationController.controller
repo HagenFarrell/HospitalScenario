@@ -498,9 +498,6 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 1
-    m_ConditionEvent: Kill
-    m_EventTreshold: 0
   - m_ConditionMode: 6
     m_ConditionEvent: KillVariable
     m_EventTreshold: 0
@@ -789,9 +786,6 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 1
-    m_ConditionEvent: Kill
-    m_EventTreshold: 0
   - m_ConditionMode: 6
     m_ConditionEvent: KillVariable
     m_EventTreshold: 1
@@ -1338,9 +1332,6 @@ AnimatorStateTransition:
   m_PrefabAsset: {fileID: 0}
   m_Name: 
   m_Conditions:
-  - m_ConditionMode: 1
-    m_ConditionEvent: Kill
-    m_EventTreshold: 0
   - m_ConditionMode: 6
     m_ConditionEvent: KillVariable
     m_EventTreshold: 2
