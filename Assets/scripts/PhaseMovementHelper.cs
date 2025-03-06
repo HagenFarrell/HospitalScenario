@@ -38,6 +38,15 @@ public class PhaseMovementHelper : MonoBehaviour
         // Cache NPCs at the start
         CacheNPCs();
 
+        // Wait until navmesh is ready before starting movement
+        while (!IsNavMeshReady())
+        {
+            Debug.Log("Waiting for NavMesh to initialize...");
+            yield return new WaitForSeconds(1f);
+        }
+        
+        Debug.Log("NavMesh is ready! Starting NPC movement.");
+
         while (current.GetCurrentPhase() == GamePhase.Phase1)
         {
             // Clear previous queue
@@ -270,6 +279,19 @@ public class PhaseMovementHelper : MonoBehaviour
             // Yield to avoid overloading frame updates
             yield return null;
         }
+    }
+
+    private bool IsNavMeshReady()
+    {
+        Pathfinder pathfinder = FindObjectOfType<Pathfinder>();
+        if (pathfinder == null)
+            return false;
+            
+        DynamicNavMesh navMesh = FindObjectOfType<DynamicNavMesh>();
+        if (navMesh == null || navMesh.Grid == null)
+            return false;
+            
+        return true;
     }
 
 }
