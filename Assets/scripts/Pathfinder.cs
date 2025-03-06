@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -93,6 +94,7 @@ public class Pathfinder : MonoBehaviour
 
     public List<Vector3> FindLongDistancePath(Vector3 startPos, Vector3 targetPos)
     {
+        Debug.Log("initializing teleportation to: " + targetPos);
         // For long distances, create an extremely simple direct path
         var simplePath = new List<Vector3>();
 
@@ -135,8 +137,9 @@ public class Pathfinder : MonoBehaviour
         // Check if start position is valid
         if (startNode == null || !startNode.IsWalkable)
         {
-            // Debug.Log("Start position is unwalkable - path impossible");
-            return null;
+            Debug.LogError("Start position is unwalkable - path impossible from " + startPos + " or [" + startNode?.GridX + ", " + startNode?.GridY + "]");
+            Vector3 temp = returnToSafety(GetBigNeighbors(startNode)).WorldPosition;
+            return FindLongDistancePath(startPos, temp);
         }
         
         // Check if target is the same as start (no need to pathfind)
@@ -167,8 +170,8 @@ public class Pathfinder : MonoBehaviour
             // Check if we've exceeded maximum iterations
             if (iterations > MAX_ITERATIONS)
             {
-                Debug.Log($"Pathfinding exceeded {MAX_ITERATIONS} iterations - terminating search");
-                return FindLongDistancePath(startPos, targetPos); // Fallback to simple path
+                // Debug.LogWarning($"Pathfinding exceeded {MAX_ITERATIONS} iterations - terminating search");
+                return null; // Fallback to simple path
             }
             
             // Get node with lowest FCost
@@ -234,7 +237,7 @@ public class Pathfinder : MonoBehaviour
             if (openSet.Count > navMesh.GridSizeX * navMesh.GridSizeY / 2)
             {
                 Debug.Log("Open set too large - likely impossible path");
-                return FindLongDistancePath(startPos, targetPos); // Fallback to simple path
+                return null; // Fallback to simple path
             }
         }
 
@@ -276,6 +279,36 @@ public class Pathfinder : MonoBehaviour
         }
 
         return neighbors;
+    }
+
+    private List<GridNode> GetBigNeighbors(GridNode node)
+    {
+        var neighbors = new List<GridNode>();
+        for (var x = -3; x <= 3; x++)
+        for (var y = -3; y <= 3; y++)
+        {
+            if (x == 0 && y == 0) continue; // Skip self
+
+            var checkX = node.GridX + x;
+            var checkY = node.GridY + y;
+
+            if (checkX >= 0 && checkX < navMesh.GridSizeX &&
+                checkY >= 0 && checkY < navMesh.GridSizeY)
+                neighbors.Add(navMesh.Grid[checkX, checkY]);
+        }
+
+        return neighbors;
+    }
+
+    private GridNode returnToSafety(List<GridNode> neighbors){
+        // Debug.LogWarning("Returning to safety");
+        foreach(GridNode node in neighbors){
+            if(node.IsWalkable) {
+                Debug.LogWarning("returning to valid node: " + node.WorldPosition + "or [" + node.GridX + ", " + node.GridY + "]");
+                return node;
+            }
+        }
+        return null;
     }
 
     private bool isNearWall(GridNode node)

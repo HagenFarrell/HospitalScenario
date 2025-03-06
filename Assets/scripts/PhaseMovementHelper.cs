@@ -5,12 +5,12 @@ using System.Collections;
 
 public class PhaseMovementHelper : MonoBehaviour
 {
-    [SerializeField] private Vector3 randomMovementArea = new Vector3(20f, 0f, 20f); // Define the area size
-    [SerializeField] private float minMoveDistance = 5f; // Minimum distance to move
-    [SerializeField] private float maxMoveDistance = 15f; // Maximum distance to move
-    [SerializeField] private float randomMovementInterval = 3f; // Time between random movements
+    [SerializeField] private Vector3 randomMovementArea = new Vector3(200f, 0f, 200f); // Define the area size
+    [SerializeField] private float minMoveDistance = 50f; // Minimum distance to move
+    [SerializeField] private float maxMoveDistance = 100f; // Maximum distance to move
+    [SerializeField] private float randomMovementInterval = 1f; // Time between random movements
     [SerializeField] private LayerMask groundLayer; // Layer to raycast against to find valid positions
-    [SerializeField] private int npcsToMovePerFrame = 3; // Amount of npcs to move per frame 
+    [SerializeField] private int npcsToMovePerFrame = 5; // Amount of npcs to move per frame 
 
     private readonly Queue<GameObject> npcUpdateQueue = new Queue<GameObject>();
     private bool isProcessingUpdates = false;
