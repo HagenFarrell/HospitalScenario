@@ -78,7 +78,7 @@ public class HostageTriggerArea : MonoBehaviour
             return;
 
         // Check if this is a Civilian or Medical
-        if ((npc.CompareTag("Civilians") || npc.CompareTag("Medicals")) && !convertedNPCs.Contains(npc.gameObject))
+        if ((npc.CompareTag("Civilians") || npc.CompareTag("Medicals") || npc.CompareTag("Receptionist")) && !convertedNPCs.Contains(npc.gameObject))
         {
             ConvertToHostage(npc.gameObject);
         }
@@ -126,6 +126,10 @@ public class HostageTriggerArea : MonoBehaviour
             // mover.StopAllMovement();
             mover.SetRunning(false);
             mover.SetTargetPosition(transform.position);
+        } 
+        Animator animator = npc.GetComponent<Animator>();
+        if(animator != null){
+            animator.SetBool("IsThreatPresent", true);
         }
         
         // Phase 2: NPCs who are now hostages should lie down

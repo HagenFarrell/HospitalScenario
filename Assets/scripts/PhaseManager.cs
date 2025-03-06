@@ -375,7 +375,10 @@ public class PhaseManager : MonoBehaviour
                 }
                 
                 // Villains pull out guns
-                Debug.Log("Villains pull out long guns.");
+                foreach(GameObject villain in villains){
+                    GameObject gun = villain.transform.GetChild(2).gameObject;
+                    gun.SetActive(true);
+                }
                 
                 // Receptionist hits duress alarm
                 if (receptionist != null) {
@@ -436,10 +439,12 @@ public class PhaseManager : MonoBehaviour
                     // Move hostage to gamma knife
                     NPCPosition = new Vector3(-15.6f, 0, 65f);
                     npcMove.MoveNPCToTarget(physicianHostage, NPCPosition);
+                    Animator animator = physicianHostage.GetComponent<Animator>();
+                    if(animator != null) animator.SetBool("IsThreatPresent", false);
                     
                     Debug.Log($"Two villains are taking {physicianHostage.name} to the gamma knife room");
                     // Start the work on the gamma knife
-                    StartCoroutine(WorkOnGammaKnife(physicianHostage, NPCPosition));
+                    currentPhaseCoroutine = StartCoroutine(WorkOnGammaKnife(physicianHostage, NPCPosition));
                 }
                 
                 // Outside villains move inside to reinforce
@@ -496,6 +501,10 @@ public class PhaseManager : MonoBehaviour
                 // VFD pulls up
                 // source goes into canister into backpack
                 // all adversaries and physicianhostage group up & get ready to leave
+                if (currentPhaseCoroutine != null) {
+                    StopCoroutine(currentPhaseCoroutine);
+                    currentPhaseCoroutine = null;
+                }
                 Vector3 youMoveHere = new Vector3(0f, 0, 113f);
                 float radius = 3.5f;
                 npcMove.MoveNPCToTarget(physicianHostage, youMoveHere);
@@ -575,19 +584,19 @@ public class PhaseManager : MonoBehaviour
         return new Vector3(x, center.y, z);
     }
     
-    private IEnumerator WorkOnGammaKnife(GameObject villain, Vector3 targetposition)
+    private IEnumerator WorkOnGammaKnife(GameObject npc, Vector3 targetposition)
     {
         // Debug.Log("Started WorkOnGammaKnife Coroutine");
 
-        while (Vector3.Distance(villain.transform.position, targetposition) > 1f)
+        while (Vector3.Distance(npc.transform.position, targetposition) > 1f)
         {
-            // Debug.Log($"Waiting... Current Pos: {villain.transform.position}, Target: {targetposition}");
+            // Debug.Log($"Waiting... Current Pos: {npc.transform.position}, Target: {targetposition}");
             yield return new WaitForSeconds(3f);
         }
 
         Debug.Log("The villain is working on the gamma knife source!");
         
-        Animator animator = villain.GetComponent<Animator>();
+        Animator animator = npc.GetComponent<Animator>();
         if (animator != null)
         {
             // Debug.Log("Animator found! Changing states.");

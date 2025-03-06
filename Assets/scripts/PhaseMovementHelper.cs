@@ -169,67 +169,15 @@ public class PhaseMovementHelper : MonoBehaviour
         isProcessingUpdates = false;
     }
 
-    // Coroutine to handle random civilian movement
-    // public IEnumerator MoveCiviliansRandomly(GamePhase currentPhase)
-    // {
-    //     PhaseManager current = FindObjectOfType<PhaseManager>();
-    //     if (current == null)
-    //     {
-    //         Debug.LogError("PhaseManager not found in scene!");
-    //         yield return null;
-    //     }
-    //     while (current.GetCurrentPhase() == GamePhase.Phase1) // Keep moving civilians until coroutine is stopped
-    //     {
-    //         // Find all civilian NPCs
-    //         GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
-    //         GameObject[] hostages = GameObject.FindGameObjectsWithTag("Hostages");
-    //         List<GameObject> MoveList = new List<GameObject>(GameObject.FindGameObjectsWithTag("Civilians"));
-
-    //         // I want civilians to be more active, etc. etc.
-    //         int rand = UnityEngine.Random.Range(0, 3);
-    //         if(rand == 0){
-    //             // Debug.Log("moving medicals and hostages");
-    //             MoveList.AddRange(medicals);
-    //             MoveList.AddRange(hostages);
-    //         } else if(rand <= 1) {
-    //             // Debug.Log("Moving medicals");
-    //             MoveList.AddRange(medicals);
-    //         } 
-    //         // else Debug.Log("Moving all");
-
-    //         // Queue up NPCs for batch processing
-    //         npcUpdateQueue.Clear();
-    //         foreach (GameObject npc in MoveList)
-    //         {
-    //             // GameObject VisualRing = npc.transform.GetChild(2).gameObject;
-    //             // VisualRing.SetActive(true);
-    //             // Vector3 newPosition = VisualRing.transform.localPosition;
-    //             // newPosition.y = 1f; 
-    //             // VisualRing.transform.localPosition = newPosition;
-    //             if (npc != null && npc.activeInHierarchy)
-    //             {
-    //                 npcUpdateQueue.Enqueue(npc);
-    //             }
-    //         }
-
-    //         // Process NPCs in smaller batches
-    //         if (!isProcessingUpdates && npcUpdateQueue.Count > 0)
-    //         {
-    //             StartCoroutine(ProcessNPCUpdates());
-    //         }
-
-    //         // Wait before moving NPCs again
-    //         yield return new WaitForSeconds(randomMovementInterval + Random.Range(-1f, 1f)); // Add slight variation
-    //     }
-    // }
-
     public IEnumerator MoveToEdgeAndDespawn()
     {
         GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
         GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
+        GameObject[] receptionist = GameObject.FindGameObjectsWithTag("Receptionist");
 
         List<GameObject> MoveList = new List<GameObject>(civilians);
         MoveList.AddRange(medicals);
+        MoveList.AddRange(receptionist);
 
         Dictionary<GameObject, Vector3> targetPositions = new Dictionary<GameObject, Vector3>();
 
