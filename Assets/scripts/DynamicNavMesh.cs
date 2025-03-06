@@ -46,7 +46,7 @@ public class DynamicNavMesh : MonoBehaviour
                     }
                     else
                     {
-                        // Otherwise, assume it’s a floor.
+                        // Otherwise, assume itï¿½s a floor.
                         walkable = true;
                     }
                 }
@@ -70,7 +70,9 @@ public class DynamicNavMesh : MonoBehaviour
         // Debug logs to check alignment
         //Debug.Log($"World Position: {worldPosition}");
         //Debug.Log($"Grid Index: ({x}, {y})");
-        //Debug.Log($"Node Walkable: {grid[x, y].IsWalkable}");
+        if(!grid[x, y].IsWalkable){
+            // Debug.LogError($"Node Walkable? {grid[x, y].IsWalkable}");
+        }
 
         return grid[x, y];
     }
