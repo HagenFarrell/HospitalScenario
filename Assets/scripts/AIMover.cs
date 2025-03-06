@@ -9,7 +9,7 @@ public class AIMover : MonoBehaviour
     // ---- Variables for the BOIDS algorithm. ----
     [SerializeField] private float speed = 4f;
     [SerializeField] private float maxSpeed = 5f;
-    [SerializeField] private float maxForce = 4f;
+    [SerializeField] private float maxForce = 100f;
     [SerializeField] private float slowingRadius = 2f;
     [SerializeField] private float seperationRadius = 1f;
     [SerializeField] private float lookAheadDistance = 0.3f;
