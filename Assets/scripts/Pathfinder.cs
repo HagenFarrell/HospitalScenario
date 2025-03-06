@@ -154,7 +154,7 @@ public class Pathfinder : MonoBehaviour
         var closedSet = new HashSet<GridNode>();
         
         // Set maximum iterations to prevent infinite loops
-        const int MAX_ITERATIONS = 1000;
+        const int MAX_ITERATIONS = 5000;
         int iterations = 0;
 
         startNode.GCost = 0; // Reset start node's cost
@@ -165,12 +165,12 @@ public class Pathfinder : MonoBehaviour
 
         while (openSet.Count > 0)
         {
-            iterations++;
+            // iterations++;
             
-            // Check if we've exceeded maximum iterations
+            // // Check if we've exceeded maximum iterations
             // if (iterations > MAX_ITERATIONS)
             // {
-            //     // Debug.LogWarning($"Pathfinding exceeded {MAX_ITERATIONS} iterations - terminating search");
+            //     Debug.LogWarning($"Pathfinding exceeded {MAX_ITERATIONS} iterations - terminating search (feel free to disable if causing issues)");
             //     return null; // Fallback to simple path
             // }
             
@@ -234,11 +234,11 @@ public class Pathfinder : MonoBehaviour
             }
             
             // Check if open set is too large (another sign of a difficult/impossible path)
-            // if (openSet.Count > navMesh.GridSizeX * navMesh.GridSizeY / 2)
-            // {
-            //     Debug.Log("Open set too large - likely impossible path");
-            //     return null; // Fallback to simple path
-            // }
+            if (openSet.Count > navMesh.GridSizeX * navMesh.GridSizeY / 2)
+            {
+                Debug.Log("Open set too large - likely impossible path");
+                return null; // Fallback to simple path
+            }
         }
 
         Debug.Log("No path found after exhaustive search");
