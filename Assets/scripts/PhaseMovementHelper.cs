@@ -227,6 +227,10 @@ public class PhaseMovementHelper : MonoBehaviour
         // Set target positions for all NPCs
         foreach (GameObject npc in MoveList)
         {
+            Animator animator = npc.GetComponent<Animator>();
+            animator.SetBool("IsWalking", false);
+            animator.SetBool("IsRunning", true);
+
             Vector3 targetPosition = GetEdgePosition();
             targetPositions[npc] = targetPosition;
             Rigidbody rb = npc.GetComponent<Rigidbody>();

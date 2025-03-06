@@ -24,7 +24,6 @@ public class PhaseManager : MonoBehaviour
     // private GameObject superVillain;
     private GameObject receptionist;
     private int egress;
-    private bool egressPhaseSelected = false;
     public delegate void EgressSelectedHandler(int egressPhase);
     public static event EgressSelectedHandler OnEgressSelected;
 
@@ -393,7 +392,7 @@ public class PhaseManager : MonoBehaviour
                     currentPhaseCoroutine = null;
                 }
                 
-                // Select a medical NPC to be the physician hostage
+                // Select a medical NPC to be the physician hostage (thats it for this phase lol)
                 GameObject[] hostages = GameObject.FindGameObjectsWithTag("Hostages");
                 if (hostages.Length > 0) {
                     foreach (GameObject hostage in hostages) {
@@ -435,10 +434,12 @@ public class PhaseManager : MonoBehaviour
                     npcMove.MoveNPCToTarget(villainsInside[1], NPCPosition);
                     
                     // Move hostage to gamma knife
-                    NPCPosition = new Vector3(-14.3f, 0, 65.4f);
+                    NPCPosition = new Vector3(-15.6f, 0, 65f);
                     npcMove.MoveNPCToTarget(physicianHostage, NPCPosition);
                     
                     Debug.Log($"Two villains are taking {physicianHostage.name} to the gamma knife room");
+                    // Start the work on the gamma knife
+                    StartCoroutine(WorkOnGammaKnife(physicianHostage, NPCPosition));
                 }
                 
                 // Outside villains move inside to reinforce
@@ -463,8 +464,6 @@ public class PhaseManager : MonoBehaviour
                     Debug.Log($"{villainsInside[2].name} stays behind in the lobby");
                 }
                 
-                // Start the work on the gamma knife
-                StartCoroutine(WorkOnGammaKnife());
                 
                 break;
             case GamePhase.Phase5:
@@ -576,11 +575,31 @@ public class PhaseManager : MonoBehaviour
         return new Vector3(x, center.y, z);
     }
     
-    private IEnumerator WorkOnGammaKnife()
+    private IEnumerator WorkOnGammaKnife(GameObject villain, Vector3 targetposition)
     {
-        yield return new WaitForSeconds(3f); // Wait a bit for NPCs to reach positions
+        // Debug.Log("Started WorkOnGammaKnife Coroutine");
+
+        while (Vector3.Distance(villain.transform.position, targetposition) > 1f)
+        {
+            // Debug.Log($"Waiting... Current Pos: {villain.transform.position}, Target: {targetposition}");
+            yield return new WaitForSeconds(3f);
+        }
+
         Debug.Log("The villain is working on the gamma knife source!");
+        
+        Animator animator = villain.GetComponent<Animator>();
+        if (animator != null)
+        {
+            // Debug.Log("Animator found! Changing states.");
+            animator.SetBool("IsWalking", false);
+            animator.SetBool("ToRummaging", true);
+        }
+        else
+        {
+            Debug.LogError("Animator null for rummaging");
+        }
     }
+
 
     public GamePhase GetCurrentPhase(){
         return phaseList.Current.Phase;
