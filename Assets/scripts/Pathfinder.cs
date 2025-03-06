@@ -122,18 +122,37 @@ public class Pathfinder : MonoBehaviour
             // If so, return a copy of the path.
             return new List<Vector3>(pathCache[pathKey]);
 
-
         var startNode = navMesh.GetNodeFromWorldPoint(startPos);
         var targetNode = navMesh.GetNodeFromWorldPoint(targetPos);
-        if(!targetNode.IsWalkable) {
-            Debug.LogError("Unwalkable target");
+
+        // Check if target is unreachable (in an unwalkable node)
+        if (targetNode == null || !targetNode.IsWalkable)
+        {
+            // Debug.Log("Target position is unwalkable - path impossible");
             return null;
         }
-
+        
+        // Check if start position is valid
+        if (startNode == null || !startNode.IsWalkable)
+        {
+            // Debug.Log("Start position is unwalkable - path impossible");
+            return null;
+        }
+        
+        // Check if target is the same as start (no need to pathfind)
+        if (startNode == targetNode)
+        {
+            var directPath = new List<Vector3> { startPos, targetPos };
+            return directPath;
+        }
+        
         // Initialize open/closed sets
         var openSet = new PathPriorityQueue();
         var closedSet = new HashSet<GridNode>();
-
+        
+        // Set maximum iterations to prevent infinite loops
+        const int MAX_ITERATIONS = 1000;
+        int iterations = 0;
 
         startNode.GCost = 0; // Reset start node's cost
         startNode.HCost = GetDistance(startNode, targetNode);
@@ -143,6 +162,15 @@ public class Pathfinder : MonoBehaviour
 
         while (openSet.Count > 0)
         {
+            iterations++;
+            
+            // Check if we've exceeded maximum iterations
+            if (iterations > MAX_ITERATIONS)
+            {
+                Debug.Log($"Pathfinding exceeded {MAX_ITERATIONS} iterations - terminating search");
+                return FindLongDistancePath(startPos, targetPos); // Fallback to simple path
+            }
+            
             // Get node with lowest FCost
             var currentNode = openSet.Dequeue();
             closedSet.Add(currentNode);
@@ -151,6 +179,10 @@ public class Pathfinder : MonoBehaviour
             if (currentNode == targetNode)
             {
                 var path = RetracePath(startNode, targetNode, cameFrom);
+                
+                // Log iterations for performance monitoring
+
+                // Debug.Log($"Path found in {iterations} iterations");
 
                 // If path found, add to cache
                 if (path != null && path.Count > 0)
@@ -197,8 +229,16 @@ public class Pathfinder : MonoBehaviour
                     }
                 }
             }
+            
+            // Check if open set is too large (another sign of a difficult/impossible path)
+            if (openSet.Count > navMesh.GridSizeX * navMesh.GridSizeY / 2)
+            {
+                Debug.Log("Open set too large - likely impossible path");
+                return FindLongDistancePath(startPos, targetPos); // Fallback to simple path
+            }
         }
 
+        Debug.Log("No path found after exhaustive search");
         return null; // No path found
     }
 

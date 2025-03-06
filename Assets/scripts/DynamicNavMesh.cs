@@ -71,7 +71,7 @@ public class DynamicNavMesh : MonoBehaviour
         //Debug.Log($"World Position: {worldPosition}");
         //Debug.Log($"Grid Index: ({x}, {y})");
         if(!grid[x, y].IsWalkable){
-            Debug.LogError($"Node Walkable? {grid[x, y].IsWalkable}");
+            // Debug.LogError($"Node Walkable? {grid[x, y].IsWalkable}");
         }
 
         return grid[x, y];
