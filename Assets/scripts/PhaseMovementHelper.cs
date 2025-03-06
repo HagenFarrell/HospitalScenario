@@ -5,12 +5,12 @@ using System.Collections;
 
 public class PhaseMovementHelper : MonoBehaviour
 {
-    [SerializeField] private Vector3 randomMovementArea = new Vector3(200f, 0f, 200f); // Define the area size
-    [SerializeField] private float minMoveDistance = 50f; // Minimum distance to move
-    [SerializeField] private float maxMoveDistance = 100f; // Maximum distance to move
-    [SerializeField] private float randomMovementInterval = 1f; // Time between random movements
+    [SerializeField] private Vector3 randomMovementArea = new Vector3(20f, 0f, 20f); // Define the area size
+    [SerializeField] private float minMoveDistance = 5f; // Minimum distance to move
+    [SerializeField] private float maxMoveDistance = 15f; // Maximum distance to move
+    [SerializeField] private float randomMovementInterval = 3f; // Time between random movements
     [SerializeField] private LayerMask groundLayer; // Layer to raycast against to find valid positions
-    [SerializeField] private int npcsToMovePerFrame = 5; // Amount of npcs to move per frame 
+    [SerializeField] private int npcsToMovePerFrame = 3; // Amount of npcs to move per frame 
 
     private readonly Queue<GameObject> npcUpdateQueue = new Queue<GameObject>();
     private bool isProcessingUpdates = false;
@@ -101,7 +101,7 @@ public class PhaseMovementHelper : MonoBehaviour
 
     private Vector3 GetEdgePosition()
     {
-        Vector3 edgePosition = new Vector3(61f, 0f, Random.Range(40f, 140f));
+        Vector3 edgePosition = new Vector3(30f, 0f, Random.Range(35f, 140f));
 
         if (Physics.Raycast(edgePosition + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f, groundLayer))
         {
@@ -252,7 +252,7 @@ public class PhaseMovementHelper : MonoBehaviour
                 }
 
                 // Check if NPC has reached the target position
-                if (Vector3.Distance(npc.transform.position, targetPositions[npc]) <= 0.5f)
+                if (Vector3.Distance(npc.transform.position, targetPositions[npc]) <= 10f)
                 {
                     // Stop movement and clean up NPC
                     AIMover mover = npc.GetComponent<AIMover>();

@@ -168,11 +168,11 @@ public class Pathfinder : MonoBehaviour
             iterations++;
             
             // Check if we've exceeded maximum iterations
-            if (iterations > MAX_ITERATIONS)
-            {
-                // Debug.LogWarning($"Pathfinding exceeded {MAX_ITERATIONS} iterations - terminating search");
-                return null; // Fallback to simple path
-            }
+            // if (iterations > MAX_ITERATIONS)
+            // {
+            //     // Debug.LogWarning($"Pathfinding exceeded {MAX_ITERATIONS} iterations - terminating search");
+            //     return null; // Fallback to simple path
+            // }
             
             // Get node with lowest FCost
             var currentNode = openSet.Dequeue();
@@ -234,11 +234,11 @@ public class Pathfinder : MonoBehaviour
             }
             
             // Check if open set is too large (another sign of a difficult/impossible path)
-            if (openSet.Count > navMesh.GridSizeX * navMesh.GridSizeY / 2)
-            {
-                Debug.Log("Open set too large - likely impossible path");
-                return null; // Fallback to simple path
-            }
+            // if (openSet.Count > navMesh.GridSizeX * navMesh.GridSizeY / 2)
+            // {
+            //     Debug.Log("Open set too large - likely impossible path");
+            //     return null; // Fallback to simple path
+            // }
         }
 
         Debug.Log("No path found after exhaustive search");
