@@ -220,7 +220,7 @@ MonoBehaviour:
   syncInterval: 0
   moveSpeed: 25
   verticalSpeed: 10
-  mouseSensitivity: 2000
+  mouseSensitivity: 250
   smoothingSpeed: 0.1
   radeyePrefab: {fileID: 0}
   radeyeCircleTool: {fileID: 0}
