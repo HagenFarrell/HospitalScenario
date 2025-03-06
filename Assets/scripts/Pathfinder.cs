@@ -125,6 +125,10 @@ public class Pathfinder : MonoBehaviour
 
         var startNode = navMesh.GetNodeFromWorldPoint(startPos);
         var targetNode = navMesh.GetNodeFromWorldPoint(targetPos);
+        if(!targetNode.IsWalkable) {
+            Debug.LogError("Unwalkable target");
+            return null;
+        }
 
         // Initialize open/closed sets
         var openSet = new PathPriorityQueue();
@@ -236,6 +240,7 @@ public class Pathfinder : MonoBehaviour
 
     private bool isNearWall(GridNode node)
     {
+        // Debug.Log("near a wall! - ");
         for (var dx = -1; dx <= 1; dx++)
         for (var dy = -1; dy <= 1; dy++)
         {
