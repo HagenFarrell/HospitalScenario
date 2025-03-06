@@ -280,30 +280,38 @@ public class AIMover : MonoBehaviour
         updateRotation();
     }
 
-    // Updates the animations of units depending on movement speed.
+    private bool isRunningExternally = false; // Flag to allow external running command
+
+    public void SetRunning(bool running)
+    {
+        isRunningExternally = running;
+        animator.SetBool("IsRunning", running);
+    }
+
+    // Modify UpdateAnimation to respect external running
     private void UpdateAnimation()
     {
         if (animator != null)
         {
             float currentSpeed = currentVelocity.magnitude;
-            animator.SetBool(walkingHash, currentSpeed > movementThreshhold);
 
+            if (isRunningExternally) // If externally set to run, ignore walking logic
+            {
+                animator.SetBool(walkingHash, false);
+                animator.SetBool("IsRunning", true);
+                return;
+            }
 
-            // We need to consider multiple conditions for a unit to be "stopped":
+            // Standard walking logic
             bool shouldBeIdle =
-                // Check if we've reached our destination
                 isAtDestination ||
-                // Check if velocity is effectively zero
                 currentSpeed < 0.01f ||
-                // Check if we don't have a valid path
                 path == null ||
-                // Check if we've reached the end of our path
                 currentWaypoint >= path.Count;
 
-            // Set the walking animation state based on our idle check
             animator.SetBool(walkingHash, !shouldBeIdle);
+            animator.SetBool("IsRunning", false);
 
-            // If we are going to idle, make sure to zero out the NPC velocity.
             if (shouldBeIdle)
             {
                 currentVelocity = Vector3.zero;
@@ -311,6 +319,7 @@ public class AIMover : MonoBehaviour
             }
         }
     }
+
 
 
     // Uses quaternions (to avoid gimble lock) for smooth rotations based on hit point clicked. (target location)

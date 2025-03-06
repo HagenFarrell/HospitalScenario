@@ -236,9 +236,14 @@ public class PhaseMovementHelper : MonoBehaviour
         // Set target positions for all NPCs
         foreach (GameObject npc in MoveList)
         {
-            Animator animator = npc.GetComponent<Animator>();
-            animator.SetBool("IsWalking", false);
-            animator.SetBool("IsRunning", true);
+            // Animator animator = npc.GetComponent<Animator>();
+            // animator.SetBool("IsWalking", false);
+            // animator.SetBool("IsRunning", true);
+            AIMover mover = npc.GetComponent<AIMover>();
+            if (mover != null)
+            {
+                mover.SetRunning(true); // Set the AI to run instead of walk
+            }
 
             Vector3 targetPosition = GetEdgePosition();
             targetPositions[npc] = targetPosition;
@@ -269,6 +274,7 @@ public class PhaseMovementHelper : MonoBehaviour
                 {
                     // Stop movement and clean up NPC
                     AIMover mover = npc.GetComponent<AIMover>();
+                    // mover.SetRunning(true);
                     if (mover != null)
                     {
                         // mover.StopAllMovement(); // Stop movement coroutine

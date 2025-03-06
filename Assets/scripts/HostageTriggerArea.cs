@@ -124,6 +124,7 @@ public class HostageTriggerArea : MonoBehaviour
         {
             // Modify NPC's behavior for hostages
             // mover.StopAllMovement();
+            mover.SetRunning(false);
             mover.SetTargetPosition(transform.position);
         }
         
