@@ -169,7 +169,7 @@ public class PhaseManager : MonoBehaviour
         Animator animator = npc.GetComponent<Animator>();
         if (animator != null)
         {
-            animator.SetBool("IsHostage", true);
+            // animator.SetBool("IsHostage", true);
             animator.SetBool("IsWalking", false);
         }
     }
@@ -333,7 +333,7 @@ public class PhaseManager : MonoBehaviour
             if (animator != null)
             {
                 animator.SetBool("IsWalking", false);
-                animator.SetBool("IsHostage", npc.CompareTag("Hostages")); // Set hostage animation state based on tag
+                // animator.SetBool("IsHostage", npc.CompareTag("Hostages")); // Set hostage animation state based on tag
             }
             
             // Reset and enable AIMover
