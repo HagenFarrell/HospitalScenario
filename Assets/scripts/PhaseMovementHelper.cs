@@ -38,6 +38,15 @@ public class PhaseMovementHelper : MonoBehaviour
         // Cache NPCs at the start
         CacheNPCs();
 
+        // Wait until navmesh is ready before starting movement
+        while (!IsNavMeshReady())
+        {
+            Debug.Log("Waiting for NavMesh to initialize...");
+            yield return new WaitForSeconds(1f);
+        }
+        
+        Debug.Log("NavMesh is ready! Starting NPC movement.");
+
         while (current.GetCurrentPhase() == GamePhase.Phase1)
         {
             // Clear previous queue
@@ -91,7 +100,7 @@ public class PhaseMovementHelper : MonoBehaviour
             npc.SetActive(true);
             mover.enabled = true;
             mover.SetTargetPosition(targetPosition);
-            StartCoroutine(mover.UpdatePath()); // Start movement coroutine
+            StartCoroutine(mover.UpdatePath(mover)); // Start movement coroutine
         }
         else
         {
@@ -160,73 +169,30 @@ public class PhaseMovementHelper : MonoBehaviour
         isProcessingUpdates = false;
     }
 
-    // Coroutine to handle random civilian movement
-    // public IEnumerator MoveCiviliansRandomly(GamePhase currentPhase)
-    // {
-    //     PhaseManager current = FindObjectOfType<PhaseManager>();
-    //     if (current == null)
-    //     {
-    //         Debug.LogError("PhaseManager not found in scene!");
-    //         yield return null;
-    //     }
-    //     while (current.GetCurrentPhase() == GamePhase.Phase1) // Keep moving civilians until coroutine is stopped
-    //     {
-    //         // Find all civilian NPCs
-    //         GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
-    //         GameObject[] hostages = GameObject.FindGameObjectsWithTag("Hostages");
-    //         List<GameObject> MoveList = new List<GameObject>(GameObject.FindGameObjectsWithTag("Civilians"));
-
-    //         // I want civilians to be more active, etc. etc.
-    //         int rand = UnityEngine.Random.Range(0, 3);
-    //         if(rand == 0){
-    //             // Debug.Log("moving medicals and hostages");
-    //             MoveList.AddRange(medicals);
-    //             MoveList.AddRange(hostages);
-    //         } else if(rand <= 1) {
-    //             // Debug.Log("Moving medicals");
-    //             MoveList.AddRange(medicals);
-    //         } 
-    //         // else Debug.Log("Moving all");
-
-    //         // Queue up NPCs for batch processing
-    //         npcUpdateQueue.Clear();
-    //         foreach (GameObject npc in MoveList)
-    //         {
-    //             // GameObject VisualRing = npc.transform.GetChild(2).gameObject;
-    //             // VisualRing.SetActive(true);
-    //             // Vector3 newPosition = VisualRing.transform.localPosition;
-    //             // newPosition.y = 1f; 
-    //             // VisualRing.transform.localPosition = newPosition;
-    //             if (npc != null && npc.activeInHierarchy)
-    //             {
-    //                 npcUpdateQueue.Enqueue(npc);
-    //             }
-    //         }
-
-    //         // Process NPCs in smaller batches
-    //         if (!isProcessingUpdates && npcUpdateQueue.Count > 0)
-    //         {
-    //             StartCoroutine(ProcessNPCUpdates());
-    //         }
-
-    //         // Wait before moving NPCs again
-    //         yield return new WaitForSeconds(randomMovementInterval + Random.Range(-1f, 1f)); // Add slight variation
-    //     }
-    // }
-
     public IEnumerator MoveToEdgeAndDespawn()
     {
         GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
         GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
+        GameObject[] receptionist = GameObject.FindGameObjectsWithTag("Receptionist");
 
         List<GameObject> MoveList = new List<GameObject>(civilians);
         MoveList.AddRange(medicals);
+        MoveList.AddRange(receptionist);
 
         Dictionary<GameObject, Vector3> targetPositions = new Dictionary<GameObject, Vector3>();
 
         // Set target positions for all NPCs
         foreach (GameObject npc in MoveList)
         {
+            // Animator animator = npc.GetComponent<Animator>();
+            // animator.SetBool("IsWalking", false);
+            // animator.SetBool("IsRunning", true);
+            AIMover mover = npc.GetComponent<AIMover>();
+            if (mover != null)
+            {
+                mover.SetRunning(true); // Set the AI to run instead of walk
+            }
+
             Vector3 targetPosition = GetEdgePosition();
             targetPositions[npc] = targetPosition;
             Rigidbody rb = npc.GetComponent<Rigidbody>();
@@ -256,6 +222,7 @@ public class PhaseMovementHelper : MonoBehaviour
                 {
                     // Stop movement and clean up NPC
                     AIMover mover = npc.GetComponent<AIMover>();
+                    // mover.SetRunning(true);
                     if (mover != null)
                     {
                         // mover.StopAllMovement(); // Stop movement coroutine
@@ -270,6 +237,19 @@ public class PhaseMovementHelper : MonoBehaviour
             // Yield to avoid overloading frame updates
             yield return null;
         }
+    }
+
+    private bool IsNavMeshReady()
+    {
+        Pathfinder pathfinder = FindObjectOfType<Pathfinder>();
+        if (pathfinder == null)
+            return false;
+            
+        DynamicNavMesh navMesh = FindObjectOfType<DynamicNavMesh>();
+        if (navMesh == null || navMesh.Grid == null)
+            return false;
+            
+        return true;
     }
 
 }

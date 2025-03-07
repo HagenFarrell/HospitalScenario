@@ -116,7 +116,7 @@ public class Pathfinder : MonoBehaviour
         return simplePath;
     }
 
-    public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos)
+    public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos, AIMover npc)
     {
         var pathKey = GetPathKey(startPos, targetPos);
         // Check if the path is already contained in the cache.
@@ -137,9 +137,10 @@ public class Pathfinder : MonoBehaviour
         // Check if start position is valid
         if (startNode == null || !startNode.IsWalkable)
         {
-            Debug.LogError("Start position is unwalkable - path impossible from " + startPos + " or [" + startNode?.GridX + ", " + startNode?.GridY + "]");
+            Debug.LogError("Start position is unwalkable - path impossible from " + startPos + " or [" + startNode?.GridX + ", " + startNode?.GridY + "]"
+             + "for npc: " + npc.ToString());
             Vector3 temp = returnToSafety(GetBigNeighbors(startNode)).WorldPosition;
-            return FindLongDistancePath(startPos, temp);
+            return FindPath(temp, targetPos, npc);
         }
         
         // Check if target is the same as start (no need to pathfind)
@@ -154,7 +155,7 @@ public class Pathfinder : MonoBehaviour
         var closedSet = new HashSet<GridNode>();
         
         // Set maximum iterations to prevent infinite loops
-        const int MAX_ITERATIONS = 5000;
+        const int MAX_ITERATIONS = 50000;
         int iterations = 0;
 
         startNode.GCost = 0; // Reset start node's cost
@@ -165,14 +166,14 @@ public class Pathfinder : MonoBehaviour
 
         while (openSet.Count > 0)
         {
-            // iterations++;
+            iterations++;
             
-            // // Check if we've exceeded maximum iterations
-            // if (iterations > MAX_ITERATIONS)
-            // {
-            //     Debug.LogWarning($"Pathfinding exceeded {MAX_ITERATIONS} iterations - terminating search (feel free to disable if causing issues)");
-            //     return null; // Fallback to simple path
-            // }
+            // Check if we've exceeded maximum iterations
+            if (iterations > MAX_ITERATIONS)
+            {
+                Debug.LogWarning($"Pathfinding exceeded {MAX_ITERATIONS} iterations - terminating search (feel free to disable if causing issues)");
+                return null; // Fallback to simple path
+            }
             
             // Get node with lowest FCost
             var currentNode = openSet.Dequeue();
@@ -236,12 +237,12 @@ public class Pathfinder : MonoBehaviour
             // Check if open set is too large (another sign of a difficult/impossible path)
             if (openSet.Count > navMesh.GridSizeX * navMesh.GridSizeY / 2)
             {
-                Debug.Log("Open set too large - likely impossible path");
+                Debug.LogError("Open set too large - likely impossible path");
                 return null; // Fallback to simple path
             }
         }
 
-        Debug.Log("No path found after exhaustive search");
+        Debug.LogWarning("No path found after exhaustive search for npc: " + npc.ToString());
         return null; // No path found
     }
 
@@ -308,6 +309,7 @@ public class Pathfinder : MonoBehaviour
                 return node;
             }
         }
+        Debug.LogError("Couldnt find valid neighbor");
         return null;
     }
 
