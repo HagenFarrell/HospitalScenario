@@ -242,7 +242,7 @@ public class Pathfinder : MonoBehaviour
             }
         }
 
-        Debug.Log("No path found after exhaustive search for npc: " + npc.ToString());
+        Debug.LogWarning("No path found after exhaustive search for npc: " + npc.ToString());
         return null; // No path found
     }
 
