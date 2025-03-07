@@ -149,7 +149,7 @@ public class HostageTriggerArea : MonoBehaviour
             // Debug.Log("Toggling the ring to true");
             HostageRing.SetActive(true);
             Vector3 newPosition = HostageRing.transform.localPosition;
-            newPosition.y = 1f; 
+            newPosition.y = 0.3f; 
             HostageRing.transform.localPosition = newPosition;
 
             // Get the Renderer component of the ring
