@@ -116,7 +116,7 @@ public class Pathfinder : MonoBehaviour
         return simplePath;
     }
 
-    public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos)
+    public List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos, AIMover npc)
     {
         var pathKey = GetPathKey(startPos, targetPos);
         // Check if the path is already contained in the cache.
@@ -137,9 +137,10 @@ public class Pathfinder : MonoBehaviour
         // Check if start position is valid
         if (startNode == null || !startNode.IsWalkable)
         {
-            Debug.LogError("Start position is unwalkable - path impossible from " + startPos + " or [" + startNode?.GridX + ", " + startNode?.GridY + "]");
+            Debug.LogError("Start position is unwalkable - path impossible from " + startPos + " or [" + startNode?.GridX + ", " + startNode?.GridY + "]"
+             + "for npc: " + npc.ToString());
             Vector3 temp = returnToSafety(GetBigNeighbors(startNode)).WorldPosition;
-            return FindLongDistancePath(startPos, temp);
+            return FindPath(temp, targetPos, npc);
         }
         
         // Check if target is the same as start (no need to pathfind)
@@ -241,7 +242,7 @@ public class Pathfinder : MonoBehaviour
             }
         }
 
-        Debug.Log("No path found after exhaustive search");
+        Debug.Log("No path found after exhaustive search for npc: " + npc.ToString());
         return null; // No path found
     }
 
@@ -308,6 +309,7 @@ public class Pathfinder : MonoBehaviour
                 return node;
             }
         }
+        Debug.LogError("Couldnt find valid neighbor");
         return null;
     }
 

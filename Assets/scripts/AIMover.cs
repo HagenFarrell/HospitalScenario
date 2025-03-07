@@ -81,7 +81,7 @@ public class AIMover : MonoBehaviour
         isAtDestination = true;
     }
 
-    public IEnumerator UpdatePath()
+    public IEnumerator UpdatePath(AIMover npc)
     {
         if (this == null || gameObject == null)
         {
@@ -92,7 +92,7 @@ public class AIMover : MonoBehaviour
             if (target != null)
             {
                 // Debug.Log($"Finding path from {transform.position} to {target.position}");
-                path = pathfinder.FindPath(transform.position, target.position);
+                path = pathfinder.FindPath(transform.position, target.position, npc);
                 if (path != null && path.Count > 0)
                 {
                     // Debug.Log($"Path found with {path.Count} waypoints");

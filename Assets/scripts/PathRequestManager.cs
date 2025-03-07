@@ -53,8 +53,8 @@ public class PathRequestManager : MonoBehaviour
     {
         // Add small delay to distribute CPU load
         yield return new WaitForEndOfFrame();
-        
-        List<Vector3> newPath = pathfinder.FindPath(currentRequest.pathStart, currentRequest.pathEnd);
+        AIMover npc = new AIMover();
+        List<Vector3> newPath = pathfinder.FindPath(currentRequest.pathStart, currentRequest.pathEnd, npc);
         currentRequest.callback(newPath);
         
         isProcessingPath = false;

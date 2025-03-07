@@ -100,7 +100,7 @@ public class PhaseMovementHelper : MonoBehaviour
             npc.SetActive(true);
             mover.enabled = true;
             mover.SetTargetPosition(targetPosition);
-            StartCoroutine(mover.UpdatePath()); // Start movement coroutine
+            StartCoroutine(mover.UpdatePath(mover)); // Start movement coroutine
         }
         else
         {
