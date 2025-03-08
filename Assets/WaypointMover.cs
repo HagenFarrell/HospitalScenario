@@ -1,19 +1,29 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SocialPlatforms;
 
 public class WaypointMover : MonoBehaviour
 {
     // Stores a referece to the waypoint system this object will use
     [SerializeField] private Waypoints waypoints;
 
-    [SerializeField] private float moveSpeed = 5f;
+    [Range(1f, 10f)]
+    [SerializeField] private float moveSpeed = 2f;
 
     [SerializeField] private float distanceThreshold = 0.1f;
+
+
+    [Range(1f, 20f)]
+    [SerializeField] private float rotateSpeed = 10f;
 
     // The current waypoint target that the object is moving towards
     public Transform currentWaypoint;
 
+    // The roation target for the current frame
+    private Quaternion rotationGoal;
+    // The direction to the next waypoint that the NPC needs to rotate towards
+    private Vector3 directionToWaypoint;
 
     // Start is called before the first frame update
     void Start()
@@ -24,6 +34,7 @@ public class WaypointMover : MonoBehaviour
 
         // Set the next waypoint target
         currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
+        transform.LookAt(currentWaypoint);
 
     }
 
@@ -35,5 +46,17 @@ public class WaypointMover : MonoBehaviour
         {
             currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
         }
+        RotateTowardsWaypoint();
+    }
+
+    // Will Slowly rotate the agent towards the current waypoint it is moving towards
+    private void RotateTowardsWaypoint()
+    {
+        // Gets direction to waypoint
+        directionToWaypoint = (currentWaypoint.position - transform.position).normalized;
+        rotationGoal = Quaternion.LookRotation(directionToWaypoint);
+
+        // Slow rotation
+        transform.rotation = Quaternion.Slerp(transform.rotation, rotationGoal, rotateSpeed * Time.deltaTime);
     }
 }
