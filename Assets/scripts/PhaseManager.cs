@@ -670,15 +670,57 @@ public class PhaseManager : MonoBehaviour
         StoreCurrentPhaseState();
     }
 
-    private void moveEgress(Vector3 move, float radius){
-        foreach(GameObject villain in villains){
-            npcMove.MoveNPCToTarget(villain, GetRandomPointInRadius(move, radius));
+    private void moveEgress(Vector3 move, float radius) {
+        // Create a list to store already assigned positions
+        List<Vector3> assignedPositions = new List<Vector3>();
+        
+        foreach(GameObject villain in villains) {
+            // Try to find a non-overlapping position
+            Vector3 targetPosition = GetNonOverlappingPosition(move, radius, assignedPositions);
+            assignedPositions.Add(targetPosition); // this position has been used
+            npcMove.MoveNPCToTarget(villain, targetPosition);
         }
     }
 
-    private Vector3 GetRandomPointInRadius(Vector3 center, float radius){
-        float angle = Random.Range(0f, Mathf.PI * 2); // Random angle in radians
-        float distance = Random.Range(0f, radius);    // Random distance within radius
+    private Vector3 GetNonOverlappingPosition(Vector3 center, float radius, List<Vector3> usedPositions) {
+        float minDistanceBetweenNPCs = 1f;
+        
+        // Maximum attempts to find a suitable position
+        int maxAttempts = 5;
+        
+        for (int attempt = 0; attempt < maxAttempts; attempt++) {
+            // Get a random position within the radius
+            Vector3 candidatePosition = GetRandomPointInRadius(center, radius);
+            
+            // Check if this position is far enough from all existing positions
+            bool positionValid = true;
+            foreach (Vector3 usedPos in usedPositions) {
+                if (Vector3.Distance(candidatePosition, usedPos) < minDistanceBetweenNPCs) {
+                    positionValid = false;
+                    break;
+                }
+            }
+            
+            // If position is valid, return it
+            if (positionValid) {
+                return candidatePosition;
+            }
+        }
+        
+        // If we couldn't find a non-overlapping position after many attempts,
+        // expand the search area slightly and try again
+        if (usedPositions.Count > 0) {
+            return GetNonOverlappingPosition(center, radius * 1.2f, usedPositions);
+        }
+        
+        // Fallback - this should rarely happen
+        return GetRandomPointInRadius(center, radius);
+    }
+
+    // Keep your original random point method
+    private Vector3 GetRandomPointInRadius(Vector3 center, float radius) {
+        float angle = Random.Range(0f, Mathf.PI * 2);
+        float distance = Random.Range(0f, radius);
 
         float x = center.x + Mathf.Cos(angle) * distance;
         float z = center.z + Mathf.Sin(angle) * distance;
