@@ -16,6 +16,16 @@ public class HostageTriggerArea : MonoBehaviour
     // Cache converted NPCs to avoid converting multiple times
     private HashSet<GameObject> convertedNPCs = new HashSet<GameObject>();
     
+    // Define a minimum distance between hostages to prevent clumping
+    [SerializeField] private float minDistanceBetweenHostages = 1.5f;
+    
+    // Keep track of hostage positions for spacing
+    private List<Vector3> hostagePositions = new List<Vector3>();
+    
+    // Define area bounds for positioning hostages
+    private Vector3 areaSize;
+    private Vector3 areaCenter;
+    
     private void Start()
     {
         phaseManager = FindObjectOfType<PhaseManager>();
@@ -23,7 +33,20 @@ public class HostageTriggerArea : MonoBehaviour
         {
             Debug.LogError("PhaseManager not found in the scene!");
         }
-        // Debug.Log("Loaded!");
+        
+        // Get the trigger area size from collider if available
+        Collider collider = GetComponent<Collider>();
+        if (collider != null && collider is BoxCollider boxCollider)
+        {
+            areaSize = boxCollider.size;
+            areaCenter = transform.position;
+        }
+        else
+        {
+            // Default size if no box collider
+            areaSize = new Vector3(5f, 1f, 5f);
+            areaCenter = transform.position;
+        }
         
         if (showDebugVisual)
         {
@@ -89,7 +112,7 @@ public class HostageTriggerArea : MonoBehaviour
         // Same check for NPCs that might already be in the area when phase changes
         if (phaseManager == null || phaseManager.GetCurrentPhase() < GamePhase.Phase2)
             return;
-        // Debug.Log($"OnTriggerStay called: {npc.name}");
+        
         if ((npc.CompareTag("Civilians") || npc.CompareTag("Medicals") || npc.CompareTag("Receptionist")) && !convertedNPCs.Contains(npc.gameObject))
         {
             ConvertToHostage(npc.gameObject);
@@ -98,9 +121,6 @@ public class HostageTriggerArea : MonoBehaviour
     
     private void ConvertToHostage(GameObject npc)
     {
-        // Log the conversion
-        // Debug.Log($"Converting {npc.name} from {npc.tag} to Hostage");
-
         // Store original tag for debugging/reference
         string originalTag = npc.tag;
         if (!npc.TryGetComponent<OriginalTag>(out var tagComponent))
@@ -123,30 +143,89 @@ public class HostageTriggerArea : MonoBehaviour
         if (mover != null)
         {
             // Modify NPC's behavior for hostages
-            // mover.StopAllMovement();
             mover.SetRunning(false);
-            mover.SetTargetPosition(transform.position);
-        } 
+            
+            // Find a non-clumped position for this hostage
+            Vector3 targetPosition = GetNonClumpedPosition(npc.transform.position);
+            
+            // Move the hostage to the selected position
+            mover.SetTargetPosition(targetPosition);
+            
+            // Add this position to our tracking list
+            hostagePositions.Add(targetPosition);
+        }
+        
         Animator animator = npc.GetComponent<Animator>();
         if(animator != null){
             animator.SetBool("IsThreatPresent", true);
         }
+    }
+    
+    private Vector3 GetNonClumpedPosition(Vector3 currentPosition)
+    {
+        // First, try to keep the NPC near their current position if possible
+        if (IsPositionValid(currentPosition))
+        {
+            return currentPosition;
+        }
         
-        // Phase 2: NPCs who are now hostages should lie down
-        // Debug.Log($"{npc.name} has become a hostage and lies down.");
+        // Maximum attempts to find a valid position
+        int maxAttempts = 5;
+        
+        for (int i = 0; i < maxAttempts; i++)
+        {
+            // Generate a random position within the trigger area
+            float x = areaCenter.x + Random.Range(-areaSize.x/2 * 0.8f, areaSize.x/2 * 0.8f);
+            float z = areaCenter.z + Random.Range(-areaSize.z/2 * 0.8f, areaSize.z/2 * 0.8f);
+            Vector3 randomPos = new Vector3(x, areaCenter.y, z);
+            
+            // Check if the position is valid (not too close to other hostages)
+            if (IsPositionValid(randomPos))
+            {
+                return randomPos;
+            }
+        }
+        
+        // If we couldn't find a good position after max attempts, use a simpler approach
+        // Move the NPC to a position slightly offset from their current location
+        Vector3 offset = new Vector3(
+            Random.Range(-2f, 2f),
+            0,
+            Random.Range(-2f, 2f)
+        );
+        
+        return currentPosition + offset;
+    }
+    
+    private bool IsPositionValid(Vector3 position)
+    {
+        // Check if this position is too close to any existing hostage position
+        foreach (Vector3 existingPos in hostagePositions)
+        {
+            if (Vector3.Distance(existingPos, position) < minDistanceBetweenHostages)
+            {
+                return false;
+            }
+        }
+        
+        // Also check that the position is within the trigger area bounds
+        Collider collider = GetComponent<Collider>();
+        if (collider != null)
+        {
+            return collider.bounds.Contains(position);
+        }
+        
+        return true;
     }
 
     private void ToggleYellowRing(GameObject npc)
     {
-        // Debug.Log("Toggling the ring");
-
         // Find the 'ui_disk_02' ring prefab as a child of the NPC
         GameObject HostageRing = npc.transform.GetChild(2).gameObject;
 
         // Check if the ring object exists
         if (HostageRing != null)
         {
-            // Debug.Log("Toggling the ring to true");
             HostageRing.SetActive(true);
             Vector3 newPosition = HostageRing.transform.localPosition;
             newPosition.y = 0.3f; 
@@ -174,9 +253,6 @@ public class HostageTriggerArea : MonoBehaviour
         }
     }
 
-
-
-    
     // For coordinate-based checking (alternative to trigger collider)
     public void CheckNPCsInArea(Vector3 center, Vector3 size)
     {
@@ -206,6 +282,20 @@ public class HostageTriggerArea : MonoBehaviour
                 ConvertToHostage(npc);
             }
         }
+    }
+    
+    // Reset our tracking when phases change
+    private void OnEnable()
+    {
+        // Subscribe to phase change events if available
+        hostagePositions.Clear();
+    }
+    
+    // You might want to reset positions when the scene restarts
+    private void OnDisable()
+    {
+        hostagePositions.Clear();
+        convertedNPCs.Clear();
     }
 }
 
