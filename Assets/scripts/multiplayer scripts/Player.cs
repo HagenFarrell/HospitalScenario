@@ -384,7 +384,13 @@ public class Player : NetworkBehaviour
             GameObject[] Law = GameObject.FindGameObjectsWithTag("LawEnforcement");
 
             List<GameObject> npcs = new List<GameObject>(Fire);
+            if(npcs == null) Debug.LogError("npcs null");
             npcs.AddRange(Law);
+
+            // // ensure player characters are disabled
+            // foreach(GameObject npc in npcs){
+            //     npc.SetActive(false);
+            // }
 
             return npcs.ToArray();
         }
