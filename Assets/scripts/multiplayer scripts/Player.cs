@@ -540,7 +540,7 @@ public class Player : NetworkBehaviour
 
         foreach (uint netId in npcNetIds)
         {
-            if (NetworkServer.spawned.TryGetValue(netId, out NetworkIdentity identity))
+            if (NetworkIdentity.spawned.TryGetValue(netId, out NetworkIdentity identity))
             {
                 npcObjects.Add(identity.gameObject);
             }
@@ -585,7 +585,7 @@ public class Player : NetworkBehaviour
 
         foreach (uint netId in npcNetIds)
         {
-            if (NetworkClient.spawned.TryGetValue(netId, out NetworkIdentity identity))
+            if (NetworkIdentity.spawned.TryGetValue(netId, out NetworkIdentity identity))
             {
                 npcObjects.Add(identity.gameObject);
             }
