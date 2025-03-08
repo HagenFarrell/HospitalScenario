@@ -20,6 +20,9 @@ public class PhaseManager : MonoBehaviour
     // References to different NPC groups
     private GameObject[] villainsInside;
     private GameObject[] villainsOutside;
+    private List<GameObject> playerUnits;
+    private GameObject[] FD;
+    private GameObject[] LLE;
     private List<GameObject> villains;
     // private GameObject superVillain;
     private GameObject receptionist;
@@ -37,6 +40,11 @@ public class PhaseManager : MonoBehaviour
         {
             phaseList.AddPhase(phase);
         }
+
+        FD = GameObject.FindGameObjectsWithTag("FireDepartment");
+        LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
+        playerUnits = new List<GameObject>(FD);
+        playerUnits.AddRange(LLE);
 
         // Store initial positions and tags of all NPCs in the first phase node
         StoreInitialNPCState();
@@ -178,37 +186,64 @@ public class PhaseManager : MonoBehaviour
         if (phaseList.Head == null)
             return;
 
-        // Store civilians' initial state
-        GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
-        foreach (GameObject civilian in civilians)
+        // Store all types of NPCs initial state
+        StoreNPCTypeState("Civilians", phaseList.Head);
+        StoreNPCTypeState("Medicals", phaseList.Head);
+        StoreNPCTypeState("Hostages", phaseList.Head);
+        StoreNPCTypeState("Villains", phaseList.Head);
+        StoreNPCTypeState("OutsideVillains", phaseList.Head);
+        StoreNPCTypeState("Receptionist", phaseList.Head);
+        
+        Debug.Log($"Stored initial state for {phaseList.Head.NPCPositions.Count} NPCs in Phase 1");
+    }
+    
+    private void StoreNPCTypeState(string tag, PhaseNode node)
+    {
+        GameObject[] npcs = GameObject.FindGameObjectsWithTag(tag);
+        foreach (GameObject npc in npcs)
         {
-            phaseList.Head.NPCPositions[civilian.name] = civilian.transform.position;
-            phaseList.Head.NPCTags[civilian.name] = civilian.tag;
+            node.NPCPositions[npc.name] = npc.transform.position;
+            node.NPCTags[npc.name] = npc.tag;
+            
+            // Store active state as well in NPCTags by prepending "Active_" to indicate the GameObject is active
+            string activeKey = "Active_" + npc.name;
+            node.NPCTags[activeKey] = npc.activeInHierarchy ? "True" : "False";
         }
-
-        // Store medicals' initial state
-        GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
-        foreach (GameObject medical in medicals)
-        {
-            phaseList.Head.NPCPositions[medical.name] = medical.transform.position;
-            phaseList.Head.NPCTags[medical.name] = medical.tag;
-        }
-
-        // Store hostages' initial state
-        GameObject[] hostages = GameObject.FindGameObjectsWithTag("Hostages");
-        foreach (GameObject hostage in hostages)
-        {
-            phaseList.Head.NPCPositions[hostage.name] = hostage.transform.position;
-            phaseList.Head.NPCTags[hostage.name] = hostage.tag;
-        }
-
-        // Debug.Log($"Stored initial state for {phaseList.Head.NPCPositions.Count} NPCs in Phase 1");
     }
 
     private void StartPhase()
     {
         Debug.Log($"Entering Phase: {phaseList.Current.Phase}");
+        
+        // First, check if we need to despawn civilians and medicals in Phase 3
+        if (phaseList.Current.Phase == GamePhase.Phase3)
+        {
+            DespawnRemainingCiviliansAndMedicals();
+        }
+        
         MoveNPCsForPhase(phaseList.Current.Phase);
+    }
+
+    private void DespawnRemainingCiviliansAndMedicals()
+    {
+        // Find and disable any remaining civilians
+        GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
+        foreach (GameObject civilian in civilians)
+        {
+            Debug.Log($"Phase 3: Despawning civilian {civilian.name}");
+            civilian.SetActive(false);
+        }
+        
+        // Find and disable any remaining medicals
+        GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
+        foreach (GameObject medical in medicals)
+        {
+            Debug.Log($"Phase 3: Despawning medical {medical.name}");
+            medical.SetActive(false);
+        }
+        
+        // Note: We're not storing disabled state for these NPCs anymore
+        // to optimize performance
     }
 
     public void NextPhase()
@@ -259,34 +294,57 @@ public class PhaseManager : MonoBehaviour
     {
         if (phaseList.Current.Next != null)
         {
-            // If we already have stored positions for the next phase, we'll use those
+            // Capture state even if the next phase already exists - we want to update
+            // with the latest info each time we move through phases
+            PhaseNode nextPhase = phaseList.Current.Next;
+            
+            // Clear existing data in the next phase to avoid duplicates or stale data
+            nextPhase.NPCPositions.Clear();
+            nextPhase.NPCTags.Clear();
+            
+            // Store only active NPCs' current state in the next phase
+            StoreActiveNPCsCurrentState(nextPhase);
+            
+            Debug.Log($"Updated state for next Phase {nextPhase.Phase} with {nextPhase.NPCPositions.Count} NPCs");
             return;
         }
         
-        // Find all NPCs in the scene and store their current state
-        GameObject[] allNPCs = GameObject.FindGameObjectsWithTag("Civilians");
-        StoreNPCsInCurrentPhase(allNPCs);
-        
-        allNPCs = GameObject.FindGameObjectsWithTag("Medicals");
-        StoreNPCsInCurrentPhase(allNPCs);
-        
-        allNPCs = GameObject.FindGameObjectsWithTag("Hostages");
-        StoreNPCsInCurrentPhase(allNPCs);
-
-        allNPCs = GameObject.FindGameObjectsWithTag("Villains");
-        StoreNPCsInCurrentPhase(allNPCs);
-
-        allNPCs = GameObject.FindGameObjectsWithTag("PhysicianHostage");
-        StoreNPCsInCurrentPhase(allNPCs);
-        
-        Debug.Log($"Captured state for {phaseList.Current.NPCPositions.Count} NPCs in Phase {phaseList.Current.Phase}");
+        // If we're at the last node, there's no next phase to capture state for
+        Debug.Log("Already at the last phase, no need to capture state for next phase");
     }
     
-    private void StoreNPCsInCurrentPhase(GameObject[] npcs)
+    private void StoreActiveNPCsCurrentState(PhaseNode targetNode)
     {
+        // Store only active NPCs by tag type - skip disabled ones
+        StoreActiveNPCTypeState("Hostages", targetNode);
+        StoreActiveNPCTypeState("Villains", targetNode);
+        StoreActiveNPCTypeState("OutsideVillains", targetNode);
+        StoreActiveNPCTypeState("PhysicianHostage", targetNode);
+        StoreActiveNPCTypeState("Receptionist", targetNode);
+        
+        // Only store active civilians and medicals - skip disabled ones
+        if (phaseList.Current.Phase < GamePhase.Phase3)
+        {
+            StoreActiveNPCTypeState("Civilians", targetNode);
+            StoreActiveNPCTypeState("Medicals", targetNode);
+        }
+    }
+    
+    private void StoreActiveNPCTypeState(string tag, PhaseNode targetNode)
+    {
+        GameObject[] npcs = GameObject.FindGameObjectsWithTag(tag);
         foreach (GameObject npc in npcs)
         {
-            phaseList.StoreNPCState(phaseList.Current, npc);
+            // Only store state for active NPCs
+            if (npc.activeInHierarchy)
+            {
+                targetNode.NPCPositions[npc.name] = npc.transform.position;
+                targetNode.NPCTags[npc.name] = npc.tag;
+                
+                // Store active state
+                string activeKey = "Active_" + npc.name;
+                targetNode.NPCTags[activeKey] = "True";
+            }
         }
     }
     
@@ -303,19 +361,28 @@ public class PhaseManager : MonoBehaviour
             // Check if this is one of our tracked NPCs
             if (node.NPCPositions.ContainsKey(npc.name))
             {
-                // Re-enable if inactive
-                if (!npc.activeInHierarchy)
+                // Check if we should enable or disable based on stored state
+                string activeKey = "Active_" + npc.name;
+                if (node.NPCTags.ContainsKey(activeKey))
                 {
-                    npc.SetActive(true);
+                    bool shouldBeActive = node.NPCTags[activeKey] == "True";
+                    if (npc.activeInHierarchy != shouldBeActive)
+                    {
+                        npc.SetActive(shouldBeActive);
+                    }
                 }
                 
-                // Reset tag to the one stored in the phase node
-                if (node.NPCTags.ContainsKey(npc.name))
+                // Only proceed with position and tag restoration if the object should be active
+                if (npc.activeInHierarchy)
                 {
-                    npc.tag = node.NPCTags[npc.name];
+                    // Reset tag to the one stored in the phase node
+                    if (node.NPCTags.ContainsKey(npc.name))
+                    {
+                        npc.tag = node.NPCTags[npc.name];
+                    }
+                    
+                    ResetNPC(npc, node);
                 }
-                
-                ResetNPC(npc, node);
             }
         }
     }
@@ -332,7 +399,8 @@ public class PhaseManager : MonoBehaviour
             if (animator != null)
             {
                 animator.SetBool("IsWalking", false);
-                // animator.SetBool("IsHostage", npc.CompareTag("Hostages")); // Set hostage animation state based on tag
+                animator.SetBool("IsThreatPresent", npc.CompareTag("Hostages") || npc.CompareTag("PhysicianHostage"));
+                animator.SetBool("ToRummaging", false);
             }
             
             // Reset and enable AIMover
@@ -395,7 +463,7 @@ public class PhaseManager : MonoBehaviour
                     currentPhaseCoroutine = null;
                 }
                 
-                // Select a medical NPC to be the physician hostage (thats it for this phase lol)
+                // Select a medical NPC to be the physician hostage
                 GameObject[] hostages = GameObject.FindGameObjectsWithTag("Hostages");
                 if (hostages.Length > 0) {
                     foreach (GameObject hostage in hostages) {
@@ -477,7 +545,19 @@ public class PhaseManager : MonoBehaviour
                 // 3 baddies move to long hallway, cafeteria, and lobby - DONE
                 // rad dose hemisphere is togglable by instructor.
                 // Two villains take the physician hostage to the gamma knife room
+                if (currentPhaseCoroutine != null) {
+                    StopCoroutine(currentPhaseCoroutine);
+                    currentPhaseCoroutine = null;
+                }
 
+                // Ensure the physician hostage stops rummaging animation when moving
+                if (physicianHostage != null) {
+                    Animator physicianAnimator = physicianHostage.GetComponent<Animator>();
+                    if (physicianAnimator != null) {
+                        physicianAnimator.SetBool("ToRummaging", false);
+                        physicianAnimator.SetBool("IsWalking", true);
+                    }
+                }
 
                 if (villainsOutside != null && villainsInside.Length >= 2) {
                     // Move two inside villains with the hostage
@@ -505,6 +585,7 @@ public class PhaseManager : MonoBehaviour
                     StopCoroutine(currentPhaseCoroutine);
                     currentPhaseCoroutine = null;
                 }
+
                 Vector3 youMoveHere = new Vector3(0f, 0, 113f);
                 float radius = 3.5f;
                 npcMove.MoveNPCToTarget(physicianHostage, youMoveHere);
@@ -518,11 +599,29 @@ public class PhaseManager : MonoBehaviour
                     StopCoroutine(currentPhaseCoroutine);
                     currentPhaseCoroutine = null;
                 }
+
+                if (physicianHostage != null) {
+                    Animator physicianAnimator = physicianHostage.GetComponent<Animator>();
+                    if (physicianAnimator != null) {
+                        physicianAnimator.SetBool("IsThreatPresent", true);
+                    }
+                }
+                
                 // currentPhaseCoroutine = StartCoroutine(WaitForEgressSelection());
                 OnEgressSelected += ExecuteEgressPhase;
                 break;
 
         }
+        
+        // After moving NPCs for the phase, store their new positions
+        StoreCurrentPhaseState();
+    }
+    
+    private void StoreCurrentPhaseState()
+    {
+        // Store the state of only active NPCs in the current phase
+        StoreActiveNPCsCurrentState(phaseList.Current);
+        Debug.Log($"Stored state for {phaseList.Current.NPCPositions.Count} NPCs in Phase {phaseList.Current.Phase}");
     }
 
     private void ExecuteEgressPhase(int selectedEgress)
@@ -566,6 +665,9 @@ public class PhaseManager : MonoBehaviour
                 Debug.LogWarning("Invalid egress phase!");
                 break;
         }
+        
+        // Store the final egress state
+        StoreCurrentPhaseState();
     }
 
     private void moveEgress(Vector3 move, float radius){
