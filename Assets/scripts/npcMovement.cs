@@ -72,7 +72,7 @@ public class npcMovement : MonoBehaviour
             }
 
             commanderAI.SetTargetPosition(hit.point);
-            StartCoroutine(commanderAI.UpdatePath());
+            StartCoroutine(commanderAI.UpdatePath(commanderAI));
 
             // If a formation corutine is already running, halt.
             if (formationUpdateCoroutine != null) StopCoroutine(formationUpdateCoroutine);
@@ -115,7 +115,7 @@ public class npcMovement : MonoBehaviour
                     if (Vector3.Distance(npc.transform.position, formationSlot) > 0.5f)
                     {
                         agent.SetTargetPosition(formationSlot);
-                        if (!agent.isAtDestination) StartCoroutine(agent.UpdatePath());
+                        if (!agent.isAtDestination) StartCoroutine(agent.UpdatePath(commanderAI));
                     }
                 }
             }

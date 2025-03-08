@@ -9,7 +9,7 @@ public class AIMover : MonoBehaviour
     // ---- Variables for the BOIDS algorithm. ----
     [SerializeField] private float speed = 4f;
     [SerializeField] private float maxSpeed = 5f;
-    [SerializeField] private float maxForce = 4f;
+    [SerializeField] private float maxForce = 100f;
     [SerializeField] private float slowingRadius = 2f;
     [SerializeField] private float seperationRadius = 1f;
     [SerializeField] private float lookAheadDistance = 0.3f;
@@ -81,7 +81,7 @@ public class AIMover : MonoBehaviour
         isAtDestination = true;
     }
 
-    public IEnumerator UpdatePath()
+    public IEnumerator UpdatePath(AIMover npc)
     {
         if (this == null || gameObject == null)
         {
@@ -92,7 +92,7 @@ public class AIMover : MonoBehaviour
             if (target != null)
             {
                 // Debug.Log($"Finding path from {transform.position} to {target.position}");
-                path = pathfinder.FindPath(transform.position, target.position);
+                path = pathfinder.FindPath(transform.position, target.position, npc);
                 if (path != null && path.Count > 0)
                 {
                     // Debug.Log($"Path found with {path.Count} waypoints");
@@ -280,30 +280,38 @@ public class AIMover : MonoBehaviour
         updateRotation();
     }
 
-    // Updates the animations of units depending on movement speed.
+    private bool isRunningExternally = false; // Flag to allow external running command
+
+    public void SetRunning(bool running)
+    {
+        isRunningExternally = running;
+        animator.SetBool("IsRunning", running);
+    }
+
+    // Modify UpdateAnimation to respect external running
     private void UpdateAnimation()
     {
         if (animator != null)
         {
             float currentSpeed = currentVelocity.magnitude;
-            animator.SetBool(walkingHash, currentSpeed > movementThreshhold);
 
+            if (isRunningExternally) // If externally set to run, ignore walking logic
+            {
+                animator.SetBool(walkingHash, false);
+                animator.SetBool("IsRunning", true);
+                return;
+            }
 
-            // We need to consider multiple conditions for a unit to be "stopped":
+            // Standard walking logic
             bool shouldBeIdle =
-                // Check if we've reached our destination
                 isAtDestination ||
-                // Check if velocity is effectively zero
                 currentSpeed < 0.01f ||
-                // Check if we don't have a valid path
                 path == null ||
-                // Check if we've reached the end of our path
                 currentWaypoint >= path.Count;
 
-            // Set the walking animation state based on our idle check
             animator.SetBool(walkingHash, !shouldBeIdle);
+            animator.SetBool("IsRunning", false);
 
-            // If we are going to idle, make sure to zero out the NPC velocity.
             if (shouldBeIdle)
             {
                 currentVelocity = Vector3.zero;
@@ -311,6 +319,7 @@ public class AIMover : MonoBehaviour
             }
         }
     }
+
 
 
     // Uses quaternions (to avoid gimble lock) for smooth rotations based on hit point clicked. (target location)
