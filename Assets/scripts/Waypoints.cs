@@ -17,6 +17,7 @@ public class Waypoints : MonoBehaviour
     [SerializeField] public bool PathBranching = false; // Sets path to be phase 1 if false and if true runs aways phase 2 
     
     [SerializeField] private int waypointsActiveInPhase1 = 4; // Number of waypoints active in Phase 1
+    int ActiveChildLength = 0;
 
 
     
@@ -43,7 +44,7 @@ public class Waypoints : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        int ActiveChildLength = 0;
+        ActiveChildLength = 0;
 
         foreach (Transform t in transform)
         {
@@ -93,9 +94,10 @@ public class Waypoints : MonoBehaviour
 
 
             // Do not go to next node if disabled
-            if (nextIndex < transform.childCount && !currentWaypoint.GetChild(nextIndex).gameObject.activeSelf)
+            if (nextIndex < transform.childCount && !transform.GetChild(nextIndex).gameObject.activeSelf)
             {
-                return currentWaypoint;
+                if(canLoop) nextIndex = 0;
+                else return currentWaypoint;
             }
 
             // If the next waypoint index is equal to the count of the childdren/waypoints
@@ -121,6 +123,12 @@ public class Waypoints : MonoBehaviour
         {
             nextIndex -= 1;
 
+            // Do not go to next node if disabled
+            if (nextIndex >= 0 && !transform.GetChild(nextIndex).gameObject.activeSelf)
+            {
+                if(!canLoop) return currentWaypoint;
+            }
+
             // If the nextIndex is below 0 then it means that you are
             // already at the first waypoint, check if the path is set
             // to loop and if so return the last waypoint, otherwise we add 1 to the next Index
@@ -129,14 +137,9 @@ public class Waypoints : MonoBehaviour
 
             if (nextIndex < 0)
             {
-                // Do not go to next node if disabled
-                if (!currentWaypoint.GetChild(nextIndex).gameObject.activeSelf)
-                {
-                    return currentWaypoint;
-                }
                 if(canLoop)
                 {
-                    nextIndex = transform.childCount - 1;
+                    nextIndex = ActiveChildLength;
                 }
                 else 
                 {
