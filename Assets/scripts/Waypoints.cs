@@ -1,306 +1,130 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using UnityEngine;
-
-// Define a waypoint with branching capabilities
-[System.Serializable]
-public class WaypointNode
-{
-    public Transform waypoint;
-    public List<WaypointConnection> connections = new List<WaypointConnection>();
-    
-    // Optional: Add a name/identifier for editor convenience
-    public string nodeName;
-}
-
-// Define a connection between waypoints with conditions
-[System.Serializable]
-public class WaypointConnection
-{
-    public Transform targetWaypoint;
-    public GamePhase requiredPhase = GamePhase.Phase1; // Default to Phase1
-    public bool anyPhase = true; // If true, this connection is valid for any phase
-    public float probability = 1f; // For random path selection (1.0 = 100%)
-    
-    // Optional: Add a description for editor convenience
-    public string connectionName;
-}
+using UnityEngine.UIElements;
 
 public class Waypoints : MonoBehaviour
 {
-    [Range(0f, 2f)]
-    [SerializeField] private float waypointSize = 1f;
-    
+    [Range(0f, 2f)] // Range Slider for range of size
+    [SerializeField] private float size = 1f; // Set size of waypoint sphere
+
     [Header("Path Settings")]
-    [SerializeField] public bool visualizeAllPaths = true;
+    [SerializeField] public bool canLoop = true; // Sets path to be looped or not
+
+    [SerializeField] public bool isMovingForward = true; // Sets path to reverse after at last waypoint
+
+    [SerializeField] public bool PathBranching = false; // Sets path to be phase 1 if false and if true runs aways phase 2 
     
-    [Header("Waypoint Configuration")]
-    [SerializeField] private List<WaypointNode> waypointNodes = new List<WaypointNode>();
+    [SerializeField] private int waypointsActiveInPhase1 = 4; // Number of waypoints active in Phase 1
+
+
     
-    // Cache for faster lookup
-    private Dictionary<Transform, WaypointNode> nodeMap = new Dictionary<Transform, WaypointNode>();
-    
-    private void OnValidate()
+    private void Start()
     {
-        // Auto-populate waypoints if not already set up
-        if (waypointNodes.Count == 0 || NeedsRebuild())
-        {
-            RebuildWaypointNodes();
-        }
+        UpdateWaypointVisibility();
     }
     
-    private void Awake()
+    // Simple method to update waypoint visibility
+    private void UpdateWaypointVisibility()
     {
-        // Build the lookup dictionary
-        BuildNodeMap();
-    }
-    
-    private bool NeedsRebuild()
-    {
-        // Check if the child transforms match the waypoint nodes
-        if (transform.childCount != waypointNodes.Count)
-            return true;
-            
-        for (int i = 0; i < waypointNodes.Count; i++)
-        {
-            if (waypointNodes[i].waypoint != transform.GetChild(i))
-                return true;
-        }
-        
-        return false;
-    }
-    
-    private void RebuildWaypointNodes()
-    {
-        waypointNodes.Clear();
-        
-        // Create a node for each child transform
         for (int i = 0; i < transform.childCount; i++)
         {
-            Transform waypointTransform = transform.GetChild(i);
-            WaypointNode node = new WaypointNode
-            {
-                waypoint = waypointTransform,
-                nodeName = waypointTransform.name
-            };
-            
-            // If this isn't the last waypoint, add a default connection to the next waypoint
-            if (i < transform.childCount - 1)
-            {
-                WaypointConnection defaultConnection = new WaypointConnection
-                {
-                    targetWaypoint = transform.GetChild(i + 1),
-                    anyPhase = true, // Default connection works for any phase
-                    connectionName = "Default to " + transform.GetChild(i + 1).name
-                };
-                node.connections.Add(defaultConnection);
-            }
-            
-            waypointNodes.Add(node);
+            transform.GetChild(i).gameObject.SetActive(PathBranching || i < waypointsActiveInPhase1);
         }
     }
-    
-    private void BuildNodeMap()
+
+    // Makes changes visible in the editor
+    private void OnValidate()
     {
-        nodeMap.Clear();
-        foreach (WaypointNode node in waypointNodes)
-        {
-            if (node.waypoint != null)
-            {
-                nodeMap[node.waypoint] = node;
-            }
-        }
+        if (Application.isEditor && !Application.isPlaying)
+            UpdateWaypointVisibility();
     }
-    
-    public Transform GetNextWaypoint(Transform currentWaypoint, GamePhase currentPhase)
-    {
-        // If no current waypoint, return the first one
-        if (currentWaypoint == null && waypointNodes.Count > 0)
-        {
-            return waypointNodes[0].waypoint;
-        }
-        
-        // If the current waypoint is in our node map
-        if (nodeMap.ContainsKey(currentWaypoint))
-        {
-            WaypointNode currentNode = nodeMap[currentWaypoint];
-            
-            // Filter connections by phase if specified
-            List<WaypointConnection> validConnections = new List<WaypointConnection>();
-            
-            foreach (WaypointConnection connection in currentNode.connections)
-            {
-                // Connection is valid if target exists and either anyPhase is true or phase matches
-                if (connection.targetWaypoint != null && 
-                    (connection.anyPhase || connection.requiredPhase == currentPhase))
-                {
-                    validConnections.Add(connection);
-                }
-            }
-            
-            // If we have valid connections
-            if (validConnections.Count > 0)
-            {
-                // For now, just return the first valid connection
-                // You could implement probability-based selection here if needed
-                return validConnections[0].targetWaypoint;
-            }
-        }
-        
-        // If no connections or if waypoint isn't in the map, stay at current waypoint
-        return currentWaypoint;
-    }
-    
-    // Implement probability-based selection
-    public Transform GetRandomNextWaypoint(Transform currentWaypoint, GamePhase currentPhase)
-    {
-        if (currentWaypoint == null && waypointNodes.Count > 0)
-        {
-            return waypointNodes[0].waypoint;
-        }
-        
-        if (nodeMap.ContainsKey(currentWaypoint))
-        {
-            WaypointNode currentNode = nodeMap[currentWaypoint];
-            List<WaypointConnection> validConnections = new List<WaypointConnection>();
-            
-            foreach (WaypointConnection connection in currentNode.connections)
-            {
-                if (connection.targetWaypoint != null && 
-                    (connection.anyPhase || connection.requiredPhase == currentPhase))
-                {
-                    validConnections.Add(connection);
-                }
-            }
-            
-            if (validConnections.Count > 0)
-            {
-                // Calculate total probability
-                float totalProbability = 0f;
-                foreach (WaypointConnection connection in validConnections)
-                {
-                    totalProbability += connection.probability;
-                }
-                
-                // Select a random point along the probability spectrum
-                float randomPoint = Random.Range(0, totalProbability);
-                float runningTotal = 0f;
-                
-                // Find which connection was selected
-                foreach (WaypointConnection connection in validConnections)
-                {
-                    runningTotal += connection.probability;
-                    if (randomPoint <= runningTotal)
-                    {
-                        return connection.targetWaypoint;
-                    }
-                }
-                
-                // Fallback
-                return validConnections[0].targetWaypoint;
-            }
-        }
-        
-        return currentWaypoint;
-    }
-    
+
     private void OnDrawGizmos()
     {
-        if (waypointNodes.Count == 0 && Application.isEditor && !Application.isPlaying)
+        foreach (Transform t in transform)
         {
-            // Auto-generate for gizmo drawing if needed
-            RebuildWaypointNodes();
-            BuildNodeMap();
+            Gizmos.color = Color.blue;
+            Gizmos.DrawWireSphere(t.position, size);
         }
-        
-        // Draw waypoint spheres
-        foreach (WaypointNode node in waypointNodes)
+
+        Gizmos.color = Color.red;
+        for (int i = 0; i < transform.childCount - 1; i++)
         {
-            if (node.waypoint != null)
-            {
-                Gizmos.color = Color.blue;
-                Gizmos.DrawWireSphere(node.waypoint.position, waypointSize);
-            }
+            // Draws lines based on where they are in the Hierarchy top down.
+            Gizmos.DrawLine(transform.GetChild(i).position, transform.GetChild(i + 1).position);
         }
-        
-        // Draw connection lines
-        foreach (WaypointNode node in waypointNodes)
+
+        if (canLoop == true)
         {
-            if (node.waypoint != null)
-            {
-                foreach (WaypointConnection connection in node.connections)
-                {
-                    if (connection.targetWaypoint != null)
-                    {
-                        // Use different colors for different phases
-                        if (connection.anyPhase)
-                        {
-                            Gizmos.color = Color.red; // Default connection for any phase
-                        }
-                        else
-                        {
-                            // Use different colors for different phases
-                            // This creates unique colors based on the phase enum value
-                            float hue = ((int)connection.requiredPhase * 0.15f) % 1.0f;
-                            Gizmos.color = Color.HSVToRGB(hue, 0.7f, 0.9f);
-                        }
-                        
-                        Gizmos.DrawLine(node.waypoint.position, connection.targetWaypoint.position);
-                        
-                        // Draw a small arrow to indicate direction
-                        Vector3 direction = (connection.targetWaypoint.position - node.waypoint.position).normalized;
-                        Vector3 arrowPos = Vector3.Lerp(node.waypoint.position, connection.targetWaypoint.position, 0.7f);
-                        float arrowSize = waypointSize * 0.5f;
-                        Vector3 right = Quaternion.Euler(0, 30, 0) * -direction * arrowSize;
-                        Vector3 left = Quaternion.Euler(0, -30, 0) * -direction * arrowSize;
-                        
-                        Gizmos.DrawLine(arrowPos, arrowPos + right);
-                        Gizmos.DrawLine(arrowPos, arrowPos + left);
-                    }
-                }
-            }
+            // Connects last line to first line to finish the loop
+            Gizmos.DrawLine(transform.GetChild(transform.childCount - 1).position, transform.GetChild(0).position);
         }
     }
-    
-    // Editor utility to add a connection between waypoints
-    public void AddConnection(Transform source, Transform target, GamePhase phaseRequirement, bool anyPhase, float connectionProbability = 1f)
+
+    public Transform GetNextWaypoint(Transform currentWaypoint)
     {
-        if (source == null || target == null)
-            return;
-            
-        // Update maps if needed
-        if (nodeMap.Count != waypointNodes.Count)
-            BuildNodeMap();
-            
-        if (nodeMap.ContainsKey(source))
+        if (currentWaypoint == null)
         {
-            WaypointNode sourceNode = nodeMap[source];
-            
-            // Check if connection already exists
-            bool exists = false;
-            foreach (WaypointConnection conn in sourceNode.connections)
+            // Returns first waypoint
+            return transform.GetChild(0);
+        } 
+
+        // Gets the index of the current waypoint
+        int currentIndex = currentWaypoint.GetSiblingIndex();
+        // Stores the index of the next waypoint to trabel towards
+        int nextIndex = currentIndex;
+
+
+        // Check for if moving forward on the path
+        if (isMovingForward)
+        {
+            nextIndex += 1;
+
+            // If the next waypoint index is equal to the count of the childdren/waypoints
+            // then it is Already at the last waypoint
+            // Check if the path is set to a loop return the first waypoint as the current waypoint
+            // otherwise we subtract 1 from next index which return the same waypoint that the agent is currently at,
+            // which will cause it to stop moving since it is already there
+
+            if (nextIndex == transform.childCount)
             {
-                if (conn.targetWaypoint == target && conn.anyPhase == anyPhase && 
-                    (!anyPhase && conn.requiredPhase == phaseRequirement))
+                if (canLoop)
                 {
-                    exists = true;
-                    break;
+                    nextIndex = 0;
+                }
+                else
+                {
+                    nextIndex -= 1;
                 }
             }
-            
-            if (!exists)
+        }
+        // moving backwards on the path
+        else
+        {
+            nextIndex -= 1;
+
+            // If the nextIndex is below 0 then it means that you are
+            // already at the first waypoint, check if the path is set
+            // to loop and if so return the last waypoint, otherwise we add 1 to the next Index
+            // which will return the current waypoint that you already at which will cause the 
+            // agent to stop since it is already there
+
+            if (nextIndex < 0)
             {
-                WaypointConnection newConnection = new WaypointConnection
+                if(canLoop)
                 {
-                    targetWaypoint = target,
-                    requiredPhase = phaseRequirement,
-                    anyPhase = anyPhase,
-                    probability = connectionProbability,
-                    connectionName = "To " + target.name + (anyPhase ? " (Any Phase)" : " (Phase " + phaseRequirement.ToString() + ")")
-                };
-                
-                sourceNode.connections.Add(newConnection);
+                    nextIndex = transform.childCount - 1;
+                }
+                else 
+                {
+                    nextIndex += 1;
+                }
             }
         }
+        
+        // Return the waypoint that has an index of nextIndex
+        return transform.GetChild(nextIndex);
     }
 }
