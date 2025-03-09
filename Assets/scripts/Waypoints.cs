@@ -40,10 +40,14 @@ public class Waypoints : MonoBehaviour
             // Returns first waypoint
             return transform.GetChild(0);
         } 
+
+        // Gets the index of the current waypoint
+        int currentIndex = currentWaypoint.GetSiblingIndex();
+
         // All waypoints in between
-        else if (currentWaypoint.GetSiblingIndex() < transform.childCount - 1)
+        if (currentIndex < transform.childCount - 1)
         {
-            return transform.GetChild(currentWaypoint.GetSiblingIndex() + 1);
+            return transform.GetChild(currentIndex + 1);
         }
         else
         {
@@ -57,9 +61,8 @@ public class Waypoints : MonoBehaviour
             else
             {
                 // Return current waypoint
-                return transform.GetChild(currentWaypoint.GetSiblingIndex());
+                return transform.GetChild(currentIndex);
             }
-
         }
     }
 }
