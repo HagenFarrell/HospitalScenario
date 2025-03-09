@@ -46,7 +46,20 @@ public class WaypointMover : MonoBehaviour
         {
             currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
         }
-        RotateTowardsWaypoint();
+        if (waypoints.canLoop)
+        {
+            RotateTowardsWaypoint();
+        }
+        else
+        {
+            // If path is not looping, only rotate if not at the last waypoint
+            if (currentWaypoint.GetSiblingIndex() < waypoints.transform.childCount)
+            {
+                // Not at the last waypoint, so continue rotating
+                RotateTowardsWaypoint();
+            }
+            // If at the last waypoint, do nothing (don't rotate)
+        }
     }
 
     // Will Slowly rotate the agent towards the current waypoint it is moving towards
@@ -54,9 +67,14 @@ public class WaypointMover : MonoBehaviour
     {
         // Gets direction to waypoint
         directionToWaypoint = (currentWaypoint.position - transform.position).normalized;
-        rotationGoal = Quaternion.LookRotation(directionToWaypoint);
+        
+        // Check to stop last waypoint rotation if Canloop = false
+        if (directionToWaypoint != Vector3.zero)
+        {
+            rotationGoal = Quaternion.LookRotation(directionToWaypoint);
 
-        // Slow rotation
-        transform.rotation = Quaternion.Slerp(transform.rotation, rotationGoal, rotateSpeed * Time.deltaTime);
+            // Slow rotation
+            transform.rotation = Quaternion.Slerp(transform.rotation, rotationGoal, rotateSpeed * Time.deltaTime);
+        }
     }
 }

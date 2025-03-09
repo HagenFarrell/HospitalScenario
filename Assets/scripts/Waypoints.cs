@@ -7,6 +7,10 @@ public class Waypoints : MonoBehaviour
 {
     [Range(0f, 2f)] // Range Slider for range of size
     [SerializeField] private float size = 1f; // Set size of waypoint sphere
+
+    [Header("Path Settings")]
+    [SerializeField] public bool canLoop = true; // Sets path to be looped or not
+
     private void OnDrawGizmos()
     {
         foreach (Transform t in transform)
@@ -21,8 +25,12 @@ public class Waypoints : MonoBehaviour
             // Draws lines based on where they are in the Hierarchy top down.
             Gizmos.DrawLine(transform.GetChild(i).position, transform.GetChild(i + 1).position);
         }
-        // Connects last line to first line to finish the loop
-        Gizmos.DrawLine(transform.GetChild(transform.childCount - 1).position, transform.GetChild(0).position);
+
+        if (canLoop == true)
+        {
+            // Connects last line to first line to finish the loop
+            Gizmos.DrawLine(transform.GetChild(transform.childCount - 1).position, transform.GetChild(0).position);
+        }
     }
 
     public Transform GetNextWaypoint(Transform currentWaypoint)
@@ -39,8 +47,19 @@ public class Waypoints : MonoBehaviour
         }
         else
         {
-            // Returns first waypoint
-            return transform.GetChild(0);
+            // If we want a loop
+            if (canLoop == true)
+            {
+                // Returns first waypoint
+                return transform.GetChild(0);
+            }
+            // If we dont want a loop
+            else
+            {
+                // Return current waypoint
+                return transform.GetChild(currentWaypoint.GetSiblingIndex());
+            }
+
         }
     }
 }
