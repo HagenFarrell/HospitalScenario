@@ -17,6 +17,7 @@ public class Player : NetworkBehaviour
     private float pitch = 0f;
     private GameObject playerObject;
 
+    [SerializeField] private GameObject instructorMenuCanvas; // reference to instructor canvas
 
     [SerializeField] private GameObject radeyePrefab; // Reference to the Radeye prefab
     private GameObject radeyeInstance; // Holds the instantiated Radeye tool
@@ -156,7 +157,7 @@ public class Player : NetworkBehaviour
 
         if (instructorButton != null)
         {
-            instructorButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(instructorButton));
+            instructorButton.onClick.AddListener(() => LocalPlayerInstance.OnInstructorButtonClick());
             Debug.Log("InstructorButton onClick assigned.");
         }
         if (dispatchButton != null)
@@ -609,6 +610,42 @@ public class Player : NetworkBehaviour
             {
                 Debug.LogError("npcMovement script is missing on the NPC parent object!");
             }
+        }
+    }
+
+    public void OnInstructorButtonClick()
+    {
+        if (!isLocalPlayer)
+        {
+            Debug.LogError("onBUttonClick called on a non-local player");
+            return;
+        }
+
+        playerRole = Roles.Instructor;
+        CmdSetRole(playerRole);
+
+        if(instructorMenuCanvas == null)
+        {
+            instructorMenu foundMenu = FindObjectOfType<instructorMenu>(true);
+            if(foundMenu!= null)
+            {
+                instructorMenuCanvas = foundMenu.gameObject;
+            }
+        }
+        if(instructorMenuCanvas != null)
+        {
+            instructorMenuCanvas.SetActive(true);
+            Debug.Log("Instructor Menu Opened");
+        }
+        else
+        {
+            Debug.LogError("Instructor menu canvas not assigned");
+        }
+
+        GameObject roleSelectionUI = GameObject.Find("Canvas");
+        if(roleSelectionUI != null)
+        {
+            roleSelectionUI.SetActive(false);
         }
     }
 

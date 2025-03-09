@@ -137,8 +137,8 @@ public class Pathfinder : MonoBehaviour
         // Check if start position is valid
         if (startNode == null || !startNode.IsWalkable)
         {
-            Debug.LogError("Start position is unwalkable - path impossible from " + startPos + " or [" + startNode?.GridX + ", " + startNode?.GridY + "]"
-             + "for npc: " + npc.ToString());
+            //Debug.LogError("Start position is unwalkable - path impossible from " + startPos + " or [" + startNode?.GridX + ", " + startNode?.GridY + "]"
+            // + "for npc: " + npc.ToString());
             Vector3 temp = returnToSafety(GetBigNeighbors(startNode)).WorldPosition;
             return FindPath(temp, targetPos, npc);
         }
