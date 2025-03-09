@@ -16,6 +16,8 @@ public class Player : NetworkBehaviour
     private float yaw = 0f;
     private float pitch = 0f;
     private GameObject playerObject;
+    private List<GameObject> DispatchCams;
+    
 
 
     [SerializeField] private GameObject radeyePrefab; // Reference to the Radeye prefab
@@ -60,6 +62,13 @@ public class Player : NetworkBehaviour
     [Client]
     void Start()
     {
+
+        DispatchCams = GameObject.Find("Cameras").GetComponent<cameraSwitch>().DispatchCams;
+        foreach(GameObject cam in DispatchCams)
+        {
+            cam.SetActive(false);
+        }
+
         if (!isLocalPlayer)
         {
             // Disable camera for remote players
@@ -384,7 +393,13 @@ public class Player : NetworkBehaviour
             GameObject[] Law = GameObject.FindGameObjectsWithTag("LawEnforcement");
 
             List<GameObject> npcs = new List<GameObject>(Fire);
+            if(npcs == null) Debug.LogError("npcs null");
             npcs.AddRange(Law);
+
+            // // ensure player characters are disabled
+            // foreach(GameObject npc in npcs){
+            //     npc.SetActive(false);
+            // }
 
             return npcs.ToArray();
         }
@@ -433,8 +448,11 @@ public class Player : NetworkBehaviour
             case "InstructorButton":
                 npcRole = "Instructor";
                 playerRole = Roles.Instructor;
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
+                break;
+            case "DispatchButton":
+                npcRole = "Dispatch";
+                playerRole = Roles.Dispatch;
+                ChangeDispatchView();
                 break;
             default:
                 Debug.LogWarning($"Unknown button clicked: {button.name}");
@@ -456,6 +474,25 @@ public class Player : NetworkBehaviour
         }
     }
 
+    private void ChangeDispatchView()
+    {
+        List<GameObject> LLEcams = GameObject.FindGameObjectsWithTag("LLE/FD Cams").ToList();
+        GameObject Maincam = GameObject.FindGameObjectWithTag("MainCamera");
+        Maincam.SetActive(false);
+        transform.GetChild(1).gameObject.SetActive(false);
+        foreach(GameObject cam in LLEcams)
+        {
+            cam.SetActive(false);
+        }
+
+        
+
+        foreach(GameObject cam in DispatchCams)
+        {
+            cam.GetComponent<Camera>().enabled = true;
+            cam.SetActive(true);
+        }
+    }
     private void UndoLastAction()
     {
         // if (phaseManager == null) return;

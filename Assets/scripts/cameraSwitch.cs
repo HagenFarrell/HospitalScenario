@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class cameraSwitch : MonoBehaviour
@@ -10,7 +11,7 @@ public class cameraSwitch : MonoBehaviour
     public Vector3[] radeyePositions;
     public Vector3[] radeyeRotations;
     public GameObject radeyeCircleTool; // The object that follows the mouse
-    
+    public List<GameObject> DispatchCams;
 
     void Start()
     {
