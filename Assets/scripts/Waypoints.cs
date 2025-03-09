@@ -14,6 +14,33 @@ public class Waypoints : MonoBehaviour
 
     [SerializeField] public bool isMovingForward = true; // Sets path to reverse after at last waypoint
 
+    [SerializeField] public bool PathBranching = false; // Sets path to be phase 1 if false and if true runs aways phase 2 
+    
+    [SerializeField] private int waypointsActiveInPhase1 = 4; // Number of waypoints active in Phase 1
+
+
+    
+    private void Start()
+    {
+        UpdateWaypointVisibility();
+    }
+    
+    // Simple method to update waypoint visibility
+    private void UpdateWaypointVisibility()
+    {
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            transform.GetChild(i).gameObject.SetActive(PathBranching || i < waypointsActiveInPhase1);
+        }
+    }
+
+    // Makes changes visible in the editor
+    private void OnValidate()
+    {
+        if (Application.isEditor && !Application.isPlaying)
+            UpdateWaypointVisibility();
+    }
+
     private void OnDrawGizmos()
     {
         foreach (Transform t in transform)
