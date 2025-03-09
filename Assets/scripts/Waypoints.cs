@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
+using Mirror.BouncyCastle.Crypto.Engines;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -10,6 +12,8 @@ public class Waypoints : MonoBehaviour
 
     [Header("Path Settings")]
     [SerializeField] public bool canLoop = true; // Sets path to be looped or not
+
+    [SerializeField] public bool isMovingForward = true; // Sets path to reverse after at last waypoint
 
     private void OnDrawGizmos()
     {
@@ -43,26 +47,58 @@ public class Waypoints : MonoBehaviour
 
         // Gets the index of the current waypoint
         int currentIndex = currentWaypoint.GetSiblingIndex();
+        // Stores the index of the next waypoint to trabel towards
+        int nextIndex = currentIndex;
 
-        // All waypoints in between
-        if (currentIndex < transform.childCount - 1)
+
+        // Check for if moving forward on the path
+        if (isMovingForward)
         {
-            return transform.GetChild(currentIndex + 1);
+            nextIndex += 1;
+
+            // If the next waypoint index is equal to the count of the childdren/waypoints
+            // then it is Already at the last waypoint
+            // Check if the path is set to a loop return the first waypoint as the current waypoint
+            // otherwise we subtract 1 from next index which return the same waypoint that the agent is currently at,
+            // which will cause it to stop moving since it is already there
+
+            if (nextIndex == transform.childCount)
+            {
+                if (canLoop)
+                {
+                    nextIndex = 0;
+                }
+                else
+                {
+                    nextIndex -= 1;
+                }
+            }
         }
+        // moving backwards on the path
         else
         {
-            // If we want a loop
-            if (canLoop == true)
+            nextIndex -= 1;
+
+            // If the nextIndex is below 0 then it means that you are
+            // already at the first waypoint, check if the path is set
+            // to loop and if so return the last waypoint, otherwise we add 1 to the next Index
+            // which will return the current waypoint that you already at which will cause the 
+            // agent to stop since it is already there
+
+            if (nextIndex < 0)
             {
-                // Returns first waypoint
-                return transform.GetChild(0);
-            }
-            // If we dont want a loop
-            else
-            {
-                // Return current waypoint
-                return transform.GetChild(currentIndex);
+                if(canLoop)
+                {
+                    nextIndex = transform.childCount - 1;
+                }
+                else 
+                {
+                    nextIndex += 1;
+                }
             }
         }
+        
+        // Return the waypoint that has an index of nextIndex
+        return transform.GetChild(nextIndex);
     }
 }
