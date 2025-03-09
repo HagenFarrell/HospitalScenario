@@ -43,24 +43,33 @@ public class Waypoints : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        int ActiveChildLength = 0;
+
         foreach (Transform t in transform)
         {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawWireSphere(t.position, size);
+            if (t.gameObject.activeSelf)
+            {
+                Gizmos.color = Color.blue;
+                Gizmos.DrawWireSphere(t.position, size);
+            }
         }
 
         Gizmos.color = isMovingForward ? Color.green : Color.red;
-        
+
         for (int i = 0; i < transform.childCount - 1; i++)
         {
+            if (transform.GetChild(i + 1).gameObject.activeSelf)
+            {
             // Draws lines based on where they are in the Hierarchy top down.
             Gizmos.DrawLine(transform.GetChild(i).position, transform.GetChild(i + 1).position);
+            ActiveChildLength++;
+            }
         }
 
         if (canLoop == true)
         {
             // Connects last line to first line to finish the loop
-            Gizmos.DrawLine(transform.GetChild(transform.childCount - 1).position, transform.GetChild(0).position);
+            Gizmos.DrawLine(transform.GetChild(ActiveChildLength).position, transform.GetChild(0).position);
         }
     }
 
@@ -77,11 +86,17 @@ public class Waypoints : MonoBehaviour
         // Stores the index of the next waypoint to trabel towards
         int nextIndex = currentIndex;
 
-
         // Check for if moving forward on the path
         if (isMovingForward)
         {
             nextIndex += 1;
+
+
+            // Do not go to next node if disabled
+            if (nextIndex < transform.childCount && !currentWaypoint.GetChild(nextIndex).gameObject.activeSelf)
+            {
+                return currentWaypoint;
+            }
 
             // If the next waypoint index is equal to the count of the childdren/waypoints
             // then it is Already at the last waypoint
@@ -114,6 +129,11 @@ public class Waypoints : MonoBehaviour
 
             if (nextIndex < 0)
             {
+                // Do not go to next node if disabled
+                if (!currentWaypoint.GetChild(nextIndex).gameObject.activeSelf)
+                {
+                    return currentWaypoint;
+                }
                 if(canLoop)
                 {
                     nextIndex = transform.childCount - 1;
