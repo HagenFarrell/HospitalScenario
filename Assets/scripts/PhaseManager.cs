@@ -96,7 +96,7 @@ public class PhaseManager : MonoBehaviour
                 // Reset to first waypoint in the path
                 if (mover.waypoints != null && mover.waypoints.transform.childCount > 0)
                 {
-                    mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null);
+                    mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null, GetCurrentPhase());
                     mover.enabled = true;
                 }
             }
@@ -120,7 +120,7 @@ public class PhaseManager : MonoBehaviour
                 // Reset to first waypoint in the path
                 if (mover.waypoints != null && mover.waypoints.transform.childCount > 0)
                 {
-                    mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null);
+                    mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null, GetCurrentPhase());
                     mover.enabled = true;
                 }
             }

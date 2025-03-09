@@ -1,80 +1,117 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SocialPlatforms;
 
 public class WaypointMover : MonoBehaviour
 {
-    // Stores a referece to the waypoint system this object will use
     [SerializeField] public Waypoints waypoints;
-
+    
     [Range(1f, 10f)]
     [SerializeField] private float moveSpeed = 2f;
-
+    
     [SerializeField] private float distanceThreshold = 0.1f;
-
-
+    
     [Range(1f, 20f)]
     [SerializeField] private float rotateSpeed = 10f;
-
+    
+    [Header("Path Selection")]
+    [SerializeField] private bool useRandomPathSelection = false;
+    
     // The current waypoint target that the object is moving towards
     public Transform currentWaypoint;
-
-    // The roation target for the current frame
+    
+    // Reference to the game phase manager
+    private PhaseManager phaseManager;
+    
+    // The rotation target for the current frame
     private Quaternion rotationGoal;
     // The direction to the next waypoint that the NPC needs to rotate towards
     private Vector3 directionToWaypoint;
-
-    // Start is called before the first frame update
-    void Start()
+    
+    private void Start()
     {
-        // Set inital postion to first waypoint
-        currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
+        // Find the game phase manager
+        phaseManager = FindObjectOfType<PhaseManager>();
+        
+        // Set initial position to first waypoint
+        GamePhase currentPhase = GetCurrentGamePhase();
+        currentWaypoint = waypoints.GetNextWaypoint(null, currentPhase);
         transform.position = currentWaypoint.position;
-
+        
         // Set the next waypoint target
-        currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
+        currentWaypoint = GetNextWaypointBasedOnStrategy(currentWaypoint, currentPhase);
         transform.LookAt(currentWaypoint);
-
     }
-
-    // Update is called once per frame
-    void Update()
+    
+    private void Update()
     {
+        // Move towards the current waypoint
         transform.position = Vector3.MoveTowards(transform.position, currentWaypoint.position, moveSpeed * Time.deltaTime);
+        
+        // Check if we've reached the waypoint
         if (Vector3.Distance(transform.position, currentWaypoint.position) < distanceThreshold)
         {
-            currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
+            // Get the current game phase
+            GamePhase currentPhase = GetCurrentGamePhase();
+            
+            // Get the next waypoint based on the current phase
+            Transform nextWaypoint = GetNextWaypointBasedOnStrategy(currentWaypoint, currentPhase);
+            
+            // Only update if we got a different waypoint
+            if (nextWaypoint != currentWaypoint)
+            {
+                currentWaypoint = nextWaypoint;
+            }
         }
-        if (waypoints.canLoop)
+        
+        // Always rotate towards the current waypoint
+        RotateTowardsWaypoint();
+    }
+    
+    private Transform GetNextWaypointBasedOnStrategy(Transform current, GamePhase phase)
+    {
+        if (useRandomPathSelection)
         {
-            RotateTowardsWaypoint();
+            return waypoints.GetRandomNextWaypoint(current, phase);
         }
         else
         {
-            // If path is not looping, only rotate if not at the last waypoint
-            if (currentWaypoint.GetSiblingIndex() < waypoints.transform.childCount)
-            {
-                // Not at the last waypoint, so continue rotating
-                RotateTowardsWaypoint();
-            }
-            // If at the last waypoint, do nothing (don't rotate)
+            return waypoints.GetNextWaypoint(current, phase);
         }
     }
-
-    // Will Slowly rotate the agent towards the current waypoint it is moving towards
+    
+    private GamePhase GetCurrentGamePhase()
+    {
+        if (phaseManager != null)
+        {
+            return phaseManager.GetCurrentPhase();
+        }
+        return GamePhase.Phase1; // Default to Phase1
+    }
+    
     private void RotateTowardsWaypoint()
     {
         // Gets direction to waypoint
         directionToWaypoint = (currentWaypoint.position - transform.position).normalized;
         
-        // Check to stop last waypoint rotation if Canloop = false
+        // Check if there's a valid direction
         if (directionToWaypoint != Vector3.zero)
         {
             rotationGoal = Quaternion.LookRotation(directionToWaypoint);
-
-            // Slow rotation
+            
+            // Smooth rotation
             transform.rotation = Quaternion.Slerp(transform.rotation, rotationGoal, rotateSpeed * Time.deltaTime);
+        }
+    }
+    
+    // Add this utility method for debugging
+    public void LogAvailablePaths()
+    {
+        if (waypoints != null && currentWaypoint != null)
+        {
+            GamePhase phase = GetCurrentGamePhase();
+            Transform nextWaypoint = waypoints.GetNextWaypoint(currentWaypoint, phase);
+            Debug.Log($"Current waypoint: {currentWaypoint.name}, Next waypoint: {nextWaypoint.name} for phase {phase}");
         }
     }
 }
