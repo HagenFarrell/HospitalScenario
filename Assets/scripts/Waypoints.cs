@@ -49,7 +49,8 @@ public class Waypoints : MonoBehaviour
             Gizmos.DrawWireSphere(t.position, size);
         }
 
-        Gizmos.color = Color.red;
+        Gizmos.color = isMovingForward ? Color.green : Color.red;
+        
         for (int i = 0; i < transform.childCount - 1; i++)
         {
             // Draws lines based on where they are in the Hierarchy top down.
