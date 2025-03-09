@@ -6,7 +6,7 @@ using UnityEngine.SocialPlatforms;
 public class WaypointMover : MonoBehaviour
 {
     // Stores a referece to the waypoint system this object will use
-    [SerializeField] private Waypoints waypoints;
+    [SerializeField] public Waypoints waypoints;
 
     [Range(1f, 10f)]
     [SerializeField] private float moveSpeed = 2f;

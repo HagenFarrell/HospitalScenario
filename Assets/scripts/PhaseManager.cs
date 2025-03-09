@@ -72,6 +72,79 @@ public class PhaseManager : MonoBehaviour
         }
     }
 
+
+    // Phase 1 with new waypoint paths
+    private void ExecutePhase1()
+    {
+        Debug.Log("Executing Phase 1: NPCs begin waypoint movement");
+        
+        // Initialize civilians on their waypoint paths
+        GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
+        foreach (GameObject civilian in civilians)
+        {
+            // Set animation state to walking
+            Animator animator = civilian.GetComponent<Animator>();
+            if (animator != null)
+            {
+                animator.SetBool("IsWalking", true);
+            }
+            
+            // Enable the WaypointMover component
+            WaypointMover mover = civilian.GetComponent<WaypointMover>();
+            if (mover != null)
+            {
+                // Reset to first waypoint in the path
+                if (mover.waypoints != null && mover.waypoints.transform.childCount > 0)
+                {
+                    mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null);
+                    mover.enabled = true;
+                }
+            }
+        }
+        
+        // Initialize medicals on their waypoint paths
+        GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
+        foreach (GameObject medical in medicals)
+        {
+            // Set animation state to walking
+            Animator animator = medical.GetComponent<Animator>();
+            if (animator != null)
+            {
+                animator.SetBool("IsWalking", true);
+            }
+            
+            // Enable the WaypointMover component
+            WaypointMover mover = medical.GetComponent<WaypointMover>();
+            if (mover != null)
+            {
+                // Reset to first waypoint in the path
+                if (mover.waypoints != null && mover.waypoints.transform.childCount > 0)
+                {
+                    mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null);
+                    mover.enabled = true;
+                }
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     private int SetEgressPhase()
     {
         // Debug.Log("Awaiting Egress Selection...");
@@ -424,14 +497,7 @@ public class PhaseManager : MonoBehaviour
         {
             case GamePhase.Phase1:
                 // If coming back to Phase1, NPCs should already be reset to initial positions
-                // by the RestoreNPCsFromPhaseNode method called in PreviousPhase()
-                if (currentPhaseCoroutine != null) {
-                    StopCoroutine(currentPhaseCoroutine);
-                    currentPhaseCoroutine = null;
-                }
-                
-                // Start random movement for civilians
-                currentPhaseCoroutine = StartCoroutine(npcMove.MoveCiviliansRandomly(GetCurrentPhase()));
+                ExecutePhase1();
                 break;
                 
             case GamePhase.Phase2:
