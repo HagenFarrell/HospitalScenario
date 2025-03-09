@@ -127,6 +127,23 @@ public class PhaseManager : MonoBehaviour
         }
     }
 
+    private void ExecutePhase2(){
+        Debug.Log("executing the phae of two");
+        // Waypoints waypoint = FindObjectOfType<Waypoints>();
+        Waypoints[] waypoint = FindObjectsOfType<Waypoints>();
+        if(waypoint == null){
+            Debug.LogError("waypoint object not found!");
+        }
+        foreach(Waypoints temp in waypoint){
+            temp.isMovingForward = true;
+            temp.canLoop = false;
+
+            temp.enableAll();
+        }
+        // WaypointMover mover = civilian.GetComponent<WaypointMover>();
+
+    }
+
 
 
 
@@ -501,6 +518,7 @@ public class PhaseManager : MonoBehaviour
                 break;
                 
             case GamePhase.Phase2:
+                ExecutePhase2();
             // add alarm
             // add pull out gun
                 if (currentPhaseCoroutine != null) {

@@ -151,4 +151,11 @@ public class Waypoints : MonoBehaviour
         // Return the waypoint that has an index of nextIndex
         return transform.GetChild(nextIndex);
     }
+
+    public void enableAll(){
+        Debug.Log("enabling all");
+        foreach(Transform t in transform){
+            t.gameObject.SetActive(true);
+        }
+    }
 }

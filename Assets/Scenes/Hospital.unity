@@ -2882,7 +2882,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &279561511
 Transform:
   m_ObjectHideFlags: 0
@@ -2931,7 +2931,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &294779641
 Transform:
   m_ObjectHideFlags: 0
@@ -3229,7 +3229,7 @@ GameObject:
   - component: {fileID: 326689426}
   - component: {fileID: 326689427}
   m_Layer: 0
-  m_Name: Waypoints
+  m_Name: Waypoints2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3735,7 +3735,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68b2566e29ba1b241ad6c1f1f6e3958c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  waypoints: {fileID: 326689427}
+  waypoints: {fileID: 726217095}
   moveSpeed: 10
   distanceThreshold: 0.1
   rotateSpeed: 10
@@ -7028,7 +7028,7 @@ GameObject:
   - component: {fileID: 726217094}
   - component: {fileID: 726217095}
   m_Layer: 0
-  m_Name: Waypoints
+  m_Name: Waypoints3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -17682,7 +17682,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68b2566e29ba1b241ad6c1f1f6e3958c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  waypoints: {fileID: 726217095}
+  waypoints: {fileID: 326689427}
   moveSpeed: 10
   distanceThreshold: 0.1
   rotateSpeed: 10
