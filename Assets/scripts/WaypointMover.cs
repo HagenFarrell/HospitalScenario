@@ -59,6 +59,8 @@ public class WaypointMover : MonoBehaviour
                 Debug.Log($"Phase 2: NPC {gameObject.name} reached final waypoint and is despawning");
                 gameObject.SetActive(false);
                 return;
+            } else if(!despawnAtLastWaypoint){
+                gameObject.SetActive(true);
             }
 
             // Otherwise, continue to the next waypoint
