@@ -192,7 +192,8 @@ public class PhaseManager : MonoBehaviour
                 // Make sure animations are playing
                 Animator animator = medical.GetComponent<Animator>();
                 if (animator != null) {
-                    animator.SetBool("IsWalking", true);
+                    animator.SetBool("IsWalking", false);
+                    animator.SetBool("IsRunning", true);
                 }
             }
         }
@@ -430,7 +431,7 @@ public class PhaseManager : MonoBehaviour
         if (phaseList.MovePrevious())
         {
             Debug.Log("Moving to previous phase.");
-            // RestoreNPCsFromPhaseNode(phaseList.Current);
+            RestoreNPCsFromPhaseNode(phaseList.Current);
             StartPhase();
         }
         else
