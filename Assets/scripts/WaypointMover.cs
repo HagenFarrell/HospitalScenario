@@ -24,6 +24,8 @@ public class WaypointMover : MonoBehaviour
     private Quaternion rotationGoal;
     // The direction to the next waypoint that the NPC needs to rotate towards
     private Vector3 directionToWaypoint;
+    // Check if civilian/medical reach final waypoint so they can be despawned
+    public bool despawnAtLastWaypoint = false;
 
     // Start is called before the first frame update
     void Start()
@@ -44,6 +46,22 @@ public class WaypointMover : MonoBehaviour
         transform.position = Vector3.MoveTowards(transform.position, currentWaypoint.position, moveSpeed * Time.deltaTime);
         if (Vector3.Distance(transform.position, currentWaypoint.position) < distanceThreshold)
         {
+            // Get current phase
+            PhaseManager phaseManager = FindObjectOfType<PhaseManager>();
+            
+            // Check if this is the last waypoint
+            bool isLastWaypoint = currentWaypoint.GetSiblingIndex() == currentWaypoint.parent.childCount - 1;
+
+            // If it's the last waypoint, we should despawn, we're not looping, and we're in Phase 2
+            if (isLastWaypoint && despawnAtLastWaypoint && !waypoints.canLoop && 
+                phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase2) {
+                // Despawn the NPC
+                Debug.Log($"Phase 2: NPC {gameObject.name} reached final waypoint and is despawning");
+                gameObject.SetActive(false);
+                return;
+            }
+
+            // Otherwise, continue to the next waypoint
             currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
         }
         if (waypoints.canLoop)
