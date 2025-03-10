@@ -3237,6 +3237,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   size: 1
   canLoop: 1
+  isMovingForward: 1
 --- !u!1001 &330933689
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7004,6 +7005,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   size: 1
   canLoop: 0
+  isMovingForward: 1
 --- !u!1 &726238384
 GameObject:
   m_ObjectHideFlags: 0
@@ -17739,6 +17741,28 @@ MonoBehaviour:
   compressRotation: 0
   interpolateScale: 1
   syncScale: 1
+--- !u!114 &1462633069
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1462633065}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: badf09916faa57646b7a03984465e485, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 4
+  maxSpeed: 5
+  maxForce: 100
+  slowingRadius: 2
+  seperationRadius: 1
+  lookAheadDistance: 0.3
+  movementThreshhold: 0.01
+  animationDampTime: 0.1
+  pathWeight: 0.4
+  pathUpdateInterval: 8
 --- !u!114 &1462633071
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22459,6 +22483,28 @@ MonoBehaviour:
   compressRotation: 0
   interpolateScale: 1
   syncScale: 1
+--- !u!114 &1882515094
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1882515089}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: badf09916faa57646b7a03984465e485, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 4
+  maxSpeed: 5
+  maxForce: 100
+  slowingRadius: 2
+  seperationRadius: 1
+  lookAheadDistance: 0.3
+  movementThreshhold: 0.01
+  animationDampTime: 0.1
+  pathWeight: 0.4
+  pathUpdateInterval: 8
 --- !u!1 &1887743988 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -6258729698771675635, guid: f34181e0f7c78db45a2d0056636ebad6, type: 3}
@@ -23575,6 +23621,28 @@ MonoBehaviour:
   compressRotation: 0
   interpolateScale: 1
   syncScale: 1
+--- !u!114 &2048941922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2048941917}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: badf09916faa57646b7a03984465e485, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 4
+  maxSpeed: 5
+  maxForce: 100
+  slowingRadius: 2
+  seperationRadius: 1
+  lookAheadDistance: 0.3
+  movementThreshhold: 0.01
+  animationDampTime: 0.1
+  pathWeight: 0.4
+  pathUpdateInterval: 8
 --- !u!1 &2051450285 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 231299366655890589, guid: f34181e0f7c78db45a2d0056636ebad6, type: 3}
@@ -23625,6 +23693,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   size: 1
   canLoop: 1
+  isMovingForward: 1
 --- !u!4 &2060541838
 Transform:
   m_ObjectHideFlags: 0
@@ -23971,6 +24040,28 @@ MonoBehaviour:
   compressRotation: 0
   interpolateScale: 1
   syncScale: 1
+--- !u!114 &2098046175
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2098046170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: badf09916faa57646b7a03984465e485, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 4
+  maxSpeed: 5
+  maxForce: 100
+  slowingRadius: 2
+  seperationRadius: 1
+  lookAheadDistance: 0.3
+  movementThreshhold: 0.01
+  animationDampTime: 0.1
+  pathWeight: 0.4
+  pathUpdateInterval: 8
 --- !u!1 &2108505751 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -2571529899000337683, guid: f34181e0f7c78db45a2d0056636ebad6, type: 3}

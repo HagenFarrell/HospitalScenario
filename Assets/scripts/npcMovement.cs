@@ -6,9 +6,9 @@ using static GamePhase;
 public class npcMovement : MonoBehaviour
 {
     [SerializeField] private float stoppingRadius = 2f;
-    [SerializeField] private float rowSpacing = 4f;
+    [SerializeField] private float rowSpacing = 2f;
     [SerializeField] private float colSpacing = 2f;
-    [SerializeField] private float formationUpdateInterval = 10f;
+    [SerializeField] private float formationUpdateInterval = 4f;
 
     public DynamicNavMesh dynamicNavMesh;
 
