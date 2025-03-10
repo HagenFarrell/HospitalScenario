@@ -188,6 +188,11 @@ MonoBehaviour:
   verticalSpeed: 10
   mouseSensitivity: 250
   smoothingSpeed: 0.1
+  DispatchCams:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   radeyePrefab: {fileID: 0}
   radeyeCircleTool: {fileID: 0}
   playerRole: 0

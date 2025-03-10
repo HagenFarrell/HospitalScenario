@@ -14,6 +14,9 @@ TagManager:
   - Hostages
   - OutsideVillains
   - SuperVillain
+  - DispatchCam
+  - LLE/FD Cams
+  - Dispatch
   layers:
   - Default
   - TransparentFX
