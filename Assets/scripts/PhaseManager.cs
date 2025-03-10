@@ -23,6 +23,8 @@ public class PhaseManager : MonoBehaviour
     private List<GameObject> playerUnits;
     private GameObject[] FD;
     private GameObject[] LLE;
+    private GameObject[] newCivilians;
+    private GameObject[] newMedicals;
     private List<GameObject> villains;
     // private GameObject superVillain;
     private GameObject receptionist;
@@ -45,6 +47,8 @@ public class PhaseManager : MonoBehaviour
         LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
         playerUnits = new List<GameObject>(FD);
         playerUnits.AddRange(LLE);
+        newCivilians = GameObject.FindGameObjectsWithTag("Civilians");
+        newMedicals = GameObject.FindGameObjectsWithTag("Medicals");
 
         // Store initial positions and tags of all NPCs in the first phase node
         StoreInitialNPCState();
@@ -80,11 +84,11 @@ public class PhaseManager : MonoBehaviour
         
         // Hide gun
         villains[0].transform.GetChild(1).gameObject.SetActive(false);
-
-        // Initialize civilians on their waypoint paths
-        GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
-        foreach (GameObject civilian in civilians)
+        
+        foreach (GameObject civilian in newCivilians)
         {
+            Debug.Log("Enabling NPC: " + civilian);
+            civilian.SetActive(true);
             // Set animation state to walking
             Animator animator = civilian.GetComponent<Animator>();
             if (animator != null)
@@ -99,16 +103,18 @@ public class PhaseManager : MonoBehaviour
                 // Reset to first waypoint in the path
                 if (mover.waypoints != null && mover.waypoints.transform.childCount > 0)
                 {
+                    Debug.Log("Resetting to initial waypoint");
                     mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null);
                     mover.enabled = true;
+                    mover.despawnAtLastWaypoint = false;
                 }
             }
         }
         
-        // Initialize medicals on their waypoint paths
-        GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
-        foreach (GameObject medical in medicals)
+        foreach (GameObject medical in newMedicals)
         {
+            Debug.Log("Enabling Medicals");
+            medical.SetActive(true);
             // Set animation state to walking
             Animator animator = medical.GetComponent<Animator>();
             if (animator != null)
@@ -123,8 +129,10 @@ public class PhaseManager : MonoBehaviour
                 // Reset to first waypoint in the path
                 if (mover.waypoints != null && mover.waypoints.transform.childCount > 0)
                 {
+                    Debug.Log("Resetting to initial waypoint");
                     mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null);
                     mover.enabled = true;
+                    mover.despawnAtLastWaypoint = false;
                 }
             }
         }
@@ -156,12 +164,9 @@ public class PhaseManager : MonoBehaviour
             temp.enableAll();
         }
 
-        // Get all civilians and medicals
-        GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
-        GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
 
         // Configure all civilian WaypointMovers to despawn when they reach the last waypoint
-        foreach (GameObject civilian in civilians) {
+        foreach (GameObject civilian in newCivilians) {
             WaypointMover mover = civilian.GetComponent<WaypointMover>();
             if (mover != null) {
                 // Set up despawn behavior - we'll add a simple check to the component
@@ -177,7 +182,8 @@ public class PhaseManager : MonoBehaviour
         }
 
         // Configure all medical WaypointMovers to despawn when they reach the last waypoint
-        foreach (GameObject medical in medicals) {
+        foreach (GameObject medical in newMedicals) {
+            medical.SetActive(true);
             WaypointMover mover = medical.GetComponent<WaypointMover>();
             if (mover != null) {
                 // Set up despawn behavior
@@ -214,23 +220,6 @@ public class PhaseManager : MonoBehaviour
         // WaypointMover mover = civilian.GetComponent<WaypointMover>();
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     private int SetEgressPhase()
@@ -379,7 +368,7 @@ public class PhaseManager : MonoBehaviour
         // First, check if we need to despawn civilians and medicals in Phase 3
         if (phaseList.Current.Phase == GamePhase.Phase3)
         {
-            DespawnRemainingCiviliansAndMedicals();
+            // DespawnRemainingCiviliansAndMedicals();
         }
         
         MoveNPCsForPhase(phaseList.Current.Phase);
@@ -441,7 +430,7 @@ public class PhaseManager : MonoBehaviour
         if (phaseList.MovePrevious())
         {
             Debug.Log("Moving to previous phase.");
-            RestoreNPCsFromPhaseNode(phaseList.Current);
+            // RestoreNPCsFromPhaseNode(phaseList.Current);
             StartPhase();
         }
         else
