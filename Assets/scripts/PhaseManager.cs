@@ -78,6 +78,9 @@ public class PhaseManager : MonoBehaviour
     {
         Debug.Log("Executing Phase 1: NPCs begin waypoint movement");
         
+        // Hide gun
+        villains[0].transform.GetChild(1).gameObject.SetActive(false);
+
         // Initialize civilians on their waypoint paths
         GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
         foreach (GameObject civilian in civilians)
@@ -123,6 +126,18 @@ public class PhaseManager : MonoBehaviour
                     mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null);
                     mover.enabled = true;
                 }
+            }
+        }
+
+        // Sets villains disc to green to make then try to blend in
+        foreach(GameObject villain in villains) {
+            GameObject disc = villain.transform.GetChild(2).gameObject;
+            disc.SetActive(true);
+            
+            // Change the disc color to green
+            Renderer discRenderer = disc.GetComponent<Renderer>();
+            if (discRenderer != null) {
+                discRenderer.material.color = Color.green;
             }
         }
     }
@@ -176,11 +191,20 @@ public class PhaseManager : MonoBehaviour
             }
         }
 
-        // Set up villains and receptionist for Phase 2
+        // Shows gun
+        villains[0].transform.GetChild(1).gameObject.SetActive(true);
+
+        // Sets villains disc to red to show they are bad
         foreach(GameObject villain in villains) {
-            GameObject gun = villain.transform.GetChild(2).gameObject;
-            gun.SetActive(true);
+            GameObject disc = villain.transform.GetChild(2).gameObject;
+            
+            // Change the disc color to green
+            Renderer discRenderer = disc.GetComponent<Renderer>();
+            if (discRenderer != null) {
+                discRenderer.material.color = Color.red;
+            }
         }
+        
         
         // Receptionist hits duress alarm
         if (receptionist != null) {
