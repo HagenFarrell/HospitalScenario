@@ -140,6 +140,53 @@ public class PhaseManager : MonoBehaviour
 
             temp.enableAll();
         }
+
+        // Get all civilians and medicals
+        GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
+        GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
+
+        // Configure all civilian WaypointMovers to despawn when they reach the last waypoint
+        foreach (GameObject civilian in civilians) {
+            WaypointMover mover = civilian.GetComponent<WaypointMover>();
+            if (mover != null) {
+                // Set up despawn behavior - we'll add a simple check to the component
+                mover.despawnAtLastWaypoint = true;
+                
+                // Make sure animations are playing
+                Animator animator = civilian.GetComponent<Animator>();
+                if (animator != null) {
+                    animator.SetBool("IsWalking", false);
+                    animator.SetBool("IsRunning", true);
+                }
+            }
+        }
+
+        // Configure all medical WaypointMovers to despawn when they reach the last waypoint
+        foreach (GameObject medical in medicals) {
+            WaypointMover mover = medical.GetComponent<WaypointMover>();
+            if (mover != null) {
+                // Set up despawn behavior
+                mover.despawnAtLastWaypoint = true;
+                
+                // Make sure animations are playing
+                Animator animator = medical.GetComponent<Animator>();
+                if (animator != null) {
+                    animator.SetBool("IsWalking", true);
+                }
+            }
+        }
+
+        // Set up villains and receptionist for Phase 2
+        foreach(GameObject villain in villains) {
+            GameObject gun = villain.transform.GetChild(2).gameObject;
+            gun.SetActive(true);
+        }
+        
+        // Receptionist hits duress alarm
+        if (receptionist != null) {
+            Debug.Log("Duress alarm activated. Dispatcher notified.");
+        }
+
         // WaypointMover mover = civilian.GetComponent<WaypointMover>();
 
     }
@@ -314,7 +361,7 @@ public class PhaseManager : MonoBehaviour
         MoveNPCsForPhase(phaseList.Current.Phase);
     }
 
-    private void DespawnRemainingCiviliansAndMedicals()
+    public void DespawnRemainingCiviliansAndMedicals()
     {
         // Find and disable any remaining civilians
         GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
@@ -367,7 +414,6 @@ public class PhaseManager : MonoBehaviour
             StopCoroutine(currentPhaseCoroutine);
             currentPhaseCoroutine = null;
         }
-
         if (phaseList.MovePrevious())
         {
             Debug.Log("Moving to previous phase.");
@@ -519,26 +565,6 @@ public class PhaseManager : MonoBehaviour
                 
             case GamePhase.Phase2:
                 ExecutePhase2();
-            // add alarm
-            // add pull out gun
-                if (currentPhaseCoroutine != null) {
-                    StopCoroutine(currentPhaseCoroutine);
-                    currentPhaseCoroutine = null;
-                }
-                
-                // Villains pull out guns
-                foreach(GameObject villain in villains){
-                    GameObject gun = villain.transform.GetChild(2).gameObject;
-                    gun.SetActive(true);
-                }
-                
-                // Receptionist hits duress alarm
-                if (receptionist != null) {
-                    Debug.Log("Duress alarm activated. Dispatcher notified.");
-                }
-                
-                // Start civilians and medicals running for the exit
-                currentPhaseCoroutine = StartCoroutine(npcMove.MoveToEdgeAndDespawn());
                 break;
                 
             case GamePhase.Phase3:
