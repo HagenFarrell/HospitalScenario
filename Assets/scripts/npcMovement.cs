@@ -8,7 +8,7 @@ public class npcMovement : MonoBehaviour
     [SerializeField] private float stoppingRadius = 2f;
     [SerializeField] private float rowSpacing = 2f;
     [SerializeField] private float colSpacing = 2f;
-    [SerializeField] private float formationUpdateInterval = 0.25f;
+    [SerializeField] private float formationUpdateInterval = 0.10f;
 
     public DynamicNavMesh dynamicNavMesh;
 
@@ -32,122 +32,139 @@ public class npcMovement : MonoBehaviour
     }
 
     // Rewrote this function to implement the steering solution analogous to StarCraft II's design.
-    public void moveFormation(GameObject[] npcs)
+   public void moveFormation(GameObject[] npcs)
+{
+    Debug.Log($"NPCs length = {npcs.Length}");
+    if (npcs.Length == 0) return;
+
+    var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+    if (Physics.Raycast(ray, out var hit))
     {
-        // You know what this does ;)
-        Debug.Log($"NPCs length = {npcs.Length}");
-        if (npcs.Length == 0) return;
-
-        var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out var hit))
+        // Get the click position - this is where the formation will be centered
+        Vector3 clickPosition = hit.point;
+        
+        // Set formation direction - typically toward the camera or based on the terrain
+        Vector3 formationDirection = Vector3.forward; // Default direction
+        
+        // Try to use a more natural direction if available (e.g., from current position to click)
+        if (npcs.Length > 0 && npcs[0] != null)
         {
-            // We need to create a commander, this way we can have the group offset from the commanders position.
-            var commanderAI = npcs[0].GetComponent<AIMover>();
-
-            // Early exit to prevent crashing.
-            if (commanderAI == null)
+            Vector3 directionToClick = (clickPosition - npcs[0].transform.position).normalized;
+            // Use horizontal direction only
+            directionToClick.y = 0;
+            if (directionToClick.magnitude > 0.1f)
             {
-                Debug.LogError("Commander NPC does not have an AIMover component!");
-                return;
+                formationDirection = directionToClick;
             }
+        }
+        
+        // Clear tracking dictionaries
+        npcAgents.Clear();
+        npcDestinationStatus.Clear();
+        npcAnimators.Clear();
 
-            // Clear tracking directories.
-            npcAgents.Clear();
-            npcDestinationStatus.Clear();
-            npcAnimators.Clear();
+        // Register all NPCs first
+        foreach (var npc in npcs)
+        {
+            var mover = npc.GetComponent<AIMover>();
+            var animator = npc.GetComponent<Animator>();
 
-            foreach (var npc in npcs)
+            if (mover != null)
             {
-                // Grab the AIMover and Animator components for each NPC.
-                var mover = npc.GetComponent<AIMover>();
-                var animator = npc.GetComponent<Animator>();
-
-                if (mover != null)
-                {
-                    npcAgents[npc] = mover;
-                    npcDestinationStatus[npc] = false;
-
-                    if (animator != null) npcAnimators[npc] = animator;
-                }
+                npcAgents[npc] = mover;
+                npcDestinationStatus[npc] = false;
+                if (animator != null) npcAnimators[npc] = animator;
             }
+        }
+        
+        // Calculate all final destinations based on the click position
+        for (var i = 0; i < npcs.Length; i++)
+        {
+            var npc = npcs[i];
+            var agent = npcAgents[npc];
 
-            commanderAI.SetTargetPosition(hit.point);
-            StartCoroutine(commanderAI.UpdatePath(commanderAI));
+            if (agent == null) continue;
             
-            var commanderPosition = commanderAI.transform.position;
-            var commanderForward = commanderAI.transform.forward;
-
-            for (var i = 1; i < npcs.Length; i++) // Start from 1 to skip commander
+            Vector3 finalPosition;
+            
+            if (i == 0)
             {
-                var npc = npcs[i];
-                var agent = npcAgents[npc];
-
-                if (agent != null)
-                {
-                    // Calculate formation position
-                    var formationSlot = ComputeTriangleSlot(
-                        i,
-                        commanderPosition,
-                        commanderForward,
-                        rowSpacing,
-                        colSpacing
-                    );
-
-                    // Set target and start path update immediately
-                    agent.SetTargetPosition(formationSlot);
-                    StartCoroutine(agent.UpdatePath(agent)); // Pass the agent itself as parameter
-                }
+                // Commander goes to the click position
+                finalPosition = clickPosition;
+            }
+            else
+            {
+                // Calculate formation position relative to click position
+                finalPosition = ComputeTriangleSlot(
+                    i,
+                    clickPosition,       // Use click position, not commander position
+                    formationDirection,  // Use calculated direction
+                    rowSpacing,
+                    colSpacing
+                );
             }
 
-            // If a formation corutine is already running, halt.
-            if (formationUpdateCoroutine != null) StopCoroutine(formationUpdateCoroutine);
-
-            formationUpdateCoroutine = StartCoroutine(updateFormationPositions(npcs));
+            // Set the destination and calculate path immediately
+            agent.SetTargetPosition(finalPosition);
+            StartCoroutine(agent.UpdatePath(agent));
         }
-    }
 
-    private IEnumerator updateFormationPositions(GameObject[] npcs)
+        // Optionally start an update coroutine for ongoing adjustments
+        if (formationUpdateCoroutine != null) StopCoroutine(formationUpdateCoroutine);
+        formationUpdateCoroutine = StartCoroutine(updateFormationPositions(npcs, clickPosition, formationDirection));
+    }
+}
+
+private IEnumerator updateFormationPositions(GameObject[] npcs, Vector3 formationCenter, Vector3 formationDirection)
+{
+    // Small initial delay
+    yield return new WaitForSeconds(0.1f);
+    
+    while (!allNpcsAtDestination())
     {
-        while (!allNpcsAtDestination())
+        // Check if any units need their paths refreshed
+        for (var i = 0; i < npcs.Length; i++)
         {
-            var commanderAI = npcs[0].GetComponent<AIMover>();
+            var npc = npcs[i];
+            var agent = npcAgents[npc];
 
-            if (commanderAI == null) yield break;
-
-            var commanderPosition = commanderAI.transform.position;
-            var commanderForward = commanderAI.transform.forward;
-
-            // Update all NPCs including the commander
-            for (var i = 0; i < npcs.Length; i++)
+            if (agent != null && !agent.isAtDestination)
             {
-                var npc = npcs[i];
-                var agent = npc.GetComponent<AIMover>();
-
-                if (agent != null)
+                // Get the unit's current target
+                Vector3 currentTarget = agent.target.position;
+                
+                // Only recalculate if needed (unit might be stuck or had issues)
+                if (Vector3.Distance(npc.transform.position, currentTarget) > 5f && 
+                    agent.currentVelocity.magnitude < 0.1f)
                 {
-                    // Skip commander.
-                    if (i == 0) continue;
-
-                    var formationSlot = ComputeTriangleSlot(
-                        i,
-                        commanderPosition,
-                        commanderForward,
-                        rowSpacing,
-                        colSpacing
-                    );
-
-                    // Only update if the NPC needs to move
-                    if (Vector3.Distance(npc.transform.position, formationSlot) > 0.5f)
+                    // Unit seems stuck - calculate a new path
+                    Vector3 finalPosition;
+                    
+                    if (i == 0)
                     {
-                        agent.SetTargetPosition(formationSlot);
-                        if (!agent.isAtDestination) StartCoroutine(agent.UpdatePath(commanderAI));
+                        // Commander
+                        finalPosition = formationCenter;
                     }
+                    else
+                    {
+                        // Calculate formation position relative to formation center
+                        finalPosition = ComputeTriangleSlot(
+                            i,
+                            formationCenter,
+                            formationDirection,
+                            rowSpacing,
+                            colSpacing
+                        );
+                    }
+                    
+                    agent.SetTargetPosition(finalPosition);
                 }
             }
-
-            yield return new WaitForSeconds(formationUpdateInterval);
         }
+
+        yield return new WaitForSeconds(formationUpdateInterval);
     }
+}
 
     private bool allNpcsAtDestination()
     {

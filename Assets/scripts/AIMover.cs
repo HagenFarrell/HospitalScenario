@@ -9,7 +9,7 @@ public class AIMover : MonoBehaviour
     // ---- Variables for the BOIDS algorithm. ----
     [SerializeField] private float speed = 4f;
     [SerializeField] private float maxSpeed = 5f;
-    [SerializeField] private float maxForce = 100f;
+    [SerializeField] private float maxForce = 150f;
     [SerializeField] private float slowingRadius = 2f;
     [SerializeField] private float seperationRadius = 1f;
     [SerializeField] private float lookAheadDistance = 0.3f;
@@ -44,7 +44,16 @@ public class AIMover : MonoBehaviour
     public bool isAtDestination { get; private set; }
 
     // Maintain a reference globally about the current speed of the AI.
-    private Vector3 currentVelocity;
+    // Private backing field
+    private Vector3 _currentVelocity;
+
+    // Full property
+    public Vector3 currentVelocity 
+    { 
+        get { return _currentVelocity; }
+        private set { _currentVelocity = value; }
+    }
+    
 
     // Lazy loading for target transforms. Only to be used when needed. Otherwise is not loaded.
     private Transform _target;
@@ -87,23 +96,35 @@ public class AIMover : MonoBehaviour
         {
             yield break; // Exit the coroutine safely
         }
+    
+        // Calculate path immediately first (don't wait)
+        if (target != null && !isAtDestination)
+        {
+            path = pathfinder.FindPath(transform.position, target.position, this); // Use THIS unit, not npc parameter
+            if (path != null && path.Count > 0)
+            {
+                currentWaypoint = 0;
+            }
+        }
+    
+        // Then continue with periodic updates
         while (!isAtDestination)
         {
             if (target != null)
             {
-                // Debug.Log($"Finding path from {transform.position} to {target.position}");
-                path = pathfinder.FindPath(transform.position, target.position, npc);
+                // Wait before next update (we already did the first one immediately)
+                yield return new WaitForSeconds(pathUpdateInterval);
+            
+                path = pathfinder.FindPath(transform.position, target.position, this); // Use THIS unit, not npc parameter
                 if (path != null && path.Count > 0)
                 {
-                    // Debug.Log($"Path found with {path.Count} waypoints");
                     currentWaypoint = 0;
                 }
-                else
-                {
-                    // Debug.Log("No path found!");
-                }
             }
-            yield return new WaitForSeconds(pathUpdateInterval);
+            else
+            {
+                yield return null; 
+            }
         }
     }
 
@@ -262,8 +283,9 @@ public class AIMover : MonoBehaviour
         // Update the currentVelocity with the steering force previously calculated.
         Vector3 smoothedSteering = Vector3.Lerp(previousSteering, steering, 0.15f);
         previousSteering = smoothedSteering;
-
-        currentVelocity.y = 0;
+        
+        // Veclocity object must be created for reinitializing currentVelocity due to its set nature.
+        currentVelocity = new Vector3(currentVelocity.x, 0, currentVelocity.z);
         smoothedSteering.y = 0;
 
         // More direct velocity application
@@ -337,7 +359,17 @@ public class AIMover : MonoBehaviour
         target.position = newPosition;
         currentWaypoint = 0;
         isAtDestination = false;
-        path = null;
+    
+        // Calculate path immediately without waiting
+        if (pathfinder != null)
+        {
+            path = pathfinder.FindPath(transform.position, target.position, this);
+            if (path != null && path.Count > 0)
+            {
+                currentWaypoint = 0;
+                // Debug.Log($"Initial path found with {path.Count} waypoints");
+            }
+        }
     }
 
     void OnDrawGizmos()
