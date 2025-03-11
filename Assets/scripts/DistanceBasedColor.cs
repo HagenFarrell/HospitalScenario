@@ -18,6 +18,13 @@ public class DistanceBasedColor : MonoBehaviour
 
     void Update()
     {
+
+        if(cylinderRenderer == null) Debug.LogError("cylinderRenderer null");
+        
+        if(MRIMachine == null) Debug.LogError("MRIMachine null");
+        
+        if(center == null) Debug.LogError("Center null");
+
         if (MRIMachine != null && cylinderRenderer != null && center != null)
         {
             // Calculate the distance between the Center GameObject and the MRIMachine
@@ -48,6 +55,8 @@ public class DistanceBasedColor : MonoBehaviour
         }
         else
         {
+
+
             Debug.LogError("MRIMachine, cylinderRenderer, or Center is not assigned!");
         }
     }
