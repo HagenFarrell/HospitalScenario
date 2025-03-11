@@ -8,7 +8,7 @@ public class npcMovement : MonoBehaviour
     [SerializeField] private float stoppingRadius = 2f;
     [SerializeField] private float rowSpacing = 2f;
     [SerializeField] private float colSpacing = 2f;
-    [SerializeField] private float formationUpdateInterval = 4f;
+    [SerializeField] private float formationUpdateInterval = 0.25f;
 
     public DynamicNavMesh dynamicNavMesh;
 
@@ -73,6 +73,31 @@ public class npcMovement : MonoBehaviour
 
             commanderAI.SetTargetPosition(hit.point);
             StartCoroutine(commanderAI.UpdatePath(commanderAI));
+            
+            var commanderPosition = commanderAI.transform.position;
+            var commanderForward = commanderAI.transform.forward;
+
+            for (var i = 1; i < npcs.Length; i++) // Start from 1 to skip commander
+            {
+                var npc = npcs[i];
+                var agent = npcAgents[npc];
+
+                if (agent != null)
+                {
+                    // Calculate formation position
+                    var formationSlot = ComputeTriangleSlot(
+                        i,
+                        commanderPosition,
+                        commanderForward,
+                        rowSpacing,
+                        colSpacing
+                    );
+
+                    // Set target and start path update immediately
+                    agent.SetTargetPosition(formationSlot);
+                    StartCoroutine(agent.UpdatePath(agent)); // Pass the agent itself as parameter
+                }
+            }
 
             // If a formation corutine is already running, halt.
             if (formationUpdateCoroutine != null) StopCoroutine(formationUpdateCoroutine);
