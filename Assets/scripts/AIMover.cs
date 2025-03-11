@@ -26,7 +26,7 @@ public class AIMover : MonoBehaviour
 
     // ---- Pathingfinding variables ----
     [SerializeField] private float pathWeight = 0.4f;
-    [SerializeField] private float pathUpdateInterval = 8f;
+    [SerializeField] private float pathUpdateInterval = 0.5f;
     private Pathfinder pathfinder;
     private List<Vector3> path;
     private int currentWaypoint = 0;
@@ -322,7 +322,7 @@ public class AIMover : MonoBehaviour
 
 
 
-    // Uses quaternions (to avoid gimble lock) for smooth rotations based on hit point clicked. (target location)
+    // Uses quaternions for smooth rotations based on hit point clicked. (target location)
     private void updateRotation()
     {
         if (currentVelocity.magnitude > 0.1f)
