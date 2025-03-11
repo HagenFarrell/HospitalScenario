@@ -32,9 +32,11 @@ public class PhaseManager : MonoBehaviour
     public delegate void EgressSelectedHandler(int egressPhase);
     public static event EgressSelectedHandler OnEgressSelected;
 
+    public int currentPhase;
 
     private void Start()
     {
+        currentPhase = 0;
         phaseList = new PhaseLinkedList();
 
         // Define the phases
@@ -80,6 +82,7 @@ public class PhaseManager : MonoBehaviour
     // Phase 1 with new waypoint paths
     private void ExecutePhase1()
     {
+        currentPhase = 1;
         Debug.Log("Executing Phase 1: NPCs begin waypoint movement");
         
         // Hide gun
@@ -151,6 +154,7 @@ public class PhaseManager : MonoBehaviour
     }
 
     private void ExecutePhase2(){
+        currentPhase = 2;
         Debug.Log("executing the phae of two");
         // Waypoints waypoint = FindObjectOfType<Waypoints>();
         Waypoints[] waypoint = FindObjectsOfType<Waypoints>();
