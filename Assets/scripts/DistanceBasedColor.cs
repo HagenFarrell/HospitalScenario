@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class DistanceBasedColor : MonoBehaviour
 {
-    public GameObject MRIMachine; // Assign the MRIMachine in the Inspector
+    public GameObject GammaKnife; // Assign the GammaKnife in the Inspector
     public Renderer cylinderRenderer; // Assign the Renderer of the cylinder in the Inspector
     public Transform center; // Assign the Center GameObject for the cylinder in the Inspector
     public float maxDistance = 50f; // The distance at which the object is fully green
@@ -19,16 +19,10 @@ public class DistanceBasedColor : MonoBehaviour
     void Update()
     {
 
-        if(cylinderRenderer == null) Debug.LogError("cylinderRenderer null");
-        
-        if(MRIMachine == null) Debug.LogError("MRIMachine null");
-        
-        if(center == null) Debug.LogError("Center null");
-
-        if (MRIMachine != null && cylinderRenderer != null && center != null)
+        if (GammaKnife != null && cylinderRenderer != null && center != null)
         {
-            // Calculate the distance between the Center GameObject and the MRIMachine
-            float distance = Vector3.Distance(center.position, MRIMachine.transform.position);
+            // Calculate the distance between the Center GameObject and the GammaKnife
+            float distance = Vector3.Distance(center.position, GammaKnife.transform.position);
 
             // Normalize the distance to a range of 0 to 1
             float t = Mathf.Clamp01(distance / maxDistance);
@@ -55,9 +49,13 @@ public class DistanceBasedColor : MonoBehaviour
         }
         else
         {
+            if(cylinderRenderer == null) Debug.LogError("cylinderRenderer null");
+        
+            if(GammaKnife == null) Debug.LogError("GammaKnife null");
+            
+            if(center == null) Debug.LogError("Center null");
 
-
-            Debug.LogError("MRIMachine, cylinderRenderer, or Center is not assigned!");
+            // Debug.LogError("GammaKnife, cylinderRenderer, or Center is not assigned!");
         }
     }
 }
