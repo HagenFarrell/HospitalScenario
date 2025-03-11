@@ -17,6 +17,7 @@ TagManager:
   - DispatchCam
   - LLE/FD Cams
   - Dispatch
+  - RadiationSource
   layers:
   - Default
   - TransparentFX
