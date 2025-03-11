@@ -17,7 +17,7 @@ public class Player : NetworkBehaviour
     private float pitch = 0f;
     private GameObject playerObject;
     private List<GameObject> DispatchCams;
-    
+    private AudioSource alarmNoise;
 
 
     [SerializeField] private GameObject radeyePrefab; // Reference to the Radeye prefab
@@ -62,7 +62,18 @@ public class Player : NetworkBehaviour
     [Client]
     void Start()
     {
+        alarmNoise = GetComponent<AudioSource>();
+        AudioListener audioListener = transform.GetChild(1).GetComponent<AudioListener>();
 
+        // Disable the AudioListener on non-local players (if this is not the local player's camera)
+        if (!isLocalPlayer)
+        {
+            audioListener.enabled = false;
+        }
+        else
+        {
+            audioListener.enabled = true;  // Ensure the local player's camera has the AudioListener
+        }
         DispatchCams = GameObject.Find("Cameras").GetComponent<cameraSwitch>().DispatchCams;
         foreach(GameObject cam in DispatchCams)
         {
@@ -367,19 +378,28 @@ public class Player : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha0) && playerRole == Roles.Instructor) // Next phase
         {
             phaseManager.NextPhase();
+            if (phaseManager.currentPhase == 2) SoundAlarm();
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha9) && playerRole == Roles.Instructor) // Previous phase
         {
             phaseManager.PreviousPhase();
+            if (phaseManager.currentPhase == 2) SoundAlarm();
         }
 
         if (Input.GetKeyDown(KeyCode.U)) // Undo last action
         {
             UndoLastAction();
         }
+
+        
     }
 
+    private void SoundAlarm()
+    {
+        if(playerRole == Roles.Dispatch || playerRole == Roles.Instructor)
+            alarmNoise.Play();
+    }
     private GameObject[] GetNpcs(string role)
     {
         if (role != "Instructor")
