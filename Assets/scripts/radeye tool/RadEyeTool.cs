@@ -4,61 +4,100 @@ using Mirror;
 
 public class RadEyeTool : NetworkBehaviour
 {
-    public Transform source; // Automatically assigned radiation source
-    public AnimationCurve radiationGraph; // Assign this in Unity to define radiation levels
-    public Text radiationDisplay; // UI text on RadEye Tool
+    public Transform source;
+    public AnimationCurve radiationGraph;
+    public Text radiationDisplay;
     public Camera mainCamera;
 
-    private bool isActive = false; // Tool starts OFF
-    private MeshRenderer[] renderers; // Store all renderers in the tool
-    private Collider toolCollider; // For raycast detection
+    private bool isActive = false;
+    private Renderer[] renderers;
+    private Player player;
+    private bool isToolLocal = false;
 
-    void Awake()
+    public override void OnStartClient()
     {
-        // Immediately hide tool on spawn before Start() runs
-        gameObject.SetActive(false);
+        base.OnStartClient();
+
+        // Find the local player
+        player = NetworkClient.localPlayer?.GetComponent<Player>();
+
+        if (player != null && player.isLocalPlayer)
+        {
+            isToolLocal = true;
+            Debug.Log("RadEyeTool detected the local player.");
+
+            //  Assign the local player's camera to the tool
+            mainCamera = player.GetComponentInChildren<Camera>();
+            if (mainCamera == null)
+            {
+                Debug.LogError(" Could not find Camera on the Player!");
+            }
+            else
+            {
+                Debug.Log($" Assigned Camera: {mainCamera.name}");
+            }
+
+            InitializeToolForLocalPlayer();
+        }
     }
 
-    void Start()
+
+    private void InitializeToolForLocalPlayer()
     {
-        if (!isLocalPlayer) return; // Ensure only local player manages their own tool
+        Debug.Log("RadEyeTool now belongs to the local player!");
 
         AssignRadiationSource();
 
+        // Ensure the GameObject is enabled so Update() runs
+        gameObject.SetActive(true);
+
         // Get all renderers & colliders
         renderers = GetComponentsInChildren<MeshRenderer>();
-        toolCollider = GetComponent<Collider>();
 
-        // Ensure the tool remains off at start
-        ToggleRadEyeTool(false);
+        // Ensure tool starts OFF but Update() is still running
+        isActive = false;
+        SetToolVisibility(isActive);
     }
 
     void Update()
     {
-        if (!isLocalPlayer) return; // Prevents remote players from toggling your tool
+        if (!isToolLocal || player == null) return;
+
+        // Keep the tool slightly ahead of the player in the world space
+        transform.position = player.transform.position + player.transform.right * 0.0f + player.transform.up * -0.35f + player.transform.forward * 0.5f;
 
         // Toggle RadEye Tool when pressing "R"
         if (Input.GetKeyDown(KeyCode.R))
         {
             isActive = !isActive;
-            ToggleRadEyeTool(isActive);
+            SetToolVisibility(isActive);
         }
 
-        // Only check for clicks if tool is active
-        if (isActive && Input.GetMouseButtonDown(0))
+        // Check for clicks and only update radiation if the clicked object has the correct tag
+        if (isActive && Input.GetMouseButtonDown(0)) // Left mouse click
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
-                float radiationLevel = CalculateRadiation(hit.point);
-                DisplayRadiation(radiationLevel);
+                // Check if the object has the correct tag
+                if (hit.collider.CompareTag("FireDepartment") || hit.collider.CompareTag("LawEnforcement"))
+                {
+                    float radiationLevel = CalculateRadiation(hit.point);
+                    DisplayRadiation(radiationLevel, true);
+                    Debug.Log($"Radiation displayed for: {hit.collider.name} (Tag: {hit.collider.tag})");
+                }
+                else
+                {
+                    Debug.Log($"Ignoring object: {hit.collider.name} (Tag: {hit.collider.tag})");
+                    DisplayRadiation(0f, false); // Show "Select NPC" instead of 0 R
+                }
             }
         }
     }
 
     void AssignRadiationSource()
     {
-        GameObject foundSource = GameObject.FindWithTag("RadiationSource"); // Finds the single source
+        GameObject foundSource = GameObject.FindWithTag("RadiationSource");
 
         if (foundSource != null)
         {
@@ -71,51 +110,62 @@ public class RadEyeTool : NetworkBehaviour
         }
     }
 
-    float CalculateRadiation(Vector3 objectPosition)
+    void SetToolVisibility(bool state)
     {
-        if (source == null)
-        {
-            Debug.LogWarning("Radiation source is not assigned yet.");
-            return 0f; // No source assigned yet
-        }
+        if (renderers == null)
+            renderers = GetComponentsInChildren<MeshRenderer>();
 
-        float distance = Vector3.Distance(source.position, objectPosition);
-        return radiationGraph.Evaluate(distance); // Get radiation from the graph
-    }
-
-    void DisplayRadiation(float radiation)
-    {
-        if (radiationDisplay != null)
-        {
-            radiationDisplay.text = $"{radiation:F2} R";
-            radiationDisplay.gameObject.SetActive(true); // Ensure UI is enabled
-        }
-
-        Debug.Log($"Radiation at object: {radiation:F2} R");
-    }
-
-    void ToggleRadEyeTool(bool state)
-    {
-        if (!isLocalPlayer) return; // Only allow local player to toggle
-
-        gameObject.SetActive(state); // Properly toggle the whole tool
-
-        // Enable/disable only visuals, NOT the script
-        foreach (MeshRenderer renderer in renderers)
+        foreach (Renderer renderer in renderers)
         {
             renderer.enabled = state;
         }
 
-        // Enable/disable UI separately
+        // Ensure the UI is also toggled
         if (radiationDisplay != null)
         {
             radiationDisplay.gameObject.SetActive(state);
         }
 
-        // Disable the collider so it doesn't interact when off
-        if (toolCollider != null)
+        Debug.Log($"RadEye Tool toggled: {(state ? "ON" : "OFF")}");
+    }
+
+    float CalculateRadiation(Vector3 objectPosition)
+    {
+        if (source == null)
         {
-            toolCollider.enabled = state;
+            Debug.LogWarning(" Radiation source is not assigned yet.");
+            return 0f;
+        }
+
+        float distance = Vector3.Distance(source.position, objectPosition);
+        float radiation = radiationGraph.Evaluate(distance);
+
+        Debug.Log($" Clicked Object at {objectPosition} | Distance: {distance}m | Radiation: {radiation} R");
+
+        return radiation;
+    }
+
+
+    void DisplayRadiation(float radiation, bool validTarget)
+    {
+        if (radiationDisplay != null)
+        {
+            if (validTarget)
+            {
+                radiationDisplay.text = $"{radiation:F2} R"; // Display the radiation value
+            }
+            else
+            {
+                radiationDisplay.text = "Select NPC"; // Show "Select NPC" when clicking an invalid object
+            }
+
+            radiationDisplay.gameObject.SetActive(true);
         }
     }
+
+    public bool IsActive()
+    {
+        return isActive;
+    }
+
 }
