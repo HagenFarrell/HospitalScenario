@@ -18860,33 +18860,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 94e7cd55f3678154db5f5795eb1644a3, type: 3}
   m_PrefabInstance: {fileID: 1333045377}
   m_PrefabAsset: {fileID: 0}
---- !u!23 &1481914260 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 94e7cd55f3678154db5f5795eb1644a3, type: 3}
-  m_PrefabInstance: {fileID: 1333045377}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1481914262 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 94e7cd55f3678154db5f5795eb1644a3, type: 3}
-  m_PrefabInstance: {fileID: 1333045377}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1481914263
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1481914259}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 71bbb9398cbea39499095a5bfce1a9b6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GammaKnife: {fileID: 0}
-  cylinderRenderer: {fileID: 1481914260}
-  center: {fileID: 1481914262}
-  maxDistance: 50
-  transparency: 0.5
 --- !u!1 &1484560363 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3778011436065751, guid: f34181e0f7c78db45a2d0056636ebad6, type: 3}
@@ -26062,7 +26035,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71bbb9398cbea39499095a5bfce1a9b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GammaKnife: {fileID: 0}
+  GammaKnife: {fileID: 1481914259}
   cylinderRenderer: {fileID: 3873567724145442194}
   center: {fileID: 3873567723114232069}
   maxDistance: 10
