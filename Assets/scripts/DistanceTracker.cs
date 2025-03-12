@@ -4,21 +4,21 @@ using UnityEngine;
 
 public class DistanceTracker : MonoBehaviour
 {
-    public GameObject MRIMachine; // Assign the MRIMachine GameObject in the Inspector
+    public GameObject GammaKnife; // Assign the GammaKnife GameObject in the Inspector
 
     void Update()
     {
-        if (MRIMachine != null)
+        if (GammaKnife != null)
         {
-            // Calculate the distance between this object and the MRIMachine
-            float distance = Vector3.Distance(transform.position, MRIMachine.transform.position);
+            // Calculate the distance between this object and the GammaKnife
+            float distance = Vector3.Distance(transform.position, GammaKnife.transform.position);
 
             // Print the actual distance to the console
-           // Debug.Log("Distance from MRIMachine: " + distance);
+           // Debug.Log("Distance from GammaKnife: " + distance);
         }
         else
         {
-            Debug.LogError("MRIMachine is not assigned!");
+            Debug.LogError("GammaKnife is not assigned!");
         }
     }
 }

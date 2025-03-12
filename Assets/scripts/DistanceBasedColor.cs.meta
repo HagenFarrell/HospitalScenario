@@ -3,7 +3,10 @@ guid: 71bbb9398cbea39499095a5bfce1a9b6
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - MRIMachine: {fileID: 919132149155446097, guid: 94e7cd55f3678154db5f5795eb1644a3, type: 3}
+  - cylinderRenderer: {instanceID: 0}
+  - center: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
