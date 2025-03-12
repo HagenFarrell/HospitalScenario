@@ -94,11 +94,6 @@ public class PhaseManager : MonoBehaviour
             civilian.SetActive(true);
             // Set animation state to walking
             Animator animator = civilian.GetComponent<Animator>();
-            if (animator != null)
-            {
-                animator.SetBool("IsWalking", true);
-                animator.SetBool("IsRunning", false);
-            }
             
             // Enable the WaypointMover component
             WaypointMover mover = civilian.GetComponent<WaypointMover>();
@@ -112,6 +107,18 @@ public class PhaseManager : MonoBehaviour
                     mover.enabled = true;
                     mover.despawnAtLastWaypoint = false;
                 }
+                if(mover.waypoints.waypointsActiveInPhase == 1){
+                    Debug.Log("Sitting down");
+                    animator.SetBool("IsWalking", false);
+                    animator.SetBool("IsRunning", false);
+                    animator.SetBool("ToSitting", true);
+                } else {
+                    if (animator != null)
+                    {
+                        animator.SetBool("IsWalking", true);
+                        animator.SetBool("IsRunning", false); // this is fine right
+                    }
+                }
             }
         }
         
@@ -121,13 +128,6 @@ public class PhaseManager : MonoBehaviour
             medical.SetActive(true);
             // Set animation state to walking
             Animator animator = medical.GetComponent<Animator>();
-            if (animator != null)
-            {
-                animator.SetBool("IsWalking", true);
-                animator.SetBool("IsRunning", false);
-            }
-            
-            // Enable the WaypointMover component
             WaypointMover mover = medical.GetComponent<WaypointMover>();
             if (mover != null)
             {
@@ -138,6 +138,18 @@ public class PhaseManager : MonoBehaviour
                     mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null);
                     mover.enabled = true;
                     mover.despawnAtLastWaypoint = false;
+                }
+                if(mover.waypoints.waypointsActiveInPhase == 1){
+                    Debug.Log("Sitting down");
+                    animator.SetBool("IsWalking", false);
+                    animator.SetBool("IsRunning", false);
+                    animator.SetBool("ToSitting", true);
+                } else {
+                    if (animator != null)
+                    {
+                        animator.SetBool("IsWalking", true);
+                        animator.SetBool("IsRunning", false); // this is fine right
+                    }
                 }
             }
         }
@@ -157,7 +169,7 @@ public class PhaseManager : MonoBehaviour
 
     private void ExecutePhase2(){
         currentPhase = 2;
-        Debug.Log("executing the phae of two");
+        Debug.Log("executing the phase of two");
         // Waypoints waypoint = FindObjectOfType<Waypoints>();
         Waypoints[] waypoint = FindObjectsOfType<Waypoints>();
         if(waypoint == null){
@@ -182,6 +194,7 @@ public class PhaseManager : MonoBehaviour
                 Animator animator = civilian.GetComponent<Animator>();
                 if (animator != null) {
                     animator.SetBool("IsWalking", false);
+                    animator.SetBool("ToSitting", false);
                     animator.SetBool("IsRunning", true);
                 }
             }
@@ -199,6 +212,7 @@ public class PhaseManager : MonoBehaviour
                 Animator animator = medical.GetComponent<Animator>();
                 if (animator != null) {
                     animator.SetBool("IsWalking", false);
+                    animator.SetBool("ToSitting", false);
                     animator.SetBool("IsRunning", true);
                 }
             }

@@ -62,7 +62,7 @@ public class WaypointMover : MonoBehaviour
             int lastActiveIndex;
             if (phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase1 && !waypoints.PathBranching) {
                 // In Phase 1 with no branching, the last active waypoint is one less than the count
-                lastActiveIndex = waypoints.waypointsActiveInPhase1 - 1;
+                lastActiveIndex = waypoints.waypointsActiveInPhase - 1;
             } else {
                 // Otherwise, the last active waypoint is the last child
                 lastActiveIndex = currentWaypoint.parent.childCount - 1;
@@ -74,7 +74,7 @@ public class WaypointMover : MonoBehaviour
             // Check if this is the first waypoint
             bool isFirstWaypoint = currentWaypoint.GetSiblingIndex() == 0;
 
-            if (isLastWaypoint && !waypoints.canLoop && 
+            if (isLastWaypoint && !waypoints.canLoop && waypoints.waypointsActiveInPhase > 1 &&
                 phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase1) {
                 // Reverse direction
                 waypoints.isMovingForward = false;
@@ -83,7 +83,7 @@ public class WaypointMover : MonoBehaviour
                 currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
                 return;
             }
-            else if (isFirstWaypoint && !waypoints.isMovingForward && !waypoints.canLoop && 
+            else if (isFirstWaypoint && !waypoints.isMovingForward && !waypoints.canLoop && waypoints.waypointsActiveInPhase > 1 &&
                 phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase1) {
                 // Change direction to forward again
                 waypoints.isMovingForward = true;
@@ -115,7 +115,7 @@ public class WaypointMover : MonoBehaviour
         else
         {
             // If path is not looping, only rotate if not at the last waypoint
-            if (currentWaypoint.GetSiblingIndex() < waypoints.transform.childCount)
+            if (currentWaypoint.GetSiblingIndex() < waypoints.transform.childCount && waypoints.waypointsActiveInPhase > 1)
             {
                 // Not at the last waypoint, so continue rotating
                 RotateTowardsWaypoint();
