@@ -97,6 +97,7 @@ public class PhaseManager : MonoBehaviour
             if (animator != null)
             {
                 animator.SetBool("IsWalking", true);
+                animator.SetBool("IsRunning", false);
             }
             
             // Enable the WaypointMover component
@@ -123,6 +124,7 @@ public class PhaseManager : MonoBehaviour
             if (animator != null)
             {
                 animator.SetBool("IsWalking", true);
+                animator.SetBool("IsRunning", false);
             }
             
             // Enable the WaypointMover component

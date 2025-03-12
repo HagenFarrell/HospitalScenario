@@ -9,7 +9,7 @@ public class WaypointMover : MonoBehaviour
     [SerializeField] public Waypoints waypoints;
 
     [Range(1f, 10f)]
-    [SerializeField] private float moveSpeed = 2f;
+    [SerializeField] public float moveSpeed = 2f;
 
     [SerializeField] private float distanceThreshold = 0.1f;
 
@@ -48,6 +48,15 @@ public class WaypointMover : MonoBehaviour
         {
             // Get current phase
             PhaseManager phaseManager = FindObjectOfType<PhaseManager>();
+
+            // Speed Change for Walking/Running
+            if (phaseManager != null) {
+                if (phaseManager.GetCurrentPhase() == GamePhase.Phase1) {
+                    moveSpeed = 1f;
+                } else if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) {
+                    moveSpeed = 5f;
+                }
+            }
             
             // For Phase 1, check against the active waypoints limit
             int lastActiveIndex;
