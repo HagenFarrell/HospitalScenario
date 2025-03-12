@@ -16,7 +16,7 @@ public class Waypoints : MonoBehaviour
 
     [SerializeField] public bool PathBranching = false; // Sets path to be phase 1 if false and if true runs aways phase 2 
     
-    [SerializeField] private int waypointsActiveInPhase1 = 4; // Number of waypoints active in Phase 1
+    [SerializeField] public int waypointsActiveInPhase1 = 4; // Number of waypoints active in Phase 1
     int ActiveChildLength = 0;
     PhaseManager phasesmanager;
 

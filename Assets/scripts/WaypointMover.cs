@@ -49,8 +49,41 @@ public class WaypointMover : MonoBehaviour
             // Get current phase
             PhaseManager phaseManager = FindObjectOfType<PhaseManager>();
             
+            // For Phase 1, check against the active waypoints limit
+            int lastActiveIndex;
+            if (phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase1 && !waypoints.PathBranching) {
+                // In Phase 1 with no branching, the last active waypoint is one less than the count
+                lastActiveIndex = waypoints.waypointsActiveInPhase1 - 1;
+            } else {
+                // Otherwise, the last active waypoint is the last child
+                lastActiveIndex = currentWaypoint.parent.childCount - 1;
+            }
+
             // Check if this is the last waypoint
-            bool isLastWaypoint = currentWaypoint.GetSiblingIndex() == currentWaypoint.parent.childCount - 1;
+            bool isLastWaypoint = currentWaypoint.GetSiblingIndex() == lastActiveIndex;
+
+            // Check if this is the first waypoint
+            bool isFirstWaypoint = currentWaypoint.GetSiblingIndex() == 0;
+
+            if (isLastWaypoint && !waypoints.canLoop && 
+                phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase1) {
+                // Reverse direction
+                waypoints.isMovingForward = false;
+                Debug.Log($"Phase 1: NPC {gameObject.name} reversing path");
+                // Get the next waypoint after changing direction
+                currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
+                return;
+            }
+            else if (isFirstWaypoint && !waypoints.isMovingForward && !waypoints.canLoop && 
+                phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase1) {
+                // Change direction to forward again
+                waypoints.isMovingForward = true;
+                Debug.Log($"Phase 1: NPC {gameObject.name} going forward again");
+                // Get the next waypoint after changing direction
+                currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
+                return;
+            }
+
 
             // If it's the last waypoint, we should despawn, we're not looping, and we're in Phase 2
             if (isLastWaypoint && despawnAtLastWaypoint && !waypoints.canLoop && 
