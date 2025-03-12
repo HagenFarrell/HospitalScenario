@@ -21,6 +21,15 @@ public class DynamicNavMesh : MonoBehaviour
 
     void CreateGrid()
     {
+        GameObject[] floor = GameObject.FindGameObjectsWithTag("TempWalls");
+        if(floor == null)  Debug.LogWarning("Floor not found!!!!!!!!!");
+
+        // enable walls
+        foreach(Transform flur in floor[0].transform){
+            flur.gameObject.SetActive(true);
+        }
+
+
         grid = new GridNode[gridSizeX, gridSizeY];
         Vector3 worldBottomLeft = transform.position - Vector3.right * gridSize.x / 2 - Vector3.forward * gridSize.y / 2;
 
@@ -53,6 +62,11 @@ public class DynamicNavMesh : MonoBehaviour
                 // If nothing is hit, the node remains unwalkable.
                 grid[x, y] = new GridNode(walkable, worldPoint, x, y);
             }
+        }
+
+        // disable walls
+        foreach(Transform flur in floor[0].transform){
+            flur.gameObject.SetActive(false);
         }
     }
 

@@ -23,6 +23,8 @@ public class PhaseManager : MonoBehaviour
     private List<GameObject> playerUnits;
     private GameObject[] FD;
     private GameObject[] LLE;
+    private GameObject[] newCivilians;
+    private GameObject[] newMedicals;
     private List<GameObject> villains;
     // private GameObject superVillain;
     private GameObject receptionist;
@@ -30,9 +32,11 @@ public class PhaseManager : MonoBehaviour
     public delegate void EgressSelectedHandler(int egressPhase);
     public static event EgressSelectedHandler OnEgressSelected;
 
+    public int currentPhase;
 
     private void Start()
     {
+        currentPhase = 0;
         phaseList = new PhaseLinkedList();
 
         // Define the phases
@@ -45,6 +49,8 @@ public class PhaseManager : MonoBehaviour
         LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
         playerUnits = new List<GameObject>(FD);
         playerUnits.AddRange(LLE);
+        newCivilians = GameObject.FindGameObjectsWithTag("Civilians");
+        newMedicals = GameObject.FindGameObjectsWithTag("Medicals");
 
         // Store initial positions and tags of all NPCs in the first phase node
         StoreInitialNPCState();
@@ -76,12 +82,16 @@ public class PhaseManager : MonoBehaviour
     // Phase 1 with new waypoint paths
     private void ExecutePhase1()
     {
+        currentPhase = 1;
         Debug.Log("Executing Phase 1: NPCs begin waypoint movement");
         
-        // Initialize civilians on their waypoint paths
-        GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
-        foreach (GameObject civilian in civilians)
+        // Hide gun
+        villains[0].transform.GetChild(1).gameObject.SetActive(false);
+        
+        foreach (GameObject civilian in newCivilians)
         {
+            Debug.Log("Enabling NPC: " + civilian);
+            civilian.SetActive(true);
             // Set animation state to walking
             Animator animator = civilian.GetComponent<Animator>();
             if (animator != null)
@@ -96,16 +106,18 @@ public class PhaseManager : MonoBehaviour
                 // Reset to first waypoint in the path
                 if (mover.waypoints != null && mover.waypoints.transform.childCount > 0)
                 {
+                    Debug.Log("Resetting to initial waypoint");
                     mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null);
                     mover.enabled = true;
+                    mover.despawnAtLastWaypoint = false;
                 }
             }
         }
         
-        // Initialize medicals on their waypoint paths
-        GameObject[] medicals = GameObject.FindGameObjectsWithTag("Medicals");
-        foreach (GameObject medical in medicals)
+        foreach (GameObject medical in newMedicals)
         {
+            Debug.Log("Enabling Medicals");
+            medical.SetActive(true);
             // Set animation state to walking
             Animator animator = medical.GetComponent<Animator>();
             if (animator != null)
@@ -120,29 +132,99 @@ public class PhaseManager : MonoBehaviour
                 // Reset to first waypoint in the path
                 if (mover.waypoints != null && mover.waypoints.transform.childCount > 0)
                 {
+                    Debug.Log("Resetting to initial waypoint");
                     mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null);
                     mover.enabled = true;
+                    mover.despawnAtLastWaypoint = false;
                 }
+            }
+        }
+
+        // Sets villains disc to green to make then try to blend in
+        foreach(GameObject villain in villains) {
+            GameObject disc = villain.transform.GetChild(2).gameObject;
+            disc.SetActive(true);
+            
+            // Change the disc color to green
+            Renderer discRenderer = disc.GetComponent<Renderer>();
+            if (discRenderer != null) {
+                discRenderer.material.color = Color.green;
             }
         }
     }
 
+    private void ExecutePhase2(){
+        currentPhase = 2;
+        Debug.Log("executing the phae of two");
+        // Waypoints waypoint = FindObjectOfType<Waypoints>();
+        Waypoints[] waypoint = FindObjectsOfType<Waypoints>();
+        if(waypoint == null){
+            Debug.LogError("waypoint object not found!");
+        }
+        foreach(Waypoints temp in waypoint){
+            temp.isMovingForward = true;
+            temp.canLoop = false;
+
+            temp.enableAll();
+        }
 
 
+        // Configure all civilian WaypointMovers to despawn when they reach the last waypoint
+        foreach (GameObject civilian in newCivilians) {
+            WaypointMover mover = civilian.GetComponent<WaypointMover>();
+            if (mover != null) {
+                // Set up despawn behavior - we'll add a simple check to the component
+                mover.despawnAtLastWaypoint = true;
+                
+                // Make sure animations are playing
+                Animator animator = civilian.GetComponent<Animator>();
+                if (animator != null) {
+                    animator.SetBool("IsWalking", false);
+                    animator.SetBool("IsRunning", true);
+                }
+            }
+        }
 
+        // Configure all medical WaypointMovers to despawn when they reach the last waypoint
+        foreach (GameObject medical in newMedicals) {
+            medical.SetActive(true);
+            WaypointMover mover = medical.GetComponent<WaypointMover>();
+            if (mover != null) {
+                // Set up despawn behavior
+                mover.despawnAtLastWaypoint = true;
+                
+                // Make sure animations are playing
+                Animator animator = medical.GetComponent<Animator>();
+                if (animator != null) {
+                    animator.SetBool("IsWalking", false);
+                    animator.SetBool("IsRunning", true);
+                }
+            }
+        }
 
+        // Shows gun
+        villains[0].transform.GetChild(1).gameObject.SetActive(true);
 
+        // Sets villains disc to red to show they are bad
+        foreach(GameObject villain in villains) {
+            GameObject disc = villain.transform.GetChild(2).gameObject;
+            
+            // Change the disc color to green
+            Renderer discRenderer = disc.GetComponent<Renderer>();
+            if (discRenderer != null) {
+                discRenderer.material.color = Color.red;
+            }
+        }
+        
+        
+        // Receptionist hits duress alarm
+        if (receptionist != null) {
+            Debug.Log("Duress alarm activated. Dispatcher notified.");
+        }
 
+        // WaypointMover mover = civilian.GetComponent<WaypointMover>();
 
-
-
-
-
-
-
-
-
-
+    }
 
 
     private int SetEgressPhase()
@@ -291,13 +373,13 @@ public class PhaseManager : MonoBehaviour
         // First, check if we need to despawn civilians and medicals in Phase 3
         if (phaseList.Current.Phase == GamePhase.Phase3)
         {
-            DespawnRemainingCiviliansAndMedicals();
+            // DespawnRemainingCiviliansAndMedicals();
         }
         
         MoveNPCsForPhase(phaseList.Current.Phase);
     }
 
-    private void DespawnRemainingCiviliansAndMedicals()
+    public void DespawnRemainingCiviliansAndMedicals()
     {
         // Find and disable any remaining civilians
         GameObject[] civilians = GameObject.FindGameObjectsWithTag("Civilians");
@@ -350,7 +432,6 @@ public class PhaseManager : MonoBehaviour
             StopCoroutine(currentPhaseCoroutine);
             currentPhaseCoroutine = null;
         }
-
         if (phaseList.MovePrevious())
         {
             Debug.Log("Moving to previous phase.");
@@ -501,26 +582,7 @@ public class PhaseManager : MonoBehaviour
                 break;
                 
             case GamePhase.Phase2:
-            // add alarm
-            // add pull out gun
-                if (currentPhaseCoroutine != null) {
-                    StopCoroutine(currentPhaseCoroutine);
-                    currentPhaseCoroutine = null;
-                }
-                
-                // Villains pull out guns
-                foreach(GameObject villain in villains){
-                    GameObject gun = villain.transform.GetChild(2).gameObject;
-                    gun.SetActive(true);
-                }
-                
-                // Receptionist hits duress alarm
-                if (receptionist != null) {
-                    Debug.Log("Duress alarm activated. Dispatcher notified.");
-                }
-                
-                // Start civilians and medicals running for the exit
-                currentPhaseCoroutine = StartCoroutine(npcMove.MoveToEdgeAndDespawn());
+                ExecutePhase2();
                 break;
                 
             case GamePhase.Phase3:
