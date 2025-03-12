@@ -246,9 +246,10 @@ public class PhaseMovementHelper : MonoBehaviour
             return false;
             
         DynamicNavMesh navMesh = FindObjectOfType<DynamicNavMesh>();
-        if (navMesh == null || navMesh.Grid == null)
+        
+        if (navMesh == null || navMesh.Grid == null){
             return false;
-            
+        }
         return true;
     }
 
