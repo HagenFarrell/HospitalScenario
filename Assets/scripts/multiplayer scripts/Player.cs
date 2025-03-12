@@ -19,12 +19,11 @@ public class Player : NetworkBehaviour
     private List<GameObject> DispatchCams;
     private AudioSource alarmNoise;
 
+    [SerializeField] private GameObject radeyeToolPrefab;
+    private RadEyeTool radeyeToolInstance;
 
-    [SerializeField] private GameObject radeyePrefab; // Reference to the Radeye prefab
-    private GameObject radeyeInstance; // Holds the instantiated Radeye tool
 
     
-    [SerializeField] private GameObject radeyeCircleTool;
 
     public enum Roles
     {
@@ -63,17 +62,30 @@ public class Player : NetworkBehaviour
     void Start()
     {
         alarmNoise = GetComponent<AudioSource>();
-        AudioListener audioListener = transform.GetChild(1).GetComponent<AudioListener>();
+        // Try to find an AudioListener in this object or its children
+        AudioListener audioListener = GetComponentInChildren<AudioListener>();
 
-        // Disable the AudioListener on non-local players (if this is not the local player's camera)
-        if (!isLocalPlayer)
+        if (audioListener == null)
         {
-            audioListener.enabled = false;
+            Debug.LogWarning("No AudioListener found in Player. Skipping AudioListener assignment.");
         }
         else
         {
-            audioListener.enabled = true;  // Ensure the local player's camera has the AudioListener
+            Debug.Log("AudioListener found!");
+
+            // Disable the AudioListener on non-local players
+            if (!isLocalPlayer)
+            {
+                audioListener.enabled = false;
+            }
+            else
+            {
+                audioListener.enabled = true;  // Ensure the local player's camera has the AudioListener
+            }
         }
+
+    Debug.Log($"Player initialized. Current child count: {transform.childCount}");
+
         DispatchCams = GameObject.Find("Cameras").GetComponent<cameraSwitch>().DispatchCams;
         foreach(GameObject cam in DispatchCams)
         {
@@ -101,41 +113,13 @@ public class Player : NetworkBehaviour
             playerCamera.enabled = true;
         }
 
-        if(radeyeInstance ==null)
-        {
-            radeyeInstance = transform.Find("playerRadeye")?.gameObject;
-            if(radeyeInstance == null)
-            {
-                Debug.LogError("radeye tool not found on player prefab");
-            }
-        }
-        if(radeyeCircleTool == null)
-        {
-            radeyeCircleTool = GameObject.Find("radeyeCircle");
-            if(radeyeCircleTool == null)
-            {
-                Debug.LogError("radeyeCircle GameObject not found");
-            }
-        }
-        
+        CmdSpawnRadEyeTool();
 
         // Find and initialize necessary objects
         InitializeSceneObjects();
 
         AssignButtonOnClick();
 
-        Collider circleCollider = radeyeCircleTool?.GetComponent<Collider>();
-        if (circleCollider != null)
-        {
-            Collider[] allColliders = FindObjectsOfType<Collider>();
-            foreach (Collider col in allColliders)
-            {
-                if (col != circleCollider)
-                {
-                    Physics.IgnoreCollision(circleCollider, col);
-                }
-            }
-        }
     }
 
 
@@ -226,14 +210,6 @@ public class Player : NetworkBehaviour
         // Handle phase management (for Instructor role)
         HandlePhaseManagement();
 
-        if (radeyeInstance != null && radeyeInstance.activeInHierarchy && radeyeCircleTool != null)
-        {
-            MoveCircleToMousePosition();
-        }
-        else
-        {
-            //Debug.LogWarning("Radeye is not active or radeyeCircleTool is null");
-        }
     }
 
     private void HandleMouseLook()
@@ -293,6 +269,12 @@ public class Player : NetworkBehaviour
 
     private void HandleNPCInteraction()
     {
+        if(radeyeToolInstance != null && radeyeToolInstance.IsActive())
+        {
+            Debug.Log("NPC movement is disabled while Radeye tool is active");
+            return;
+        }
+        
         if (Input.GetMouseButtonDown(0) && playerRole != Roles.None)
         {
             Debug.Log("Left-click detected.");
@@ -545,42 +527,6 @@ public class Player : NetworkBehaviour
         playerRole = role;
     }
 
-    private void MoveCircleToMousePosition()
-    {
-        // Get the current active camera
-        Camera activeCam = playerCamera;
-
-        // Get the mouse position in screen space
-        Vector3 mousePosition = Input.mousePosition;
-
-        // Convert the mouse position to a ray
-        Ray ray = activeCam.ScreenPointToRay(mousePosition);
-        RaycastHit hit;
-
-        // LayerMask to exclude radeyeCircleTool (IgnoreRaycast layer)
-        int layerMask = ~LayerMask.GetMask("IgnoreRaycast"); // Exclude the IgnoreRaycast layer
-
-        // Perform the raycast with the layer mask
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
-        {
-            // Move the circle to the hit point
-            radeyeCircleTool.transform.position = hit.point;
-        }
-        else
-        {
-            // Default position in front of the camera
-            radeyeCircleTool.transform.position = ray.origin + ray.direction * 10f;
-        }
-    }
-
-
-    public override void OnStopClient()
-    {
-        if (isLocalPlayer && radeyeInstance != null)
-        {
-            Destroy(radeyeInstance);
-        }
-    }
 
     [Command]
     private void CmdMoveNPCs(uint[] npcNetIds, Vector3 targetPosition)
@@ -668,5 +614,49 @@ public class Player : NetworkBehaviour
             }
         }
     }
+
+    [Command]
+    private void CmdSpawnRadEyeTool()
+    {
+        if (radeyeToolPrefab == null)
+        {
+            Debug.LogError("RadEyeTool prefab is not assigned in Player!");
+            return;
+        }
+
+        GameObject toolInstance = Instantiate(radeyeToolPrefab, transform.position, Quaternion.identity);
+        NetworkServer.Spawn(toolInstance, connectionToClient);
+        RpcAttachRadEyeTool(toolInstance);
+    }
+
+
+    [ClientRpc]
+    private void RpcAttachRadEyeTool(GameObject toolInstance)
+    {
+        if (!isLocalPlayer) return;
+
+        radeyeToolInstance = toolInstance.GetComponent<RadEyeTool>();
+        if (radeyeToolInstance == null)
+        {
+            Debug.LogError("Failed to find RadEyeTool script on spawned object!");
+            return;
+        }
+
+        // Store world position before parenting
+        Vector3 adjustedPosition = transform.position + new Vector3(1.0f, -0.5f, 0.5f);
+
+        // Attach the tool to the player safely
+        radeyeToolInstance.transform.SetParent(transform, true); 
+
+        // Set world position after parenting to avoid reset
+        radeyeToolInstance.transform.position = adjustedPosition;
+
+        // Adjust the rotation to face a specific direction
+        radeyeToolInstance.transform.localRotation = Quaternion.Euler(-30, 180, 0); // Adjust rotation as needed
+
+        Debug.Log("RadEyeTool successfully attached to player with adjusted position and rotation.");
+    }
+
+
 
 }
