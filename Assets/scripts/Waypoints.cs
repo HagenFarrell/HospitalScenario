@@ -18,12 +18,14 @@ public class Waypoints : MonoBehaviour
     
     [SerializeField] private int waypointsActiveInPhase1 = 4; // Number of waypoints active in Phase 1
     int ActiveChildLength = 0;
+    PhaseManager phasesmanager;
 
 
     
     private void Start()
     {
         UpdateWaypointVisibility();
+        phasesmanager = FindObjectOfType<PhaseManager>();
     }
     
     // Simple method to update waypoint visibility
@@ -96,8 +98,14 @@ public class Waypoints : MonoBehaviour
             // Do not go to next node if disabled
             if (nextIndex < transform.childCount && !transform.GetChild(nextIndex).gameObject.activeSelf)
             {
-                if(canLoop) nextIndex = 0;
-                else return currentWaypoint;
+                if(!canLoop) { 
+                    if(phasesmanager.GetCurrentPhase() == GamePhase.Phase1){
+                        Debug.Log("at last node, moving fro");
+                        isMovingForward = !isMovingForward;
+                        return transform.GetChild(nextIndex-1);
+                    }
+                    return currentWaypoint;
+                }
             }
 
             // If the next waypoint index is equal to the count of the childdren/waypoints
@@ -124,9 +132,11 @@ public class Waypoints : MonoBehaviour
             nextIndex -= 1;
 
             // Do not go to next node if disabled
-            if (nextIndex >= 0 && !transform.GetChild(nextIndex).gameObject.activeSelf)
+            if (nextIndex == 0 && !transform.GetChild(nextIndex).gameObject.activeSelf)
             {
-                if(!canLoop) return currentWaypoint;
+                if(!canLoop) { 
+                    return currentWaypoint;
+                }
             }
 
             // If the nextIndex is below 0 then it means that you are
@@ -143,6 +153,11 @@ public class Waypoints : MonoBehaviour
                 }
                 else 
                 {
+                    if(phasesmanager.GetCurrentPhase() == GamePhase.Phase1){
+                        Debug.Log("back to uhh first node, moving fro");
+                        isMovingForward = !isMovingForward;
+                        return transform.GetChild(currentIndex+1);
+                    }
                     nextIndex += 1;
                 }
             }
