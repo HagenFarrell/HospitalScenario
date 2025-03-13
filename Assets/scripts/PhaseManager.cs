@@ -192,11 +192,7 @@ public class PhaseManager : MonoBehaviour
                 
                 // Make sure animations are playing
                 Animator animator = civilian.GetComponent<Animator>();
-                if (animator != null) {
-                    animator.SetBool("IsWalking", false);
-                    animator.SetBool("ToSitting", false);
-                    animator.SetBool("IsRunning", true);
-                }
+                StartCoroutine(WaitForGetUpAnimation(animator, mover));
             }
         }
 
@@ -210,11 +206,7 @@ public class PhaseManager : MonoBehaviour
                 
                 // Make sure animations are playing
                 Animator animator = medical.GetComponent<Animator>();
-                if (animator != null) {
-                    animator.SetBool("IsWalking", false);
-                    animator.SetBool("ToSitting", false);
-                    animator.SetBool("IsRunning", true);
-                }
+                StartCoroutine(WaitForGetUpAnimation(animator, mover));
             }
         }
 
@@ -241,6 +233,26 @@ public class PhaseManager : MonoBehaviour
         // WaypointMover mover = civilian.GetComponent<WaypointMover>();
 
     }
+
+    private IEnumerator WaitForGetUpAnimation(Animator animator, WaypointMover mover)
+    {
+        // Wait until the "GettingUp" animation is fully played
+        while (animator.GetCurrentAnimatorStateInfo(0).IsName("Idle_Sitting") &&
+            animator.GetCurrentAnimatorStateInfo(0).IsName("ToStand") &&
+            animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f)
+        {
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(0.1f);
+
+        // Now set the running animation and allow movement
+        animator.SetBool("IsRunning", true);
+
+        // Activate waypoint movement
+        mover.enabled = true;
+    }
+
 
 
     private int SetEgressPhase()
