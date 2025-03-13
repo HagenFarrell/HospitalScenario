@@ -26,10 +26,13 @@ public class WaypointMover : MonoBehaviour
     private Vector3 directionToWaypoint;
     // Check if civilian/medical reach final waypoint so they can be despawned
     public bool despawnAtLastWaypoint = false;
+    private bool isWaitingForAnimation = false;
+    private Animator animator;
 
     // Start is called before the first frame update
     void Start()
     {
+        animator = GetComponent<Animator>();
         // Set inital postion to first waypoint
         currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
         transform.position = currentWaypoint.position;
@@ -43,6 +46,8 @@ public class WaypointMover : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (isWaitingForAnimation) return;
+
         transform.position = Vector3.MoveTowards(transform.position, currentWaypoint.position, moveSpeed * Time.deltaTime);
         if (Vector3.Distance(transform.position, currentWaypoint.position) < distanceThreshold)
         {
@@ -55,6 +60,25 @@ public class WaypointMover : MonoBehaviour
                     moveSpeed = 1f;
                 } else if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) {
                     moveSpeed = 5f;
+                }
+            }
+
+            if (phaseManager.GetCurrentPhase() == GamePhase.Phase2)
+            {
+                // Ensure NPCs run in Phase 2
+                if (animator != null)
+                {
+                    if (animator.GetBool("ToSitting"))
+                    {
+                        // NPC is currently sitting, wait for it to stand up before moving
+                        StartCoroutine(WaitForStandingAnimation());
+                        return;
+                    }
+                    else
+                    {
+                        animator.SetBool("IsWalking", false);
+                        animator.SetBool("IsRunning", true);
+                    }
                 }
             }
             
@@ -122,6 +146,14 @@ public class WaypointMover : MonoBehaviour
             }
             // If at the last waypoint, do nothing (don't rotate)
         }
+    }
+
+    IEnumerator WaitForStandingAnimation()
+    {
+        isWaitingForAnimation = true;
+        animator.SetBool("ToSitting", false); // Transition to standing up
+        yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).IsName("Idle_Standing") || animator.GetCurrentAnimatorStateInfo(0).IsName("Running"));
+        isWaitingForAnimation = false;
     }
 
     // Will Slowly rotate the agent towards the current waypoint it is moving towards
