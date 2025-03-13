@@ -127,6 +127,15 @@ public class WaypointMover : MonoBehaviour
                     // Debug.Log("not a hostage, despawning");
                     gameObject.SetActive(false);
                 } else {
+
+                    // Change disk color to yellow at last waypoint
+                    GameObject disc = transform.GetChild(2).gameObject;
+                    Renderer discRenderer = disc.GetComponent<Renderer>();
+
+                    if (discRenderer != null) {
+                        discRenderer.material.color = Color.yellow;
+                        // Debug.Log($"Changed {gameObject.name} disc to yellow at last waypoint");
+                    }
                     animator.SetBool("IsRunning", false);
                     animator.SetBool("IsThreatPresent", true);
                 }
