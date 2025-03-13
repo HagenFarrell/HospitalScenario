@@ -102,7 +102,7 @@ public class WaypointMover : MonoBehaviour
                 phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase1) {
                 // Reverse direction
                 waypoints.isMovingForward = false;
-                Debug.Log($"Phase 1: NPC {gameObject.name} reversing path");
+                // Debug.Log($"Phase 1: NPC {gameObject.name} reversing path");
                 // Get the next waypoint after changing direction
                 currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
                 return;
@@ -111,7 +111,7 @@ public class WaypointMover : MonoBehaviour
                 phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase1) {
                 // Change direction to forward again
                 waypoints.isMovingForward = true;
-                Debug.Log($"Phase 1: NPC {gameObject.name} going forward again");
+                // Debug.Log($"Phase 1: NPC {gameObject.name} going forward again");
                 // Get the next waypoint after changing direction
                 currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
                 return;
@@ -122,8 +122,15 @@ public class WaypointMover : MonoBehaviour
             if (isLastWaypoint && despawnAtLastWaypoint && !waypoints.canLoop && 
                 phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase2) {
                 // Despawn the NPC
-                Debug.Log($"Phase 2: NPC {gameObject.name} reached final waypoint and is despawning");
-                gameObject.SetActive(false);
+                // Debug.Log($"Phase 2: NPC {gameObject.name} reached final waypoint and is despawning");
+                if(!(gameObject.CompareTag("Hostages") || gameObject.CompareTag("PhysicianHostage"))) {
+                    // Debug.Log("not a hostage, despawning");
+                    gameObject.SetActive(false);
+                } else {
+                    animator.SetBool("IsRunning", false);
+                    animator.SetBool("IsThreatPresent", true);
+                }
+                
                 return;
             } else if(!despawnAtLastWaypoint){
                 gameObject.SetActive(true);

@@ -167,7 +167,7 @@ public class Waypoints : MonoBehaviour
     }
 
     public void enableAll(){
-        Debug.Log("enabling all");
+        // Debug.Log("enabling all");
         foreach(Transform t in transform){
             t.gameObject.SetActive(true);
             ActiveChildLength++;
