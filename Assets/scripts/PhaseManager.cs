@@ -23,7 +23,7 @@ public class PhaseManager : MonoBehaviour
     private List<GameObject> playerUnits;
     private GameObject[] FD;
     private GameObject[] LLE;
-    private GameObject[] newCivilians;
+    private List<GameObject> newCivilians;
     private GameObject[] newMedicals;
     private List<GameObject> villains;
     // private GameObject superVillain;
@@ -38,6 +38,7 @@ public class PhaseManager : MonoBehaviour
     {
         currentPhase = 0;
         phaseList = new PhaseLinkedList();
+        newCivilians = new List<GameObject>();
 
         // Define the phases
         foreach (GamePhase phase in System.Enum.GetValues(typeof(GamePhase)))
@@ -45,12 +46,15 @@ public class PhaseManager : MonoBehaviour
             phaseList.AddPhase(phase);
         }
 
-        FD = GameObject.FindGameObjectsWithTag("FireDepartment");
-        LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
-        playerUnits = new List<GameObject>(FD);
-        playerUnits.AddRange(LLE);
-        newCivilians = GameObject.FindGameObjectsWithTag("Civilians");
-        newMedicals = GameObject.FindGameObjectsWithTag("Medicals");
+        // FD = GameObject.FindGameObjectsWithTag("FireDepartment");
+        // LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
+        // playerUnits = new List<GameObject>(FD);
+        // playerUnits.AddRange(LLE);
+        newCivilians.AddRange(GameObject.FindGameObjectsWithTag("PhysicianHostage"));
+        newCivilians.AddRange(GameObject.FindGameObjectsWithTag("Civilians"));
+        newCivilians.AddRange(GameObject.FindGameObjectsWithTag("Hostages"));
+        newCivilians.AddRange(GameObject.FindGameObjectsWithTag("Medicals"));
+        // newMedicals = GameObject.FindGameObjectsWithTag("Medicals");
 
         // Store initial positions and tags of all NPCs in the first phase node
         StoreInitialNPCState();
@@ -99,6 +103,7 @@ public class PhaseManager : MonoBehaviour
             WaypointMover mover = civilian.GetComponent<WaypointMover>();
             if (mover != null)
             {
+                Debug.Log(mover.waypoints.waypointsActiveInPhase + " waypoints active for " + civilian);
                 // Reset to first waypoint in the path
                 if (mover.waypoints != null && mover.waypoints.transform.childCount > 0)
                 {
@@ -122,37 +127,37 @@ public class PhaseManager : MonoBehaviour
             }
         }
         
-        foreach (GameObject medical in newMedicals)
-        {
-            Debug.Log("Enabling Medicals");
-            medical.SetActive(true);
-            // Set animation state to walking
-            Animator animator = medical.GetComponent<Animator>();
-            WaypointMover mover = medical.GetComponent<WaypointMover>();
-            if (mover != null)
-            {
-                // Reset to first waypoint in the path
-                if (mover.waypoints != null && mover.waypoints.transform.childCount > 0)
-                {
-                    Debug.Log("Resetting to initial waypoint");
-                    mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null);
-                    mover.enabled = true;
-                    mover.despawnAtLastWaypoint = false;
-                }
-                if(mover.waypoints.waypointsActiveInPhase == 1){
-                    Debug.Log("Sitting down");
-                    animator.SetBool("IsWalking", false);
-                    animator.SetBool("IsRunning", false);
-                    animator.SetBool("ToSitting", true);
-                } else {
-                    if (animator != null)
-                    {
-                        animator.SetBool("IsWalking", true);
-                        animator.SetBool("IsRunning", false); // this is fine right
-                    }
-                }
-            }
-        }
+        // foreach (GameObject medical in newMedicals)
+        // {
+        //     Debug.Log("Enabling Medicals");
+        //     medical.SetActive(true);
+        //     // Set animation state to walking
+        //     Animator animator = medical.GetComponent<Animator>();
+        //     WaypointMover mover = medical.GetComponent<WaypointMover>();
+        //     if (mover != null)
+        //     {
+        //         // Reset to first waypoint in the path
+        //         if (mover.waypoints != null && mover.waypoints.transform.childCount > 0)
+        //         {
+        //             Debug.Log("Resetting to initial waypoint");
+        //             mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null);
+        //             mover.enabled = true;
+        //             mover.despawnAtLastWaypoint = false;
+        //         }
+        //         if(mover.waypoints.waypointsActiveInPhase == 1){
+        //             Debug.Log("Sitting down");
+        //             animator.SetBool("IsWalking", false);
+        //             animator.SetBool("IsRunning", false);
+        //             animator.SetBool("ToSitting", true);
+        //         } else {
+        //             if (animator != null)
+        //             {
+        //                 animator.SetBool("IsWalking", true);
+        //                 animator.SetBool("IsRunning", false); // this is fine right
+        //             }
+        //         }
+        //     }
+        // }
 
         // Sets villains disc to green to make then try to blend in
         foreach(GameObject villain in villains) {
@@ -197,18 +202,18 @@ public class PhaseManager : MonoBehaviour
         }
 
         // Configure all medical WaypointMovers to despawn when they reach the last waypoint
-        foreach (GameObject medical in newMedicals) {
-            medical.SetActive(true);
-            WaypointMover mover = medical.GetComponent<WaypointMover>();
-            if (mover != null) {
-                // Set up despawn behavior
-                mover.despawnAtLastWaypoint = true;
+        // foreach (GameObject medical in newMedicals) {
+        //     medical.SetActive(true);
+        //     WaypointMover mover = medical.GetComponent<WaypointMover>();
+        //     if (mover != null) {
+        //         // Set up despawn behavior
+        //         mover.despawnAtLastWaypoint = true;
                 
-                // Make sure animations are playing
-                Animator animator = medical.GetComponent<Animator>();
-                StartCoroutine(WaitForGetUpAnimation(animator, mover));
-            }
-        }
+        //         // Make sure animations are playing
+        //         Animator animator = medical.GetComponent<Animator>();
+        //         StartCoroutine(WaitForGetUpAnimation(animator, mover));
+        //     }
+        // }
 
         // Shows gun
         villains[0].transform.GetChild(1).gameObject.SetActive(true);
@@ -620,18 +625,22 @@ public class PhaseManager : MonoBehaviour
                 }
                 
                 // Select a medical NPC to be the physician hostage
-                GameObject[] hostages = GameObject.FindGameObjectsWithTag("Hostages");
-                if (hostages.Length > 0) {
-                    foreach (GameObject hostage in hostages) {
-                        OriginalTag originalTag = hostage.GetComponent<OriginalTag>();
-                        if (originalTag != null && originalTag.originalTag == "Medicals") {
-                            physicianHostage = hostage;
-                            physicianHostage.tag = "PhysicianHostage";
-                            Debug.Log($"The villains have taken {physicianHostage.name} hostage!");
-                            break;
-                        }
-                    }
-                }
+                // GameObject[] hostages = GameObject.FindGameObjectsWithTag("Hostages");
+
+                // if (hostages.Length > 0) {
+                //     foreach (GameObject hostage in hostages) {
+                //         OriginalTag originalTag = hostage.GetComponent<OriginalTag>();
+                //         if (originalTag != null && originalTag.originalTag == "Medicals") {
+                //             physicianHostage = hostage;
+                //             physicianHostage.tag = "PhysicianHostage";
+                //             Debug.Log($"The villains have taken {physicianHostage.name} hostage!");
+                //             break;
+                //         }
+                //     }
+                // }
+
+                physicianHostage = newCivilians[0];
+                Debug.Log($"The villains have taken {physicianHostage.name} hostage!");
                 
                 break;
                 
@@ -649,20 +658,20 @@ public class PhaseManager : MonoBehaviour
                 
                 // Two villains take the physician hostage to the gamma knife room
                 if (physicianHostage != null && villainsInside != null && villainsInside.Length >= 2) {
-                    // Move two inside villains with the hostage
-                    Vector3 gammaKnifePosition = gammaKnifeObject.transform.position;
+                    // // Move two inside villains with the hostage
+                    // Vector3 gammaKnifePosition = gammaKnifeObject.transform.position;
                     
-                    // First villain moves with hostage
+                    // // First villain moves with hostage
                     Vector3 NPCPosition = new Vector3(-16.0f, 0, 66.6f);
-                    npcMove.MoveNPCToTarget(villainsInside[0], NPCPosition);
+                    // npcMove.MoveNPCToTarget(villainsInside[0], NPCPosition);
                     
-                    // Second villain moves with hostage
-                    NPCPosition = new Vector3(-13.3f, 0, 68.8f);
-                    npcMove.MoveNPCToTarget(villainsInside[1], NPCPosition);
+                    // // Second villain moves with hostage
+                    // NPCPosition = new Vector3(-13.3f, 0, 68.8f);
+                    // npcMove.MoveNPCToTarget(villainsInside[1], NPCPosition);
                     
-                    // Move hostage to gamma knife
-                    NPCPosition = new Vector3(-15.6f, 0, 65f);
-                    npcMove.MoveNPCToTarget(physicianHostage, NPCPosition);
+                    // // Move hostage to gamma knife
+                    // NPCPosition = new Vector3(-15.6f, 0, 65f);
+                    // npcMove.MoveNPCToTarget(physicianHostage, NPCPosition);
                     Animator animator = physicianHostage.GetComponent<Animator>();
                     if(animator != null) animator.SetBool("IsThreatPresent", false);
                     
@@ -706,65 +715,65 @@ public class PhaseManager : MonoBehaviour
                     currentPhaseCoroutine = null;
                 }
 
-                // Ensure the physician hostage stops rummaging animation when moving
-                if (physicianHostage != null) {
-                    Animator physicianAnimator = physicianHostage.GetComponent<Animator>();
-                    if (physicianAnimator != null) {
-                        physicianAnimator.SetBool("ToRummaging", false);
-                        physicianAnimator.SetBool("IsWalking", true);
-                    }
-                }
+                // // Ensure the physician hostage stops rummaging animation when moving
+                // if (physicianHostage != null) {
+                //     Animator physicianAnimator = physicianHostage.GetComponent<Animator>();
+                //     if (physicianAnimator != null) {
+                //         physicianAnimator.SetBool("ToRummaging", false);
+                //         physicianAnimator.SetBool("IsWalking", true);
+                //     }
+                // }
 
-                if (villainsOutside != null && villainsInside.Length >= 2) {
-                    // Move two inside villains with the hostage
-                    Vector3 gammaKnifePosition = gammaKnifeObject.transform.position;
+                // if (villainsOutside != null && villainsInside.Length >= 2) {
+                //     // Move two inside villains with the hostage
+                //     Vector3 gammaKnifePosition = gammaKnifeObject.transform.position;
                     
-                    // First villain moves with hostage
-                    Vector3 NPCPosition = new Vector3(3.3f, 0, 73.3f);
-                    npcMove.MoveNPCToTarget(villainsOutside[0], NPCPosition);
+                //     // First villain moves with hostage
+                //     Vector3 NPCPosition = new Vector3(3.3f, 0, 73.3f);
+                //     npcMove.MoveNPCToTarget(villainsOutside[0], NPCPosition);
                     
-                    // Second villain moves with hostage
-                    NPCPosition = new Vector3(-8.3f, 0, 95.3f);
-                    npcMove.MoveNPCToTarget(villainsOutside[1], NPCPosition);
+                //     // Second villain moves with hostage
+                //     NPCPosition = new Vector3(-8.3f, 0, 95.3f);
+                //     npcMove.MoveNPCToTarget(villainsOutside[1], NPCPosition);
                     
-                    // Move hostage to gamma knife
-                    NPCPosition = new Vector3(-6.8f, 0, 112.3f);
-                    npcMove.MoveNPCToTarget(villainsInside[2], NPCPosition);
+                //     // Move hostage to gamma knife
+                //     NPCPosition = new Vector3(-6.8f, 0, 112.3f);
+                //     npcMove.MoveNPCToTarget(villainsInside[2], NPCPosition);
                     
-                }
+                // }
                 break;
             case GamePhase.Phase6:
-                // VFD pulls up
-                // source goes into canister into backpack
-                // all adversaries and physicianhostage group up & get ready to leave
-                if (currentPhaseCoroutine != null) {
-                    StopCoroutine(currentPhaseCoroutine);
-                    currentPhaseCoroutine = null;
-                }
+                // // VFD pulls up
+                // // source goes into canister into backpack
+                // // all adversaries and physicianhostage group up & get ready to leave
+                // if (currentPhaseCoroutine != null) {
+                //     StopCoroutine(currentPhaseCoroutine);
+                //     currentPhaseCoroutine = null;
+                // }
 
-                Vector3 youMoveHere = new Vector3(0f, 0, 113f);
-                float radius = 3.5f;
-                npcMove.MoveNPCToTarget(physicianHostage, youMoveHere);
-                foreach(GameObject villain in villains){
-                    npcMove.MoveNPCToTarget(villain, GetRandomPointInRadius(youMoveHere, radius));
-                }
+                // Vector3 youMoveHere = new Vector3(0f, 0, 113f);
+                // float radius = 3.5f;
+                // npcMove.MoveNPCToTarget(physicianHostage, youMoveHere);
+                // foreach(GameObject villain in villains){
+                //     npcMove.MoveNPCToTarget(villain, GetRandomPointInRadius(youMoveHere, radius));
+                // }
                 break;
             case GamePhase.Phase7:
-                if (currentPhaseCoroutine != null) 
-                {
-                    StopCoroutine(currentPhaseCoroutine);
-                    currentPhaseCoroutine = null;
-                }
+                // if (currentPhaseCoroutine != null) 
+                // {
+                //     StopCoroutine(currentPhaseCoroutine);
+                //     currentPhaseCoroutine = null;
+                // }
 
-                if (physicianHostage != null) {
-                    Animator physicianAnimator = physicianHostage.GetComponent<Animator>();
-                    if (physicianAnimator != null) {
-                        physicianAnimator.SetBool("IsThreatPresent", true);
-                    }
-                }
+                // if (physicianHostage != null) {
+                //     Animator physicianAnimator = physicianHostage.GetComponent<Animator>();
+                //     if (physicianAnimator != null) {
+                //         physicianAnimator.SetBool("IsThreatPresent", true);
+                //     }
+                // }
                 
-                // currentPhaseCoroutine = StartCoroutine(WaitForEgressSelection());
-                OnEgressSelected += ExecuteEgressPhase;
+                // // currentPhaseCoroutine = StartCoroutine(WaitForEgressSelection());
+                // OnEgressSelected += ExecuteEgressPhase;
                 break;
 
         }
