@@ -47,7 +47,7 @@ public class WaypointMover : MonoBehaviour
     void Update()
     {
         if (isWaitingForAnimation) return;
-
+        if(currentWaypoint == null) return; // likely a villain, so just stay put.
         transform.position = Vector3.MoveTowards(transform.position, currentWaypoint.position, moveSpeed * Time.deltaTime);
         if (Vector3.Distance(transform.position, currentWaypoint.position) < distanceThreshold)
         {
