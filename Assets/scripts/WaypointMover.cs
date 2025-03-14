@@ -162,7 +162,7 @@ public class WaypointMover : MonoBehaviour
                 // Start rummaging to get radiation source
                 if (gameObject.CompareTag("PhysicianHostage"))
                 {
-                    animator.SetBool("IsWalking", false);
+                    animator.SetBool("IsRunning", false);
                     animator.SetBool("ToRummaging", true);
 
                     // Spawn in radation source
@@ -171,9 +171,27 @@ public class WaypointMover : MonoBehaviour
                 // Other villains
                 else 
                 {
-                    animator.SetBool("IsWalking", false);
+                    animator.SetBool("IsRunning", false);
                 }
-            }
+            } 
+            else if (isLastWaypoint && !waypoints.canLoop && 
+                phaseManager != null && (phaseManager.GetCurrentPhase() == GamePhase.Phase5 || phaseManager.GetCurrentPhase() == GamePhase.Phase6))
+                {
+                    // Start rummaging to get radiation source
+                    if (gameObject.CompareTag("PhysicianHostage"))
+                    {
+                        animator.SetBool("ToRummaging", false);
+
+                        // Spawn in radation source
+
+                    }
+                    // Other villains
+                    else 
+                    {
+                        animator.SetBool("IsRunning", false);
+                    }
+                    if(phaseManager.GetCurrentPhase() == GamePhase.Phase6) waypoints.isMovingForward = false;
+                }
             // Otherwise, continue to the next waypoint
             currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
         }
