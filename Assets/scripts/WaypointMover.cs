@@ -47,7 +47,7 @@ public class WaypointMover : MonoBehaviour
     void Update()
     {
         if (isWaitingForAnimation) return;
-        if(currentWaypoint == null) return; // likely a villain, so just stay put.
+
         transform.position = Vector3.MoveTowards(transform.position, currentWaypoint.position, moveSpeed * Time.deltaTime);
         if (Vector3.Distance(transform.position, currentWaypoint.position) < distanceThreshold)
         {
@@ -76,8 +76,12 @@ public class WaypointMover : MonoBehaviour
                     }
                     else
                     {
-                        animator.SetBool("IsWalking", false);
-                        animator.SetBool("IsRunning", true);
+                        // Non villians run
+                        if (!(gameObject.CompareTag("OutsideVillains") || gameObject.CompareTag("Villains")))
+                        {
+                            animator.SetBool("IsWalking", false);
+                            animator.SetBool("IsRunning", true);
+                        }
                     }
                 }
             }
@@ -132,9 +136,15 @@ public class WaypointMover : MonoBehaviour
                     GameObject disc = transform.GetChild(2).gameObject;
                     Renderer discRenderer = disc.GetComponent<Renderer>();
 
-                    if (discRenderer != null) {
+                    if (discRenderer != null && !gameObject.CompareTag("PhysicianHostage")) {
                         discRenderer.material.color = Color.yellow;
                         // Debug.Log($"Changed {gameObject.name} disc to yellow at last waypoint");
+                    } 
+                    // Sets PhysicianHostage to be orange
+                    else
+                    {
+                        // Orange Color
+                        discRenderer.material.color = new Color(1f, 0.5f, 0f);;
                     }
                     animator.SetBool("IsRunning", false);
                     animator.SetBool("IsThreatPresent", true);
@@ -145,6 +155,25 @@ public class WaypointMover : MonoBehaviour
                 gameObject.SetActive(true);
             }
 
+            // If its last waypoint and in phase 4
+            if (isLastWaypoint && !waypoints.canLoop && 
+                phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase4)
+            {
+                // Start rummaging to get radiation source
+                if (gameObject.CompareTag("PhysicianHostage"))
+                {
+                    animator.SetBool("IsWalking", false);
+                    animator.SetBool("ToRummaging", true);
+
+                    // Spawn in radation source
+
+                }
+                // Other villains
+                else 
+                {
+                    animator.SetBool("IsWalking", false);
+                }
+            }
             // Otherwise, continue to the next waypoint
             currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
         }

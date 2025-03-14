@@ -566,16 +566,63 @@ public class PhaseManager : MonoBehaviour
         mover.waypoints = GameObject.Find("Waypoints15")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0)); //this is how we get first waypoint externally
 
+        Animator animator = mover.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator != null)
+        {
+            animator.SetBool("IsWalking", true);
+            mover.moveSpeed = 1;
+        }
+
         mover = villains[1].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints14")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+        Animator animator1 = mover.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator1 != null)
+        {
+            animator1.SetBool("IsWalking", true);
+            mover.moveSpeed = 1;
+        }
 
         mover = villains[3].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints17")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
+        Animator animator2 = mover.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator2 != null)
+        {
+            animator2.SetBool("IsWalking", true);
+            mover.moveSpeed = 1;
+        }
+
         mover = villains[4].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints16")?.GetComponent<Waypoints>();
+        mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+        Animator animator3 = mover.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator3 != null)
+        {
+            animator3.SetBool("IsWalking", true);
+            mover.moveSpeed = 1;
+        }
+
+        // Doctor that gets taken hostage moves them to gamma knife
+        mover = physicianHostage.GetComponent<WaypointMover>();
+
+        Animator animator4 = physicianHostage.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator4 != null)
+        {
+            animator4.SetBool("IsWalking", true);
+            mover.moveSpeed = 1;
+        }
+
+
+        mover.waypoints = GameObject.Find("Waypoints18")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
 
