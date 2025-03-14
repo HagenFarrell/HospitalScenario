@@ -181,6 +181,7 @@ public class WaypointMover : MonoBehaviour
                     if (gameObject.CompareTag("PhysicianHostage"))
                     {
                         animator.SetBool("ToRummaging", false);
+                        animator.SetBool("IsRunning", false);
 
                         // Spawn in radation source
 
@@ -190,7 +191,6 @@ public class WaypointMover : MonoBehaviour
                     {
                         animator.SetBool("IsRunning", false);
                     }
-                    if(phaseManager.GetCurrentPhase() == GamePhase.Phase6) waypoints.isMovingForward = false;
                 }
             // Otherwise, continue to the next waypoint
             currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
