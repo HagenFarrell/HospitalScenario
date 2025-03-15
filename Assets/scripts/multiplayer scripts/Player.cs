@@ -138,7 +138,6 @@ public class Player : NetworkBehaviour
         }
     }
 
-
     private void AssignButtonOnClick()
     {
         // Find the buttons in the scene
@@ -314,16 +313,6 @@ public class Player : NetworkBehaviour
                     moveToolRing.SetActive(true);
                     selectedChars.Add(hitObj);
                     Debug.Log($"Added {hitObj.name} to selectedChars");
-
-                    /*npcs.moveFormation(selectedChars.ToArray());
-
-                    Vector3[] npcPositions = new Vector3[selectedChars.Count];
-                    for(int i = 0; i<selectedChars.Count;i++)
-                    {
-                        npcPositions[i] = selectedChars[i].transform.position;
-                    }
-                    CmdMoveNPCs(npcPositions);
-                    return;*/ 
                 }
                 if(selectedChars.Count > 0)
                 {
@@ -582,6 +571,25 @@ public class Player : NetworkBehaviour
         }
     }
 
+    [ClientRpc]
+    private void RpcExecuteMovement(uint[] npcNetIds, Vector3 targetPosition)
+    {
+        if (NetworkIdentity.spawned.TryGetValue(netId, out NetworkIdentity identity))
+        {
+            // EVERYONE (INCLUDING THE HOST) EXECUTES MOVEMENT FROM SCRATCH.
+            foreach (uint netId in npcNetIds)
+            {
+                // Reset ongoing movements, if this is actually happening.
+                AIMover mover = identity.GetComponent<AIMover>();
+                if (mover != null)  
+                {
+                    UnityEngine.Random.InitState((int)(netId + targetPosition.GetHashCode()));
+                    mover.SetTargetPosition(targetPosition);
+                }
+            }
+        }
+    }
+    
     [Command]
     private void CmdMoveNPCs(uint[] npcNetIds, Vector3 targetPosition)
     {
@@ -622,51 +630,8 @@ public class Player : NetworkBehaviour
                 Debug.LogError("npcMovement script is missing on the NPC parent object!");
             }
 
-            // Send the update to clients
-            RpcMoveNPCs(npcNetIds, targetPosition);
+            // Instead of updating the actual movement, send the command across clients.
+            RpcExecuteMovement(npcNetIds, targetPosition);
         }
     }
-
-    [ClientRpc]
-    private void RpcMoveNPCs(uint[] npcNetIds, Vector3 targetPosition)
-    {
-        if (npcNetIds == null || npcNetIds.Length == 0)
-        {
-            Debug.LogError("RpcMoveNPCs: No NPCs received for movement.");
-            return;
-        }
-
-        Debug.Log("Client: Updating NPCs positions");
-
-        List<GameObject> npcObjects = new List<GameObject>();
-
-        foreach (uint netId in npcNetIds)
-        {
-            if (NetworkIdentity.spawned.TryGetValue(netId, out NetworkIdentity identity))
-            {
-                npcObjects.Add(identity.gameObject);
-            }
-            else
-            {
-                Debug.LogWarning($"RpcMoveNPCs: NetworkIdentity with netId {netId} not found on client.");
-            }
-        }
-
-        if (npcObjects.Count > 0)
-        {
-            Debug.Log($"Client: Moving {npcObjects.Count} NPCs");
-
-            // Find the parent object with npcMovement
-            npcMovement movementScript = FindObjectOfType<npcMovement>();
-            if (movementScript != null)
-            {
-                movementScript.moveFormation(npcObjects.ToArray());
-            }
-            else
-            {
-                Debug.LogError("npcMovement script is missing on the NPC parent object!");
-            }
-        }
-    }
-
 }
