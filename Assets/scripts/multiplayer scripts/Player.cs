@@ -58,6 +58,42 @@ public class Player : NetworkBehaviour
 
     public static Player LocalPlayerInstance {get; private set; }
 
+    private uint nextRequestId = 1;
+    private Dictionary<uint, MovementRequest> pendingMoves = new Dictionary<uint, MovementRequest>();
+
+    // Struct for handling server requests with client prediction.
+    private struct MovementRequest
+    {
+        public uint requestId;
+        public uint[] npcNetIds;
+        public Vector3 targetPosition;
+        public float timestamp;
+
+        // Contructor for the struct objects.
+        public MovementRequest(uint requestId, uint[] npcNetIds, Vector3 targetPosition)
+        {
+            this.requestId = requestId;
+            this.npcNetIds = npcNetIds;
+            this.targetPosition = targetPosition;
+            this.timestamp = Time.realtimeSinceStartup;
+        }
+    }
+
+    private uint GetNextRequestId()
+    {
+        // Store the currentID
+        uint currentId = nextRequestId;
+        
+        // Move to the next request number available.
+        nextRequestId++;
+        
+        // Its possible the ID requests overflow although its less probable in our project.
+        if (nextRequestId == 0)
+            nextRequestId = 1;
+
+        return currentId;
+    }
+
     [Client]
     void Start()
     {
@@ -271,7 +307,7 @@ public class Player : NetworkBehaviour
             transform.position = newPosition;
         }
     }
-
+    
     private void HandleNPCInteraction()
     {
         if(radeyeToolInstance != null && radeyeToolInstance.IsActive())
@@ -304,10 +340,9 @@ public class Player : NetworkBehaviour
                 }
                 if(selectedChars.Count > 0)
                 {
-                    Debug.Log("Calling CmdMoveNPCs with selected npcs");
-                    //npcs.moveFormation(selectedChars.ToArray());
                     Vector3 targetPosition = hit.point;
                     uint[] npcNetIds = new uint[selectedChars.Count];
+                    
                     for (int i = 0; i < selectedChars.Count; i++)
                     {
                         NetworkIdentity identity = selectedChars[i].GetComponent<NetworkIdentity>();
@@ -316,9 +351,15 @@ public class Player : NetworkBehaviour
                             npcNetIds[i] = identity.netId;
                         }
                     }
+                    // Before we move, we send a request to the server. (timestamped)
+                    //uint requestId = GetNextRequestId();
+                    
+                    //pendingMoves[requestId] = new MovementRequest(requestId, npcNetIds, targetPosition);
+                    
+                    // Move locally before sending request to server.
+                   //moveNPClocally(selectedChars.ToArray(), targetPosition);
+                    
                     CmdMoveNPCs(npcNetIds, targetPosition);
-
-
                 }
                 else
                 {
@@ -374,8 +415,6 @@ public class Player : NetworkBehaviour
         {
             UndoLastAction();
         }
-
-        
     }
 
     private void SoundAlarm()
@@ -536,16 +575,14 @@ public class Player : NetworkBehaviour
     [ClientRpc]
     private void RpcExecuteMovement(uint[] npcNetIds, Vector3 targetPosition)
     {
-        if (NetworkIdentity.spawned.TryGetValue(netId, out NetworkIdentity identity))
+        foreach (uint npcNetId in npcNetIds)
         {
-            // EVERYONE (INCLUDING THE HOST) EXECUTES MOVEMENT FROM SCRATCH.
-            foreach (uint netId in npcNetIds)
+            if (NetworkIdentity.spawned.TryGetValue(npcNetId, out NetworkIdentity npcIdentity))
             {
-                // Reset ongoing movements, if this is actually happening.
-                AIMover mover = identity.GetComponent<AIMover>();
+                AIMover mover = npcIdentity.GetComponent<AIMover>();
                 if (mover != null)  
                 {
-                    UnityEngine.Random.InitState((int)(netId + targetPosition.GetHashCode()));
+                    UnityEngine.Random.InitState((int)(npcNetId + targetPosition.GetHashCode()));
                     mover.SetTargetPosition(targetPosition);
                 }
             }
