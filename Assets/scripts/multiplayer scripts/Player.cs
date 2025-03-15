@@ -629,16 +629,14 @@ public class Player : NetworkBehaviour
     [ClientRpc]
     private void RpcExecuteMovement(uint[] npcNetIds, Vector3 targetPosition)
     {
-        if (NetworkIdentity.spawned.TryGetValue(netId, out NetworkIdentity identity))
+        foreach (uint npcNetId in npcNetIds)
         {
-            // EVERYONE (INCLUDING THE HOST) EXECUTES MOVEMENT FROM SCRATCH.
-            foreach (uint netId in npcNetIds)
+            if (NetworkIdentity.spawned.TryGetValue(npcNetId, out NetworkIdentity npcIdentity))
             {
-                // Reset ongoing movements, if this is actually happening.
-                AIMover mover = identity.GetComponent<AIMover>();
+                AIMover mover = npcIdentity.GetComponent<AIMover>();
                 if (mover != null)  
                 {
-                    UnityEngine.Random.InitState((int)(netId + targetPosition.GetHashCode()));
+                    UnityEngine.Random.InitState((int)(npcNetId + targetPosition.GetHashCode()));
                     mover.SetTargetPosition(targetPosition);
                 }
             }
