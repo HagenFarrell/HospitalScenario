@@ -19,9 +19,9 @@ public class Player : NetworkBehaviour
     private List<GameObject> DispatchCams;
     private AudioSource alarmNoise;
 
-    [SerializeField] private GameObject radeyeToolPrefab;
-    private RadEyeTool radeyeToolInstance;
 
+    [SerializeField] private GameObject radeyePrefab; // Reference to the Radeye prefab
+    private GameObject radeyeInstance; // Holds the instantiated Radeye tool
 
     
     [SerializeField] private GameObject radeyeCircleTool;
@@ -99,30 +99,17 @@ public class Player : NetworkBehaviour
     void Start()
     {
         alarmNoise = GetComponent<AudioSource>();
-        // Try to find an AudioListener in this object or its children
-        AudioListener audioListener = GetComponentInChildren<AudioListener>();
+        AudioListener audioListener = transform.GetChild(1).GetComponent<AudioListener>();
 
-        if (audioListener == null)
+        // Disable the AudioListener on non-local players (if this is not the local player's camera)
+        if (!isLocalPlayer)
         {
-            Debug.LogWarning("No AudioListener found in Player. Skipping AudioListener assignment.");
+            audioListener.enabled = false;
         }
         else
         {
-            Debug.Log("AudioListener found!");
-
-            // Disable the AudioListener on non-local players
-            if (!isLocalPlayer)
-            {
-                audioListener.enabled = false;
-            }
-            else
-            {
-                audioListener.enabled = true;  // Ensure the local player's camera has the AudioListener
-            }
+            audioListener.enabled = true;  // Ensure the local player's camera has the AudioListener
         }
-
-    Debug.Log($"Player initialized. Current child count: {transform.childCount}");
-
         DispatchCams = GameObject.Find("Cameras").GetComponent<cameraSwitch>().DispatchCams;
         foreach(GameObject cam in DispatchCams)
         {
@@ -173,6 +160,18 @@ public class Player : NetworkBehaviour
 
         AssignButtonOnClick();
 
+        Collider circleCollider = radeyeCircleTool?.GetComponent<Collider>();
+        if (circleCollider != null)
+        {
+            Collider[] allColliders = FindObjectsOfType<Collider>();
+            foreach (Collider col in allColliders)
+            {
+                if (col != circleCollider)
+                {
+                    Physics.IgnoreCollision(circleCollider, col);
+                }
+            }
+        }
     }
 
     private void AssignButtonOnClick()
@@ -268,6 +267,14 @@ public class Player : NetworkBehaviour
         // Handle phase management (for Instructor role)
         HandlePhaseManagement();
 
+        if (radeyeInstance != null && radeyeInstance.activeInHierarchy && radeyeCircleTool != null)
+        {
+            MoveCircleToMousePosition();
+        }
+        else
+        {
+            //Debug.LogWarning("Radeye is not active or radeyeCircleTool is null");
+        }
     }
 
     private void HandleMouseLook()
@@ -327,12 +334,6 @@ public class Player : NetworkBehaviour
     
     private void HandleNPCInteraction()
     {
-        if(radeyeToolInstance != null && radeyeToolInstance.IsActive())
-        {
-            // Debug.Log("NPC movement is disabled while Radeye tool is active");
-            return;
-        }
-        
         if (Input.GetMouseButtonDown(0) && playerRole != Roles.None)
         {
             Debug.Log("Left-click detected.");
@@ -588,18 +589,56 @@ public class Player : NetworkBehaviour
         playerRole = role;
     }
 
+    private void MoveCircleToMousePosition()
+    {
+        // Get the current active camera
+        Camera activeCam = playerCamera;
+
+        // Get the mouse position in screen space
+        Vector3 mousePosition = Input.mousePosition;
+
+        // Convert the mouse position to a ray
+        Ray ray = activeCam.ScreenPointToRay(mousePosition);
+        RaycastHit hit;
+
+        // LayerMask to exclude radeyeCircleTool (IgnoreRaycast layer)
+        int layerMask = ~LayerMask.GetMask("IgnoreRaycast"); // Exclude the IgnoreRaycast layer
+
+        // Perform the raycast with the layer mask
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
+        {
+            // Move the circle to the hit point
+            radeyeCircleTool.transform.position = hit.point;
+        }
+        else
+        {
+            // Default position in front of the camera
+            radeyeCircleTool.transform.position = ray.origin + ray.direction * 10f;
+        }
+    }
+
+
+    public override void OnStopClient()
+    {
+        if (isLocalPlayer && radeyeInstance != null)
+        {
+            Destroy(radeyeInstance);
+        }
+    }
 
     [ClientRpc]
     private void RpcExecuteMovement(uint[] npcNetIds, Vector3 targetPosition)
     {
-        foreach (uint npcNetId in npcNetIds)
+        if (NetworkIdentity.spawned.TryGetValue(netId, out NetworkIdentity identity))
         {
-            if (NetworkIdentity.spawned.TryGetValue(npcNetId, out NetworkIdentity npcIdentity))
+            // EVERYONE (INCLUDING THE HOST) EXECUTES MOVEMENT FROM SCRATCH.
+            foreach (uint netId in npcNetIds)
             {
-                AIMover mover = npcIdentity.GetComponent<AIMover>();
+                // Reset ongoing movements, if this is actually happening.
+                AIMover mover = identity.GetComponent<AIMover>();
                 if (mover != null)  
                 {
-                    UnityEngine.Random.InitState((int)(npcNetId + targetPosition.GetHashCode()));
+                    UnityEngine.Random.InitState((int)(netId + targetPosition.GetHashCode()));
                     mover.SetTargetPosition(targetPosition);
                 }
             }
