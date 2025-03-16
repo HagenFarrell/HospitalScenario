@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
@@ -23,7 +23,7 @@ public class Player : NetworkBehaviour
     [SerializeField] private GameObject radeyePrefab; // Reference to the Radeye prefab
     private GameObject radeyeInstance; // Holds the instantiated Radeye tool
 
-
+    
     [SerializeField] private GameObject radeyeCircleTool;
 
     public enum Roles
@@ -38,11 +38,10 @@ public class Player : NetworkBehaviour
         Instructor,
     }
 
-    public Roles getPlayerRole()
-    {
+    public Roles getPlayerRole(){
         return playerRole;
     }
-
+    
     [SyncVar(hook = nameof(OnRoleChanged))]
     [SerializeField] private Roles playerRole;
     private void OnRoleChanged(Roles oldRole, Roles newRole)
@@ -58,7 +57,7 @@ public class Player : NetworkBehaviour
 
     [SerializeField] private Camera playerCamera; // Assign the camera in the Inspector
 
-    public static Player LocalPlayerInstance { get; private set; }
+    public static Player LocalPlayerInstance {get; private set; }
 
     private uint nextRequestId = 1;
     private Dictionary<uint, MovementRequest> pendingMoves = new Dictionary<uint, MovementRequest>();
@@ -85,10 +84,10 @@ public class Player : NetworkBehaviour
     {
         // Store the currentID
         uint currentId = nextRequestId;
-
+        
         // Move to the next request number available.
         nextRequestId++;
-
+        
         // Its possible the ID requests overflow although its less probable in our project.
         if (nextRequestId == 0)
             nextRequestId = 1;
@@ -112,7 +111,7 @@ public class Player : NetworkBehaviour
             audioListener.enabled = true;  // Ensure the local player's camera has the AudioListener
         }
         DispatchCams = GameObject.Find("Cameras").GetComponent<cameraSwitch>().DispatchCams;
-        foreach (GameObject cam in DispatchCams)
+        foreach(GameObject cam in DispatchCams)
         {
             cam.SetActive(false);
         }
@@ -138,23 +137,23 @@ public class Player : NetworkBehaviour
             playerCamera.enabled = true;
         }
 
-        if (radeyeInstance == null)
+        if(radeyeInstance ==null)
         {
             radeyeInstance = transform.Find("playerRadeye")?.gameObject;
-            if (radeyeInstance == null)
+            if(radeyeInstance == null)
             {
                 Debug.LogError("radeye tool not found on player prefab");
             }
         }
-        if (radeyeCircleTool == null)
+        if(radeyeCircleTool == null)
         {
             radeyeCircleTool = GameObject.Find("radeyeCircle");
-            if (radeyeCircleTool == null)
+            if(radeyeCircleTool == null)
             {
                 Debug.LogError("radeyeCircle GameObject not found");
             }
         }
-
+        
 
         // Find and initialize necessary objects
         InitializeSceneObjects();
@@ -236,7 +235,7 @@ public class Player : NetworkBehaviour
         {
             Debug.LogError("npcMovement not found in the scene!");
         }
-        if (npcs != null)
+        if( npcs != null)
         {
             npcs.SetCamera(playerCamera);
         }
@@ -332,7 +331,7 @@ public class Player : NetworkBehaviour
             transform.position = newPosition;
         }
     }
-
+    
     private void HandleNPCInteraction()
     {
         if (Input.GetMouseButtonDown(0) && playerRole != Roles.None)
@@ -357,11 +356,11 @@ public class Player : NetworkBehaviour
                     selectedChars.Add(hitObj);
                     Debug.Log($"Added {hitObj.name} to selectedChars");
                 }
-                if (selectedChars.Count > 0)
+                if(selectedChars.Count > 0)
                 {
                     Vector3 targetPosition = hit.point;
                     uint[] npcNetIds = new uint[selectedChars.Count];
-
+                    
                     for (int i = 0; i < selectedChars.Count; i++)
                     {
                         NetworkIdentity identity = selectedChars[i].GetComponent<NetworkIdentity>();
@@ -372,12 +371,12 @@ public class Player : NetworkBehaviour
                     }
                     // Before we move, we send a request to the server. (timestamped)
                     //uint requestId = GetNextRequestId();
-
+                    
                     //pendingMoves[requestId] = new MovementRequest(requestId, npcNetIds, targetPosition);
-
+                    
                     // Move locally before sending request to server.
-                    //moveNPClocally(selectedChars.ToArray(), targetPosition);
-
+                   //moveNPClocally(selectedChars.ToArray(), targetPosition);
+                    
                     CmdMoveNPCs(npcNetIds, targetPosition);
                 }
                 else
@@ -394,7 +393,7 @@ public class Player : NetworkBehaviour
         {
             Camera mainCamera = playerCamera;
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit))
+            if(Physics.Raycast(ray, out RaycastHit hit))
             {
                 GameObject hitObj = hit.collider.gameObject;
                 if (hitObj.tag == playerRole.ToString() || (playerRole == Roles.Instructor && hitObj.tag != "Untagged"))
@@ -438,7 +437,7 @@ public class Player : NetworkBehaviour
 
     private void SoundAlarm()
     {
-        if (playerRole == Roles.Dispatch || playerRole == Roles.Instructor)
+        if(playerRole == Roles.Dispatch || playerRole == Roles.Instructor)
             alarmNoise.Play();
     }
     private GameObject[] GetNpcs(string role)
@@ -454,7 +453,7 @@ public class Player : NetworkBehaviour
             GameObject[] Law = GameObject.FindGameObjectsWithTag("LawEnforcement");
 
             List<GameObject> npcs = new List<GameObject>(Fire);
-            if (npcs == null) Debug.LogError("npcs null");
+            if(npcs == null) Debug.LogError("npcs null");
             npcs.AddRange(Law);
 
             // // ensure player characters are disabled
@@ -545,14 +544,14 @@ public class Player : NetworkBehaviour
         GameObject Maincam = GameObject.FindGameObjectWithTag("MainCamera");
         Maincam.SetActive(false);
         transform.GetChild(1).gameObject.SetActive(false);
-        foreach (GameObject cam in LLEcams)
+        foreach(GameObject cam in LLEcams)
         {
             cam.SetActive(false);
         }
 
+        
 
-
-        foreach (GameObject cam in DispatchCams)
+        foreach(GameObject cam in DispatchCams)
         {
             cam.GetComponent<Camera>().enabled = true;
             cam.SetActive(true);
@@ -572,7 +571,7 @@ public class Player : NetworkBehaviour
         //     }
         // }
     }
-
+    
     [Command(requiresAuthority = true)]
     private void CmdSetRole(Roles role)
     {
@@ -635,7 +634,7 @@ public class Player : NetworkBehaviour
             if (NetworkIdentity.spawned.TryGetValue(npcNetId, out NetworkIdentity npcIdentity))
             {
                 AIMover mover = npcIdentity.GetComponent<AIMover>();
-                if (mover != null)
+                if (mover != null)  
                 {
                     UnityEngine.Random.InitState((int)(npcNetId + targetPosition.GetHashCode()));
                     mover.SetTargetPosition(targetPosition);
@@ -643,7 +642,7 @@ public class Player : NetworkBehaviour
             }
         }
     }
-
+    
     [Command]
     private void CmdMoveNPCs(uint[] npcNetIds, Vector3 targetPosition)
     {
@@ -653,135 +652,39 @@ public class Player : NetworkBehaviour
             return;
         }
 
-        float spacing = 2.0f; // Adjust spacing
-        List<Vector3> formationOffsets = CalculateTriangleOffsets(npcNetIds.Length, spacing);
+        Debug.Log($"Server: Moving {npcNetIds.Length} NPCs to {targetPosition}");
 
-        Debug.Log($"[SERVER] Moving {npcNetIds.Length} NPCs to {targetPosition} while keeping animations.");
+        List<GameObject> npcObjects = new List<GameObject>();
 
-        for (int i = 0; i < npcNetIds.Length; i++)
+        foreach (uint netId in npcNetIds)
         {
-            if (NetworkIdentity.spawned.TryGetValue(npcNetIds[i], out NetworkIdentity identity))
+            if (NetworkIdentity.spawned.TryGetValue(netId, out NetworkIdentity identity))
             {
-                Vector3 finalPosition = targetPosition + formationOffsets[i];
-
-                AIMover mover = identity.GetComponent<AIMover>(); 
-                UnityEngine.AI.NavMeshAgent agent = identity.GetComponent<UnityEngine.AI.NavMeshAgent>(); 
-                npcMovement npcMover = identity.GetComponent<npcMovement>(); 
-
-                if (mover != null)
-                {
-                    mover.SetTargetPosition(finalPosition); 
-                    Debug.Log($"[SERVER] Using AIMover for NPC {identity.netId} to {finalPosition}");
-                }
-                else if (agent != null)
-                {
-                    agent.SetDestination(finalPosition); 
-                    Debug.Log($"[SERVER] Using NavMeshAgent for NPC {identity.netId} to {finalPosition}");
-                }
-                else if (npcMover != null)
-                {
-                    npcMover.moveFormation(new GameObject[] { identity.gameObject }); 
-                    Debug.Log($"[SERVER] Using npcMovement for NPC {identity.netId}");
-                }
-                else
-                {
-                    Debug.LogWarning($"[SERVER] No movement system found for NPC {identity.netId}. Falling back to direct movement.");
-                    identity.transform.position = finalPosition;
-                }
+                npcObjects.Add(identity.gameObject);
             }
-        }
-        RpcMoveNPCs(npcNetIds, targetPosition);
-    }
-
-    [ClientRpc]
-    private void RpcMoveNPCs(uint[] npcNetIds, Vector3 targetPosition)
-    {
-        float spacing = 2.0f;
-        List<Vector3> formationOffsets = CalculateTriangleOffsets(npcNetIds.Length, spacing);
-
-        Debug.Log($"[CLIENT] Moving {npcNetIds.Length} NPCs to {targetPosition} while keeping animations.");
-
-        for (int i = 0; i < npcNetIds.Length; i++)
-        {
-            if (NetworkIdentity.spawned.TryGetValue(npcNetIds[i], out NetworkIdentity identity))
+            else
             {
-                Vector3 finalPosition = targetPosition + formationOffsets[i];
-
-                AIMover mover = identity.GetComponent<AIMover>();
-                UnityEngine.AI.NavMeshAgent agent = identity.GetComponent<UnityEngine.AI.NavMeshAgent>();
-                npcMovement npcMover = identity.GetComponent<npcMovement>();
-
-                if (mover != null)
-                {
-                    mover.SetTargetPosition(finalPosition);
-                    Debug.Log($"[CLIENT] Using AIMover for NPC {identity.netId}");
-                }
-                else if (agent != null)
-                {
-                    agent.SetDestination(finalPosition);
-                    Debug.Log($"[CLIENT] Using NavMeshAgent for NPC {identity.netId}");
-                }
-                else if (npcMover != null)
-                {
-                    npcMover.moveFormation(new GameObject[] { identity.gameObject });
-                    Debug.Log($"[CLIENT] Using npcMovement for NPC {identity.netId}");
-                }
-            }
-        }
-    }
-
-    private List<Vector3> CalculateTriangleOffsets(int npcCount, float spacing)
-    {
-        List<Vector3> offsets = new List<Vector3>();
-
-        if (npcCount == 1)
-        {
-            offsets.Add(Vector3.zero);
-        }
-        else if (npcCount == 2)
-        {
-            offsets.Add(new Vector3(-spacing / 2, 0, 0));
-            offsets.Add(new Vector3(spacing / 2, 0, 0));
-        }
-        else if (npcCount == 3)
-        {
-            // Triangle Formation
-            offsets.Add(new Vector3(0, 0, 0)); // Leader
-            offsets.Add(new Vector3(-spacing, 0, -spacing));
-            offsets.Add(new Vector3(spacing, 0, -spacing));
-        }
-        else if (npcCount == 4)
-        {
-            offsets.Add(new Vector3(0, 0, 0)); 
-            offsets.Add(new Vector3(-spacing, 0, -spacing));
-            offsets.Add(new Vector3(spacing, 0, -spacing));
-            offsets.Add(new Vector3(0, 0, -2 * spacing)); 
-        }
-        else
-        {
-            int row = 0;
-            int col = 0;
-            int rowSize = 1;
-            int placed = 0;
-
-            for (int i = 0; i < npcCount; i++)
-            {
-                float xOffset = (col - (rowSize / 2.0f)) * spacing;
-                float zOffset = -row * spacing;
-
-                offsets.Add(new Vector3(xOffset, 0, zOffset));
-                placed++;
-                col++;
-
-                if (placed >= rowSize)
-                {
-                    row++;
-                    col = 0;
-                    rowSize++;
-                }
+                Debug.LogWarning($"CmdMoveNPCs: NetworkIdentity with netId {netId} not found on server.");
             }
         }
 
-        return offsets;
+        if (npcObjects.Count > 0)
+        {
+            Debug.Log($"Server: Moving {npcObjects.Count} NPCs");
+
+            // Instead of looking for npcMovement on the NPC, find it on the parent object
+            npcMovement movementScript = FindObjectOfType<npcMovement>();
+            if (movementScript != null)
+            {
+                movementScript.moveFormation(npcObjects.ToArray());
+            }
+            else
+            {
+                Debug.LogError("npcMovement script is missing on the NPC parent object!");
+            }
+
+            // Instead of updating the actual movement, send the command across clients.
+            RpcExecuteMovement(npcNetIds, targetPosition);
+        }
     }
 }
