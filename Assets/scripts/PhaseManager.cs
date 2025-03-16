@@ -63,9 +63,6 @@ public class PhaseManager : MonoBehaviour
         // Store initial positions and tags of all NPCs in the first phase node
         StoreInitialNPCState();
         
-        // Find or create hostage trigger area
-        SetupHostageArea();
-        
         // Find key NPCs
         FindKeyNPCs();
         
@@ -176,45 +173,6 @@ public class PhaseManager : MonoBehaviour
         
         Debug.Log("Created temporary gamma knife object");
     }
-    
-    private void SetupHostageArea()
-    {
-        // hostageArea = FindObjectOfType<HostageTriggerArea>();
-    }
-    
-    // private void ConvertToHostage(GameObject npc)
-    // {
-    //     // Skip if already a hostage
-    //     if (npc.CompareTag("Hostages"))
-    //         return;
-            
-    //     // Store original tag if not already stored in current phase
-    //     if (!phaseList.Current.NPCTags.ContainsKey(npc.name))
-    //     {
-    //         phaseList.Current.NPCTags[npc.name] = npc.tag;
-    //     }
-        
-    //     // Log the conversion
-    //     // Debug.Log($"Converting {npc.name} from {npc.tag} to Hostage");
-        
-    //     // Change tag to Hostage
-    //     npc.tag = "Hostages";
-        
-    //     // Optional: Modify behavior
-    //     AIMover mover = npc.GetComponent<AIMover>();
-    //     if (mover != null)
-    //     {
-    //         // mover.StopAllMovement();
-    //     }
-        
-    //     // Optional: Change animation
-    //     Animator animator = npc.GetComponent<Animator>();
-    //     if (animator != null)
-    //     {
-    //         // animator.SetBool("IsHostage", true);
-    //         animator.SetBool("IsWalking", false);
-    //     }
-    // }
 
     private void StoreInitialNPCState()
     {
@@ -566,16 +524,63 @@ public class PhaseManager : MonoBehaviour
         mover.waypoints = GameObject.Find("Waypoints15")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0)); //this is how we get first waypoint externally
 
+        Animator animator = mover.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator != null)
+        {
+            animator.SetBool("IsRunning", true);
+            mover.moveSpeed = 5;
+        }
+
         mover = villains[1].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints14")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
+        Animator animator1 = mover.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator1 != null)
+        {
+            animator1.SetBool("IsRunning", true);
+            mover.moveSpeed = 5;
+        }
+
         mover = villains[3].GetComponent<WaypointMover>();
+        mover.waypoints = GameObject.Find("Waypoints16")?.GetComponent<Waypoints>();
+        mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+        Animator animator2 = mover.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator2 != null)
+        {
+            animator2.SetBool("IsRunning", true);
+            mover.moveSpeed = 5;
+        }
+
+        mover = villains[4].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints17")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
-        mover = villains[4].GetComponent<WaypointMover>();
-        mover.waypoints = GameObject.Find("Waypoints16")?.GetComponent<Waypoints>();
+        Animator animator3 = mover.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator3 != null)
+        {
+            animator3.SetBool("IsRunning", true);
+            mover.moveSpeed = 5;
+        }
+
+        // Doctor that gets taken hostage moves them to gamma knife
+        mover = physicianHostage.GetComponent<WaypointMover>();
+
+        Animator animator4 = physicianHostage.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator4 != null)
+        {
+            animator4.SetBool("IsRunning", true);
+            mover.moveSpeed = 5;
+        }
+
+
+        mover.waypoints = GameObject.Find("Waypoints18")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
 
@@ -596,11 +601,593 @@ public class PhaseManager : MonoBehaviour
     }
 
     private void ExecutePhase5(){
-        
+
+        WaypointMover mover = villains[2].GetComponent<WaypointMover>();
+        mover.waypoints = GameObject.Find("Waypoints13")?.GetComponent<Waypoints>();
+        mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+        Animator animator1 = mover.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator1 != null)
+        {
+            animator1.SetBool("IsRunning", true);
+            mover.moveSpeed = 5;
+        }
+
+        mover = villains[3].GetComponent<WaypointMover>();
+        mover.waypoints = GameObject.Find("Waypoints24")?.GetComponent<Waypoints>();
+        mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+        Animator animator2 = mover.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator2 != null)
+        {
+            animator2.SetBool("IsRunning", true);
+            mover.moveSpeed = 5;
+        }
+
+        mover = villains[4].GetComponent<WaypointMover>();
+        mover.waypoints = GameObject.Find("Waypoints25")?.GetComponent<Waypoints>();
+        mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+        Animator animator3 = mover.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator3 != null)
+        {
+            animator3.SetBool("IsRunning", true);
+            mover.moveSpeed = 5;
+        }
+
+        Animator animator4 = physicianHostage.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator4 != null)
+        {
+            animator4.SetBool("ToRummaging", false);
+        }
     }
 
     private void ExecutePhase6(){
-        
+        WaypointMover mover = villains[0].GetComponent<WaypointMover>();
+        mover.waypoints = GameObject.Find("Waypoints26")?.GetComponent<Waypoints>();
+        mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0)); //this is how we get first waypoint externally
+
+        Animator animator = mover.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator != null)
+        {
+            animator.SetBool("IsRunning", true);
+            mover.moveSpeed = 5;
+        }
+
+        mover = villains[1].GetComponent<WaypointMover>();
+        mover.waypoints = GameObject.Find("Waypoints27")?.GetComponent<Waypoints>();
+        mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+        Animator animator1 = mover.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator1 != null)
+        {
+            animator1.SetBool("IsRunning", true);
+            mover.moveSpeed = 5;
+        }
+
+        mover = villains[2].GetComponent<WaypointMover>();
+        mover.waypoints = GameObject.Find("Waypoints28")?.GetComponent<Waypoints>();
+        mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+        animator1 = mover.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator1 != null)
+        {
+            animator1.SetBool("IsRunning", true);
+            mover.moveSpeed = 5;
+        }
+
+        mover = villains[3].GetComponent<WaypointMover>();
+        mover.waypoints = GameObject.Find("Waypoints29")?.GetComponent<Waypoints>();
+        mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+        Animator animator2 = mover.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator2 != null)
+        {
+            animator2.SetBool("IsRunning", true);
+            mover.moveSpeed = 5;
+        }
+
+        mover = villains[4].GetComponent<WaypointMover>();
+        mover.waypoints = GameObject.Find("Waypoints30")?.GetComponent<Waypoints>();
+        mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+        Animator animator3 = mover.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator3 != null)
+        {
+            animator3.SetBool("IsRunning", true);
+            mover.moveSpeed = 5;
+        }
+
+        // physician hostage goes with them
+        mover = physicianHostage.GetComponent<WaypointMover>();
+
+        Animator animator4 = physicianHostage.GetComponent<Animator>();
+        // Change animation to walking
+        if (animator4 != null)
+        {
+            animator4.SetBool("IsRunning", true);
+            mover.moveSpeed = 5;
+        }
+        mover.waypoints = GameObject.Find("Waypoints31")?.GetComponent<Waypoints>();
+        mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+        // Remaining hostages get rounded up
+        mover = newHostages[0].GetComponent<WaypointMover>();
+
+        animator4 = newHostages[0].GetComponent<Animator>();
+        // Change animation to walking
+        if (animator4 != null)
+        {
+            animator4.SetBool("IsRunning", true);
+            animator4.SetBool("IsThreatPresent", false);
+            mover.moveSpeed = 5;
+        }
+        mover.waypoints = GameObject.Find("Waypoints32")?.GetComponent<Waypoints>();
+        mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+        // Remaining hostages get rounded up
+        mover = newHostages[1].GetComponent<WaypointMover>();
+
+        animator4 = newHostages[1].GetComponent<Animator>();
+        // Change animation to walking
+        if (animator4 != null)
+        {
+            animator4.SetBool("IsRunning", true);
+            animator4.SetBool("IsThreatPresent", false);
+            mover.moveSpeed = 5;
+        }
+        mover.waypoints = GameObject.Find("Waypoints33")?.GetComponent<Waypoints>();
+        mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+    }
+
+    private void ExecuteEgressPhase(int selectedEgress)
+    {
+        OnEgressSelected -= ExecuteEgressPhase; // Unsubscribe to prevent multiple calls
+
+        Debug.Log($"Egress phase {selectedEgress} selected!");
+        egress = selectedEgress;
+
+        switch(egress) // b = random
+        {
+            case 1: // z
+                // Phase Egress 1: Adversaries move to the front emergency exit
+                Debug.Log("Phase Egress: " + egress);
+                
+                WaypointMover mover = villains[0].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints34")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0)); //this is how we get first waypoint externally
+
+                Animator animator = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator != null)
+                {
+                    animator.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                mover = villains[1].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints35")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                Animator animator1 = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator1 != null)
+                {
+                    animator1.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                mover = villains[2].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints36")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                animator1 = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator1 != null)
+                {
+                    animator1.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                mover = villains[3].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints37")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                Animator animator2 = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator2 != null)
+                {
+                    animator2.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                mover = villains[4].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints38")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                Animator animator3 = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator3 != null)
+                {
+                    animator3.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                // physician hostage goes with them
+                mover = physicianHostage.GetComponent<WaypointMover>();
+
+                Animator animator4 = physicianHostage.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator4 != null)
+                {
+                    animator4.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+                mover.waypoints = GameObject.Find("Waypoints39")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                // Remaining hostages get rounded up
+                mover = newHostages[0].GetComponent<WaypointMover>();
+
+                animator4 = newHostages[0].GetComponent<Animator>();
+                // Change animation to walking
+                if (animator4 != null)
+                {
+                    animator4.SetBool("IsRunning", true);
+                    animator4.SetBool("IsThreatPresent", false);
+                    mover.moveSpeed = 5;
+                }
+                mover.waypoints = GameObject.Find("Waypoints40")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                // Remaining hostages get rounded up
+                mover = newHostages[1].GetComponent<WaypointMover>();
+
+                animator4 = newHostages[1].GetComponent<Animator>();
+                // Change animation to walking
+                if (animator4 != null)
+                {
+                    animator4.SetBool("IsRunning", true);
+                    animator4.SetBool("IsThreatPresent", false);
+                    mover.moveSpeed = 5;
+                }
+                mover.waypoints = GameObject.Find("Waypoints41")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+
+                break;
+            case 2: // x
+                // Phase Egress 2: Adversaries move to the rear emergency exit
+                Debug.Log("Phase Egress: " + egress);
+                
+                mover = villains[0].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints42")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0)); //this is how we get first waypoint externally
+
+                animator = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator != null)
+                {
+                    animator.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                mover = villains[1].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints43")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                animator1 = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator1 != null)
+                {
+                    animator1.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                mover = villains[2].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints44")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                animator1 = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator1 != null)
+                {
+                    animator1.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                mover = villains[3].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints45")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                animator2 = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator2 != null)
+                {
+                    animator2.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                mover = villains[4].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints46")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                animator3 = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator3 != null)
+                {
+                    animator3.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                // physician hostage goes with them
+                mover = physicianHostage.GetComponent<WaypointMover>();
+
+                animator4 = physicianHostage.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator4 != null)
+                {
+                    animator4.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+                mover.waypoints = GameObject.Find("Waypoints47")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                // Remaining hostages get rounded up
+                mover = newHostages[0].GetComponent<WaypointMover>();
+
+                animator4 = newHostages[0].GetComponent<Animator>();
+                // Change animation to walking
+                if (animator4 != null)
+                {
+                    animator4.SetBool("IsRunning", true);
+                    animator4.SetBool("IsThreatPresent", false);
+                    mover.moveSpeed = 5;
+                }
+                mover.waypoints = GameObject.Find("Waypoints48")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                // Remaining hostages get rounded up
+                mover = newHostages[1].GetComponent<WaypointMover>();
+
+                animator4 = newHostages[1].GetComponent<Animator>();
+                // Change animation to walking
+                if (animator4 != null)
+                {
+                    animator4.SetBool("IsRunning", true);
+                    animator4.SetBool("IsThreatPresent", false);
+                    mover.moveSpeed = 5;
+                }
+                mover.waypoints = GameObject.Find("Waypoints49")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+
+                break;
+            case 3: // c
+                // Phase Egress 3: Adversaries move to the lobby exit
+                Debug.Log("Phase Egress: " + egress);
+
+                mover = villains[0].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints50")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0)); //this is how we get first waypoint externally
+
+                animator = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator != null)
+                {
+                    animator.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                mover = villains[1].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints51")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                animator1 = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator1 != null)
+                {
+                    animator1.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                mover = villains[2].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints52")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                animator1 = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator1 != null)
+                {
+                    animator1.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                mover = villains[3].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints53")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                animator2 = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator2 != null)
+                {
+                    animator2.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                mover = villains[4].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints54")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                animator3 = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator3 != null)
+                {
+                    animator3.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                // physician hostage goes with them
+                mover = physicianHostage.GetComponent<WaypointMover>();
+
+                animator4 = physicianHostage.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator4 != null)
+                {
+                    animator4.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+                mover.waypoints = GameObject.Find("Waypoints55")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                // Remaining hostages get rounded up
+                mover = newHostages[0].GetComponent<WaypointMover>();
+
+                animator4 = newHostages[0].GetComponent<Animator>();
+                // Change animation to walking
+                if (animator4 != null)
+                {
+                    animator4.SetBool("IsRunning", true);
+                    animator4.SetBool("IsThreatPresent", false);
+                    mover.moveSpeed = 5;
+                }
+                mover.waypoints = GameObject.Find("Waypoints56")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                // Remaining hostages get rounded up
+                mover = newHostages[1].GetComponent<WaypointMover>();
+
+                animator4 = newHostages[1].GetComponent<Animator>();
+                // Change animation to walking
+                if (animator4 != null)
+                {
+                    animator4.SetBool("IsRunning", true);
+                    animator4.SetBool("IsThreatPresent", false);
+                    mover.moveSpeed = 5;
+                }
+                mover.waypoints = GameObject.Find("Waypoints57")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                break;
+            case 4: // v
+                // Phase Egress 4: Adversaries move to the rear exit
+                Debug.Log("Phase Egress: " + egress);
+                
+                mover = villains[0].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints58")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0)); //this is how we get first waypoint externally
+
+                animator = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator != null)
+                {
+                    animator.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                mover = villains[1].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints59")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                animator1 = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator1 != null)
+                {
+                    animator1.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                mover = villains[2].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints60")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                animator1 = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator1 != null)
+                {
+                    animator1.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                mover = villains[3].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints61")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                animator2 = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator2 != null)
+                {
+                    animator2.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                mover = villains[4].GetComponent<WaypointMover>();
+                mover.waypoints = GameObject.Find("Waypoints62")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                animator3 = mover.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator3 != null)
+                {
+                    animator3.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+
+                // physician hostage goes with them
+                mover = physicianHostage.GetComponent<WaypointMover>();
+
+                animator4 = physicianHostage.GetComponent<Animator>();
+                // Change animation to walking
+                if (animator4 != null)
+                {
+                    animator4.SetBool("IsRunning", true);
+                    mover.moveSpeed = 5;
+                }
+                mover.waypoints = GameObject.Find("Waypoints63")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                // Remaining hostages get rounded up
+                mover = newHostages[0].GetComponent<WaypointMover>();
+
+                animator4 = newHostages[0].GetComponent<Animator>();
+                // Change animation to walking
+                if (animator4 != null)
+                {
+                    animator4.SetBool("IsRunning", true);
+                    animator4.SetBool("IsThreatPresent", false);
+                    mover.moveSpeed = 5;
+                }
+                mover.waypoints = GameObject.Find("Waypoints64")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                // Remaining hostages get rounded up
+                mover = newHostages[1].GetComponent<WaypointMover>();
+
+                animator4 = newHostages[1].GetComponent<Animator>();
+                // Change animation to walking
+                if (animator4 != null)
+                {
+                    animator4.SetBool("IsRunning", true);
+                    animator4.SetBool("IsThreatPresent", false);
+                    mover.moveSpeed = 5;
+                }
+                mover.waypoints = GameObject.Find("Waypoints65")?.GetComponent<Waypoints>();
+                mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
+
+                break;
+            default:
+                Debug.LogWarning("Invalid egress phase!");
+                break;
+        }
     }
 
     private void MoveNPCsForPhase(GamePhase phase)
@@ -658,6 +1245,7 @@ public class PhaseManager : MonoBehaviour
                 
                 break;
             case GamePhase.Phase7:
+                SetEgressPhase();
 
                 break;
 
@@ -673,78 +1261,6 @@ public class PhaseManager : MonoBehaviour
         StoreActiveNPCsCurrentState(phaseList.Current);
         Debug.Log($"Stored state for {phaseList.Current.NPCPositions.Count} NPCs in Phase {phaseList.Current.Phase}");
     }
-
-    private void ExecuteEgressPhase(int selectedEgress)
-    {
-        OnEgressSelected -= ExecuteEgressPhase; // Unsubscribe to prevent multiple calls
-
-        Debug.Log($"Egress phase {selectedEgress} selected!");
-        egress = selectedEgress;
-
-        switch(egress) // g = random
-        {
-            case 1: // a
-                // Phase Egress 1: Adversaries move to the front emergency exit
-                Debug.Log("Phase Egress: " + egress);
-                // Vector3 youMoveHere = new Vector3(21.8f, 0, 72.3f);
-                // float radius = 2f;
-                // moveEgress(youMoveHere, radius);
-                break;
-            case 2: // s
-                // Phase Egress 2: Adversaries move to the rear emergency exit
-                Debug.Log("Phase Egress: " + egress);
-                // youMoveHere = new Vector3(-12.3f, 0, 95.8f);
-                // radius = 3f;
-                // moveEgress(youMoveHere, radius);
-                break;
-            case 3: // d
-                // Phase Egress 3: Adversaries move to the lobby exit
-                Debug.Log("Phase Egress: " + egress);
-                // youMoveHere = new Vector3(20.8f, 0, 113.3f);
-                // radius = 3f;
-                // moveEgress(youMoveHere, radius);
-                break;
-            case 4: // f
-                // Phase Egress 4: Adversaries move to the rear exit
-                Debug.Log("Phase Egress: " + egress);
-                // youMoveHere = new Vector3(-12.8f, 0, 112.3f);
-                // radius = 3f;
-                // moveEgress(youMoveHere, radius);
-                break;
-            default:
-                Debug.LogWarning("Invalid egress phase!");
-                break;
-        }
-        
-        // Store the final egress state
-        StoreCurrentPhaseState();
-    }
-
-    private IEnumerator WorkOnGammaKnife(GameObject npc, Vector3 targetposition)
-    {
-        // Debug.Log("Started WorkOnGammaKnife Coroutine");
-
-        while (Vector3.Distance(npc.transform.position, targetposition) > 1f)
-        {
-            // Debug.Log($"Waiting... Current Pos: {npc.transform.position}, Target: {targetposition}");
-            yield return new WaitForSeconds(3f);
-        }
-
-        Debug.Log("The villain is working on the gamma knife source!");
-        
-        Animator animator = npc.GetComponent<Animator>();
-        if (animator != null)
-        {
-            // Debug.Log("Animator found! Changing states.");
-            animator.SetBool("IsWalking", false);
-            animator.SetBool("ToRummaging", true);
-        }
-        else
-        {
-            Debug.LogError("Animator null for rummaging");
-        }
-    }
-
 
     public GamePhase GetCurrentPhase(){
         return phaseList.Current.Phase;
