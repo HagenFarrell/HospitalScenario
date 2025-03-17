@@ -356,6 +356,7 @@ public class AIMover : MonoBehaviour
 
     public void SetTargetPosition(Vector3 newPosition)
     {
+        Debug.Log($"{gameObject.name} is moving to {newPosition}");
         target.position = newPosition;
         currentWaypoint = 0;
         isAtDestination = false;

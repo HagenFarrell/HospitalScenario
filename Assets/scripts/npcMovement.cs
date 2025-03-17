@@ -184,7 +184,7 @@ private IEnumerator updateFormationPositions(GameObject[] npcs, Vector3 formatio
      * rowSpacing: distance between sucessive rows.
      * colSpacing: horizontal spacing between each NPC in a row.
      */
-    private Vector3 ComputeTriangleSlot(int index, Vector3 apex, Vector3 forward, float rowSpacing, float colSpacing)
+    public Vector3 ComputeTriangleSlot(int index, Vector3 apex, Vector3 forward, float rowSpacing, float colSpacing)
     {
         var row = 0;
         var count = 0;
@@ -204,7 +204,7 @@ private IEnumerator updateFormationPositions(GameObject[] npcs, Vector3 formatio
                 // Centering the row horizontally.
                 // In order to grab the center of the rowCount NPC we have to do (rowCount - 1)/2.0f <-- middle position.
                 var centerOffset = (rowCount - 1) / 2.0f;
-                var horizontalOffset = (col - centerOffset) * colSpacing;
+                var horizontalOffset = (col - centerOffset) * colSpacing * 2.5f;
 
                 return rowPosition + right * horizontalOffset;
             }
