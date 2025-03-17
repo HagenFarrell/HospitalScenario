@@ -18,6 +18,7 @@ TagManager:
   - LLE/FD Cams
   - Dispatch
   - TempWalls
+  - RadiationSource
   layers:
   - Default
   - TransparentFX
