@@ -389,12 +389,21 @@ public class PhaseManager : MonoBehaviour
         }
     }
 
+    private GameObject getRadSource(){
+        GameObject[] temp = GameObject.FindGameObjectsWithTag("RadiationSource");
+        if(temp.Length > 0) return temp[0];
+        else{
+            Debug.LogWarning("gamma source null???");
+            return null;
+        }
+    }
+
     // Phase 1 with new waypoint paths
     private void ExecutePhase1()
     {
         currentPhase = 1;
         Debug.Log("Executing Phase 1: NPCs begin waypoint movement");
-        gammaKnifeObject = GameObject.FindGameObjectsWithTag("RadiationSource")[0];
+        gammaKnifeObject = getRadSource();
         if (gammaKnifeObject != null) {
             gammaKnifeObject.SetActive(false);
             // gammaKnifeObject.transform.GetChild(0).localScale = new Vector3(1.125f, 1.125f, 1.125f);
@@ -633,6 +642,7 @@ public class PhaseManager : MonoBehaviour
         if (gammaKnifeObject != null) {
             Debug.Log("gammaknifeobject spawning");
             gammaKnifeObject.SetActive(true);
+            gammaKnifeObject.transform.GetChild(0).gameObject.SetActive(true);
             // gammaKnifeObject.transform.localScale = new Vector3(25f, 25f, 25f);
         }
 
