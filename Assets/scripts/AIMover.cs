@@ -7,17 +7,17 @@ public class AIMover : MonoBehaviour
     private Animator animator;
 
     // ---- Variables for the BOIDS algorithm. ----
-    [SerializeField] private float speed = 4f;
+    // [SerializeField] private float speed = 4f;
     [SerializeField] private float maxSpeed = 5f;
     [SerializeField] private float maxForce = 150f;
     [SerializeField] private float slowingRadius = 2f;
     [SerializeField] private float seperationRadius = 1f;
-    [SerializeField] private float lookAheadDistance = 0.3f;
+    // [SerializeField] private float lookAheadDistance = 0.3f;
 
 
     // ---- Movement based variables ----
-    [SerializeField] private float movementThreshhold = 0.01f;
-    [SerializeField] private float animationDampTime = 0.1f;
+    // [SerializeField] private float movementThreshhold = 0.01f;
+    // [SerializeField] private float animationDampTime = 0.1f;
 
     // Animation parameter hashes for efficiency
     private readonly int walkingHash = Animator.StringToHash("IsWalking");
@@ -25,7 +25,7 @@ public class AIMover : MonoBehaviour
 
 
     // ---- Pathingfinding variables ----
-    [SerializeField] private float pathWeight = 0.4f;
+    // [SerializeField] private float pathWeight = 0.4f;
     [SerializeField] private float pathUpdateInterval = 0.5f;
     private Pathfinder pathfinder;
     private List<Vector3> path;
