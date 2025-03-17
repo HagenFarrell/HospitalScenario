@@ -627,17 +627,17 @@ public class Player : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void RpcExecuteMovement(uint[] npcNetIds, Vector3 targetPosition)
+    private void RpcExecuteMovement(uint[] npcNetIds, Vector3[] targetPositions)
     {
-        foreach (uint npcNetId in npcNetIds)
+        for(int i = 0; i < npcNetIds.Length; i++)
         {
-            if (NetworkIdentity.spawned.TryGetValue(npcNetId, out NetworkIdentity npcIdentity))
+            if (NetworkIdentity.spawned.TryGetValue(npcNetIds[i], out NetworkIdentity npcIdentity))
             {
                 AIMover mover = npcIdentity.GetComponent<AIMover>();
                 if (mover != null)  
                 {
-                    UnityEngine.Random.InitState((int)(npcNetId + targetPosition.GetHashCode()));
-                    mover.SetTargetPosition(targetPosition);
+                    Debug.Log($"RpcExecuteMovement: NPC {npcIdentity.name} moving to {targetPositions[i]}");
+                    mover.SetTargetPosition(targetPositions[i]);
                 }
             }
         }
@@ -676,15 +676,32 @@ public class Player : NetworkBehaviour
             npcMovement movementScript = FindObjectOfType<npcMovement>();
             if (movementScript != null)
             {
-                movementScript.moveFormation(npcObjects.ToArray());
+                Vector3[] npcPositions = new Vector3[npcObjects.Count];  //pass formation instead of single targetPosition
+                for (int i = 0; i < npcObjects.Count; i++)
+                {
+                    npcPositions[i] = movementScript.ComputeTriangleSlot(i, targetPosition, Vector3.forward, 1.0f, 1.0f);
+                }
+
+                // move each NPC to assigned position
+                for(int i = 0;i < npcObjects.Count; i++)
+                {
+                    AIMover mover = npcObjects[i].GetComponent<AIMover>();
+
+                    if (mover != null)
+                    {
+                         Debug.Log($"Setting NPC {npcObjects[i].name} to move to: {npcPositions[i]}");
+                         Vector3 adjustedPosition = npcPositions[i] + new Vector3(Random.Range(-0.5f, 0.5f), 0, Random.Range(-0.5f, 0.5f));
+                         mover.SetTargetPosition(adjustedPosition);
+                         Debug.Log($"NPC {npcObjects[i].name} final movement position: {adjustedPosition}");
+
+                    }
+                }
+                RpcExecuteMovement(npcNetIds, npcPositions);
             }
             else
             {
                 Debug.LogError("npcMovement script is missing on the NPC parent object!");
             }
-
-            // Instead of updating the actual movement, send the command across clients.
-            RpcExecuteMovement(npcNetIds, targetPosition);
         }
     }
 }
