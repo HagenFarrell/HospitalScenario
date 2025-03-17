@@ -271,7 +271,7 @@ public class Player : NetworkBehaviour
     {
         if(radeyeToolInstance != null && radeyeToolInstance.IsActive())
         {
-            Debug.Log("NPC movement is disabled while Radeye tool is active");
+            // Debug.Log("NPC movement is disabled while Radeye tool is active");
             return;
         }
         
