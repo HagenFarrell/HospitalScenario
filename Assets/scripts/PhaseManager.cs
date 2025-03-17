@@ -67,7 +67,7 @@ public class PhaseManager : MonoBehaviour
         FindKeyNPCs();
         
         // Create temporary gamma knife object
-        CreateTemporaryGammaKnife();
+        // CreateTemporaryGammaKnife();
         
 
         phaseList.SetCurrentToHead();
@@ -161,18 +161,6 @@ public class PhaseManager : MonoBehaviour
         // if (receptionist != null) Debug.Log("Found Receptionist");
     }
     
-    private void CreateTemporaryGammaKnife()
-    {
-        // Create a temporary placeholder for the gamma knife
-        gammaKnifeObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        gammaKnifeObject.name = "TemporaryGammaKnife";
-        gammaKnifeObject.transform.position = new Vector3(120f, 1f, 80f); // Placeholder position
-        gammaKnifeObject.transform.localScale = new Vector3(2f, 1f, 1f);
-        gammaKnifeObject.GetComponent<Renderer>().material.color = Color.red;
-        gammaKnifeObject.SetActive(false); // Hide initially
-        
-        Debug.Log("Created temporary gamma knife object");
-    }
 
     private void StoreInitialNPCState()
     {
@@ -406,8 +394,10 @@ public class PhaseManager : MonoBehaviour
     {
         currentPhase = 1;
         Debug.Log("Executing Phase 1: NPCs begin waypoint movement");
+        gammaKnifeObject = GameObject.FindGameObjectsWithTag("RadiationSource")[0];
         if (gammaKnifeObject != null) {
             gammaKnifeObject.SetActive(false);
+            // gammaKnifeObject.transform.GetChild(0).localScale = new Vector3(1.125f, 1.125f, 1.125f);
         }
         
         // Hide gun
@@ -515,11 +505,6 @@ public class PhaseManager : MonoBehaviour
     }
 
     private void ExecutePhase4(){
-        // Activate the gamma knife object
-        if (gammaKnifeObject != null) {
-            gammaKnifeObject.SetActive(true);
-        }
-
         WaypointMover mover = villains[0].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints15")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0)); //this is how we get first waypoint externally
@@ -644,6 +629,13 @@ public class PhaseManager : MonoBehaviour
         {
             animator4.SetBool("ToRummaging", false);
         }
+
+        if (gammaKnifeObject != null) {
+            Debug.Log("gammaknifeobject spawning");
+            gammaKnifeObject.SetActive(true);
+            // gammaKnifeObject.transform.localScale = new Vector3(25f, 25f, 25f);
+        }
+
     }
 
     private void ExecutePhase6(){
