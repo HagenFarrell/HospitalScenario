@@ -25,8 +25,8 @@ public class AIMover : MonoBehaviour
 
 
     // ---- Pathingfinding variables ----
-    // [SerializeField] private float pathWeight = 0.4f;
-    [SerializeField] private float pathUpdateInterval = 0.5f;
+    [SerializeField] private float pathWeight = 0.4f;
+    [SerializeField] private float pathUpdateInterval = 0.2f;
     private Pathfinder pathfinder;
     private List<Vector3> path;
     private int currentWaypoint = 0;
@@ -134,6 +134,7 @@ public class AIMover : MonoBehaviour
         // Ensuring idling if path is out.
         if (path == null || currentWaypoint >= path.Count)
         {
+            if (!isAtDestination) StartCoroutine(UpdatePath(this));  // Ensure path recalculation
             currentVelocity = Vector3.zero;
             previousSteering = Vector3.zero;
             UpdateAnimation();
@@ -293,7 +294,8 @@ public class AIMover : MonoBehaviour
         currentVelocity = Vector3.ClampMagnitude(currentVelocity, maxSpeed);
 
         // Update the agents position based on the new velocity calculated.
-        transform.position += currentVelocity * Time.deltaTime;
+        transform.position = Vector3.Lerp(transform.position, transform.position + currentVelocity * Time.deltaTime, 0.5f);
+
 
         // Animate on move.
         UpdateAnimation();
