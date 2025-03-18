@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
@@ -18,12 +18,13 @@ public class Player : NetworkBehaviour
     private GameObject playerObject;
     private List<GameObject> DispatchCams;
     private AudioSource alarmNoise;
+    [SyncVar] private Vector3 syncedPosition;
 
 
     [SerializeField] private GameObject radeyePrefab; // Reference to the Radeye prefab
     private GameObject radeyeInstance; // Holds the instantiated Radeye tool
 
-    
+
     [SerializeField] private GameObject radeyeCircleTool;
 
     public enum Roles
@@ -38,10 +39,11 @@ public class Player : NetworkBehaviour
         Instructor,
     }
 
-    public Roles getPlayerRole(){
+    public Roles getPlayerRole()
+    {
         return playerRole;
     }
-    
+
     [SyncVar(hook = nameof(OnRoleChanged))]
     [SerializeField] private Roles playerRole;
     private void OnRoleChanged(Roles oldRole, Roles newRole)
@@ -57,7 +59,7 @@ public class Player : NetworkBehaviour
 
     [SerializeField] private Camera playerCamera; // Assign the camera in the Inspector
 
-    public static Player LocalPlayerInstance {get; private set; }
+    public static Player LocalPlayerInstance { get; private set; }
 
     private uint nextRequestId = 1;
     private Dictionary<uint, MovementRequest> pendingMoves = new Dictionary<uint, MovementRequest>();
@@ -84,10 +86,10 @@ public class Player : NetworkBehaviour
     {
         // Store the currentID
         uint currentId = nextRequestId;
-        
+
         // Move to the next request number available.
         nextRequestId++;
-        
+
         // Its possible the ID requests overflow although its less probable in our project.
         if (nextRequestId == 0)
             nextRequestId = 1;
@@ -99,7 +101,7 @@ public class Player : NetworkBehaviour
     void Start()
     {
         alarmNoise = GetComponent<AudioSource>();
-        AudioListener audioListener = transform.GetChild(1).GetComponent<AudioListener>();
+        /*AudioListener audioListener = transform.GetChild(1).GetComponent<AudioListener>();
 
         // Disable the AudioListener on non-local players (if this is not the local player's camera)
         if (!isLocalPlayer)
@@ -109,15 +111,17 @@ public class Player : NetworkBehaviour
         else
         {
             audioListener.enabled = true;  // Ensure the local player's camera has the AudioListener
-        }
+        }*/
         DispatchCams = GameObject.Find("Cameras").GetComponent<cameraSwitch>().DispatchCams;
-        foreach(GameObject cam in DispatchCams)
+        foreach (GameObject cam in DispatchCams)
         {
             cam.SetActive(false);
         }
 
         if (!isLocalPlayer)
         {
+            Debug.Log($"Player spawned at {transform.position}");
+
             // Disable camera for remote players
             if (playerCamera != null)
             {
@@ -137,23 +141,23 @@ public class Player : NetworkBehaviour
             playerCamera.enabled = true;
         }
 
-        if(radeyeInstance ==null)
+        if (radeyeInstance == null)
         {
             radeyeInstance = transform.Find("playerRadeye")?.gameObject;
-            if(radeyeInstance == null)
+            if (radeyeInstance == null)
             {
                 Debug.LogError("radeye tool not found on player prefab");
             }
         }
-        if(radeyeCircleTool == null)
+        if (radeyeCircleTool == null)
         {
             radeyeCircleTool = GameObject.Find("radeyeCircle");
-            if(radeyeCircleTool == null)
+            if (radeyeCircleTool == null)
             {
                 Debug.LogError("radeyeCircle GameObject not found");
             }
         }
-        
+
 
         // Find and initialize necessary objects
         InitializeSceneObjects();
@@ -229,7 +233,7 @@ public class Player : NetworkBehaviour
         {
             Debug.LogError("npcMovement not found in the scene!");
         }
-        if( npcs != null)
+        if (npcs != null)
         {
             npcs.SetCamera(playerCamera);
         }
@@ -247,19 +251,24 @@ public class Player : NetworkBehaviour
     [Client]
     void Update()
     {
-        if (!isLocalPlayer) return;
+        if (!isLocalPlayer)
+        {
+            transform.position = new Vector3(transform.position.x, 6f, transform.position.z); // Adjust height
+        }
+        else
+        {
+            // Handle mouse look
+            HandleMouseLook();
 
-        // Handle mouse look
-        HandleMouseLook();
+            // Handle movement
+            HandleMovement();
 
-        // Handle movement
-        HandleMovement();
+            // Handle NPC selection and interaction
+            HandleNPCInteraction();
 
-        // Handle NPC selection and interaction
-        HandleNPCInteraction();
-
-        // Handle phase management (for Instructor role)
-        HandlePhaseManagement();
+            // Handle phase management (for Instructor role)
+            HandlePhaseManagement();
+        }
 
         if (radeyeInstance != null && radeyeInstance.activeInHierarchy && radeyeCircleTool != null)
         {
@@ -297,13 +306,16 @@ public class Player : NetworkBehaviour
 
         // Create movement vector relative to the camera's facing direction
         moveDirection = (transform.right * moveX + transform.forward * moveZ + transform.up * moveY).normalized;
-        Vector3 movement = moveDirection * moveSpeed * Time.deltaTime;
+        Vector3 movement = Vector3.Lerp(Vector3.zero, moveDirection * moveSpeed * Time.deltaTime, 0.2f);
 
         // Apply movement locally
         transform.position += movement;
 
-        // Send movement request to server
-        CmdMove(transform.position);
+        if (isLocalPlayer && movement.magnitude > 0.01f)
+        {
+            // Send movement request to server    
+            CmdMove(transform.position);
+        }
     }
 
     [Command]
@@ -322,10 +334,10 @@ public class Player : NetworkBehaviour
         // Only update the position if this is not the local player
         if (!isLocalPlayer)
         {
-            transform.position = newPosition;
+            transform.position = Vector3.Lerp(transform.position, newPosition, 0.3f);
         }
     }
-    
+
     private void HandleNPCInteraction()
     {
         if (Input.GetMouseButtonDown(0) && playerRole != Roles.None)
@@ -350,11 +362,11 @@ public class Player : NetworkBehaviour
                     selectedChars.Add(hitObj);
                     Debug.Log($"Added {hitObj.name} to selectedChars");
                 }
-                if(selectedChars.Count > 0)
+                if (selectedChars.Count > 0)
                 {
                     Vector3 targetPosition = hit.point;
                     uint[] npcNetIds = new uint[selectedChars.Count];
-                    
+
                     for (int i = 0; i < selectedChars.Count; i++)
                     {
                         NetworkIdentity identity = selectedChars[i].GetComponent<NetworkIdentity>();
@@ -365,12 +377,12 @@ public class Player : NetworkBehaviour
                     }
                     // Before we move, we send a request to the server. (timestamped)
                     //uint requestId = GetNextRequestId();
-                    
+
                     //pendingMoves[requestId] = new MovementRequest(requestId, npcNetIds, targetPosition);
-                    
+
                     // Move locally before sending request to server.
-                   //moveNPClocally(selectedChars.ToArray(), targetPosition);
-                    
+                    //moveNPClocally(selectedChars.ToArray(), targetPosition);
+
                     CmdMoveNPCs(npcNetIds, targetPosition);
                 }
                 else
@@ -387,7 +399,7 @@ public class Player : NetworkBehaviour
         {
             Camera mainCamera = playerCamera;
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            if(Physics.Raycast(ray, out RaycastHit hit))
+            if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 GameObject hitObj = hit.collider.gameObject;
                 if (hitObj.tag == playerRole.ToString() || (playerRole == Roles.Instructor && hitObj.tag != "Untagged"))
@@ -425,7 +437,7 @@ public class Player : NetworkBehaviour
 
     private void SoundAlarm()
     {
-        if(playerRole == Roles.Dispatch || playerRole == Roles.Instructor)
+        if (playerRole == Roles.Dispatch || playerRole == Roles.Instructor)
             alarmNoise.Play();
     }
     private GameObject[] GetNpcs(string role)
@@ -441,7 +453,7 @@ public class Player : NetworkBehaviour
             GameObject[] Law = GameObject.FindGameObjectsWithTag("LawEnforcement");
 
             List<GameObject> npcs = new List<GameObject>(Fire);
-            if(npcs == null) Debug.LogError("npcs null");
+            if (npcs == null) Debug.LogError("npcs null");
             npcs.AddRange(Law);
 
             // // ensure player characters are disabled
@@ -528,14 +540,14 @@ public class Player : NetworkBehaviour
         GameObject Maincam = GameObject.FindGameObjectWithTag("MainCamera");
         Maincam.SetActive(false);
         transform.GetChild(1).gameObject.SetActive(false);
-        foreach(GameObject cam in LLEcams)
+        foreach (GameObject cam in LLEcams)
         {
             cam.SetActive(false);
         }
 
-        
 
-        foreach(GameObject cam in DispatchCams)
+
+        foreach (GameObject cam in DispatchCams)
         {
             cam.GetComponent<Camera>().enabled = true;
             cam.SetActive(true);
@@ -555,7 +567,7 @@ public class Player : NetworkBehaviour
         //     }
         // }
     }
-    
+
     [Command(requiresAuthority = true)]
     private void CmdSetRole(Roles role)
     {
@@ -613,12 +625,12 @@ public class Player : NetworkBehaviour
     [ClientRpc]
     private void RpcExecuteMovement(uint[] npcNetIds, Vector3[] targetPositions)
     {
-        for(int i = 0; i < npcNetIds.Length; i++)
+        for (int i = 0; i < npcNetIds.Length; i++)
         {
             if (NetworkIdentity.spawned.TryGetValue(npcNetIds[i], out NetworkIdentity npcIdentity))
             {
                 AIMover mover = npcIdentity.GetComponent<AIMover>();
-                if (mover != null)  
+                if (mover != null)
                 {
                     Debug.Log($"RpcExecuteMovement: NPC {npcIdentity.name} moving to {targetPositions[i]}");
                     mover.SetTargetPosition(targetPositions[i]);
@@ -626,7 +638,7 @@ public class Player : NetworkBehaviour
             }
         }
     }
-    
+
     [Command]
     private void CmdMoveNPCs(uint[] npcNetIds, Vector3 targetPosition)
     {
@@ -667,16 +679,16 @@ public class Player : NetworkBehaviour
                 }
 
                 // move each NPC to assigned position
-                for(int i = 0;i < npcObjects.Count; i++)
+                for (int i = 0; i < npcObjects.Count; i++)
                 {
                     AIMover mover = npcObjects[i].GetComponent<AIMover>();
 
                     if (mover != null)
                     {
-                         Debug.Log($"Setting NPC {npcObjects[i].name} to move to: {npcPositions[i]}");
-                         Vector3 adjustedPosition = npcPositions[i] + new Vector3(Random.Range(-0.5f, 0.5f), 0, Random.Range(-0.5f, 0.5f));
-                         mover.SetTargetPosition(adjustedPosition);
-                         Debug.Log($"NPC {npcObjects[i].name} final movement position: {adjustedPosition}");
+                        Debug.Log($"Setting NPC {npcObjects[i].name} to move to: {npcPositions[i]}");
+                        Vector3 adjustedPosition = npcPositions[i] + new Vector3(Random.Range(-0.5f, 0.5f), 0, Random.Range(-0.5f, 0.5f));
+                        mover.SetTargetPosition(adjustedPosition);
+                        Debug.Log($"NPC {npcObjects[i].name} final movement position: {adjustedPosition}");
 
                     }
                 }
