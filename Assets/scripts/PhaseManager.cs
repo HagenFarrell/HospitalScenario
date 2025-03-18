@@ -196,6 +196,7 @@ public class PhaseManager : MonoBehaviour
 
         if (phaseList.MoveNext())
         {
+            ResetFoward(phaseList.Current.Phase);
             Debug.Log("Moving to next phase.");
             StartPhase();
         }
@@ -215,6 +216,7 @@ public class PhaseManager : MonoBehaviour
         }
         if (phaseList.MovePrevious())
         {
+            ResetBackwards();
             Debug.Log("Moving to previous phase.");
             StartPhase();
         }
@@ -1064,9 +1066,9 @@ public class PhaseManager : MonoBehaviour
         }
     }
 
-    private void MoveNPCsForPhase(GamePhase phase)
+
+    private void ResetFoward(GamePhase phase)
     {
-        Debug.Log($"Moving NPCs for phase: {phase}");
         if (phase != GamePhase.Phase1 && phase != GamePhase.Phase2)
         {
             foreach (GameObject npc in allNPCs)
@@ -1096,9 +1098,44 @@ public class PhaseManager : MonoBehaviour
                 }
             }
         }
-        
-        // npcMove = FindObjectOfType<PhaseMovementHelper>();
-        
+    }
+
+    private void ResetBackwards()
+    {
+        foreach (GameObject npc in allNPCs)
+        {
+            npc.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+            WaypointMover mover = npc.GetComponent<WaypointMover>();
+            if (mover != null && mover.waypoints != null)
+            {
+                Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
+                
+                // Only teleport if not already at the last waypoint
+                if (mover.currentWaypoint != firstWaypoint)
+                {
+                    mover.currentWaypoint = firstWaypoint;
+                    npc.transform.position = mover.currentWaypoint.position;
+                    
+                    // Reset animations when teleporting
+                    Animator animator = npc.GetComponent<Animator>();
+                    if (animator != null)
+                    {
+                        animator.SetBool("IsWalking", false);
+                        animator.SetBool("IsRunning", false);
+                        animator.SetBool("ToSitting", false);
+                        animator.SetBool("IsThreatPresent", false);
+                    }
+                }
+            }
+        }
+    }
+
+
+    private void MoveNPCsForPhase(GamePhase phase)
+    {
+
+        Debug.Log($"Moving NPCs for phase: {phase}");
+
         switch (phase)
         {
             case GamePhase.Phase1:
