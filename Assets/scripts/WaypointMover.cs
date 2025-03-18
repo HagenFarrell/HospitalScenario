@@ -88,9 +88,9 @@ public class WaypointMover : MonoBehaviour
             
             // For Phase 1, check against the active waypoints limit
             int lastActiveIndex;
-            if (phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase1 && !waypoints.PathBranching) {
+            if (phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase1) {
                 // In Phase 1 with no branching, the last active waypoint is one less than the count
-                lastActiveIndex = waypoints.waypointsActiveInPhase - 1;
+                lastActiveIndex = waypoints.ActiveChildLength - 1;
             } else {
                 // Otherwise, the last active waypoint is the last child
                 lastActiveIndex = currentWaypoint.parent.childCount - 1;
@@ -102,7 +102,7 @@ public class WaypointMover : MonoBehaviour
             // Check if this is the first waypoint
             bool isFirstWaypoint = currentWaypoint.GetSiblingIndex() == 0;
 
-            if (isLastWaypoint && !waypoints.canLoop && waypoints.waypointsActiveInPhase > 1 &&
+            if (isLastWaypoint && !waypoints.canLoop && waypoints.ActiveChildLength > 1 &&
                 phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase1) {
                 // Reverse direction
                 waypoints.isMovingForward = false;
@@ -111,7 +111,7 @@ public class WaypointMover : MonoBehaviour
                 currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
                 return;
             }
-            else if (isFirstWaypoint && !waypoints.isMovingForward && !waypoints.canLoop && waypoints.waypointsActiveInPhase > 1 &&
+            else if (isFirstWaypoint && !waypoints.isMovingForward && !waypoints.canLoop && waypoints.ActiveChildLength > 1 &&
                 phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase1) {
                 // Change direction to forward again
                 waypoints.isMovingForward = true;
@@ -186,7 +186,7 @@ public class WaypointMover : MonoBehaviour
         else
         {
             // If path is not looping, only rotate if not at the last waypoint
-            if (currentWaypoint.GetSiblingIndex() < waypoints.transform.childCount && waypoints.waypointsActiveInPhase > 1)
+            if (currentWaypoint.GetSiblingIndex() < waypoints.transform.childCount && waypoints.ActiveChildLength > 1)
             {
                 // Not at the last waypoint, so continue rotating
                 RotateTowardsWaypoint();

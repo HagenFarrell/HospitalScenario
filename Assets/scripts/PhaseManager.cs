@@ -12,7 +12,7 @@ public class PhaseManager : MonoBehaviour
     // private HostageTriggerArea hostageArea;
     
     // Reference to temporary gamma knife object
-    private GameObject gammaKnifeObject;
+    public GameObject gammaKnifeObject;
     
     // References to different NPC groups
     private GameObject[] villainsInside;
@@ -173,14 +173,14 @@ public class PhaseManager : MonoBehaviour
         // Find and disable any remaining civilians
         foreach (GameObject civilian in newCivilians)
         {
-            Debug.Log($"Phase 3: Despawning civilian {civilian.name}");
+            // Debug.Log($"Phase 3: Despawning civilian {civilian.name}");
             civilian.SetActive(false);
         }
         
         // Find and disable any remaining medicals
         foreach (GameObject medical in newMedicals)
         {
-            Debug.Log($"Phase 3: Despawning medical {medical.name}");
+            // Debug.Log($"Phase 3: Despawning medical {medical.name}");
             medical.SetActive(false);
         }
     }
@@ -196,7 +196,7 @@ public class PhaseManager : MonoBehaviour
 
         if (phaseList.MoveNext())
         {
-            ResetFoward(phaseList.Current.Phase);
+            ResetForward(phaseList.Current.Phase);
             Debug.Log("Moving to next phase.");
             StartPhase();
         }
@@ -368,10 +368,12 @@ public class PhaseManager : MonoBehaviour
         
         // Receptionist hits duress alarm
         Debug.Log("Duress alarm activated. Dispatcher notified.");
+        physicianHostage.transform.rotation = new Quaternion(0f, physicianHostage.transform.rotation.y, 0f, 1f);
 
     }
 
     private void ExecutePhase3(){
+        physicianHostage.transform.rotation = new Quaternion(0f, physicianHostage.transform.rotation.y, 0f, 1f);
         Debug.Log($"The allVillains have taken {physicianHostage.name} hostage!");
         Animator animator = physicianHostage.GetComponent<Animator>();
         if(animator != null) animator.SetBool("IsThreatPresent", false);
@@ -1067,21 +1069,19 @@ public class PhaseManager : MonoBehaviour
     }
 
 
-    private void ResetFoward(GamePhase phase)
+    private void ResetForward(GamePhase phase)
     {
         if (phase != GamePhase.Phase1 && phase != GamePhase.Phase2)
         {
             foreach (GameObject npc in allNPCs)
             {
-                npc.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
-                WaypointMover mover = npc.GetComponent<WaypointMover>();
-                if (mover != null && mover.waypoints != null)
-                {
-                    Transform lastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
-                    
-                    // Only teleport if not already at the last waypoint
-                    if (mover.currentWaypoint != lastWaypoint)
+                if(npc.activeSelf){
+                    npc.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+                    WaypointMover mover = npc.GetComponent<WaypointMover>();
+                    if (mover != null && mover.waypoints != null)
                     {
+                        Transform lastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
+                        
                         mover.currentWaypoint = lastWaypoint;
                         npc.transform.position = mover.currentWaypoint.position;
                         
@@ -1104,15 +1104,12 @@ public class PhaseManager : MonoBehaviour
     {
         foreach (GameObject npc in allNPCs)
         {
-            npc.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
-            WaypointMover mover = npc.GetComponent<WaypointMover>();
-            if (mover != null && mover.waypoints != null)
-            {
-                Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
-                
-                // Only teleport if not already at the last waypoint
-                if (mover.currentWaypoint != firstWaypoint)
+            if(npc.activeSelf) {
+                npc.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+                WaypointMover mover = npc.GetComponent<WaypointMover>();
+                if (mover != null && mover.waypoints != null)
                 {
+                    Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
                     mover.currentWaypoint = firstWaypoint;
                     npc.transform.position = mover.currentWaypoint.position;
                     
@@ -1129,7 +1126,6 @@ public class PhaseManager : MonoBehaviour
             }
         }
     }
-
 
     private void MoveNPCsForPhase(GamePhase phase)
     {
