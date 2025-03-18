@@ -20,12 +20,13 @@ public class PhaseManager : MonoBehaviour
     private List<GameObject> playerUnits;
     private GameObject[] FD;
     private GameObject[] LLE;
-    private List<GameObject> allNPCs;
+    private List<GameObject> allCivilians;
     private GameObject[] newCivilians;
     private GameObject[] newHostages;
     private GameObject[] newMedicals;
     private GameObject physicianHostage;
-    private List<GameObject> villains;
+    private List<GameObject> allVillains;
+    private List<GameObject> allNPCs;
     // private GameObject superVillain;
     // private GameObject receptionist;
     private int egress;
@@ -38,42 +39,16 @@ public class PhaseManager : MonoBehaviour
     {
         currentPhase = 0;
         phaseList = new PhaseLinkedList();
+        allCivilians = new List<GameObject>();
+        allVillains = new List<GameObject>();
         allNPCs = new List<GameObject>();
+        FindKeyNPCs();
 
         // Define the phases
         foreach (GamePhase phase in System.Enum.GetValues(typeof(GamePhase)))
         {
             phaseList.AddPhase(phase);
         }
-
-        FD = GameObject.FindGameObjectsWithTag("FireDepartment");
-        LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
-        playerUnits = new List<GameObject>(FD);
-        playerUnits.AddRange(LLE);
-
-        foreach(GameObject unit in playerUnits){
-            Debug.Log(unit + "is a player unit");
-        }
-        // if(playerUnits == null || playerUnits.Count == 0) Debug.LogError("NOOOOOOOO");
-
-        physicianHostage = GameObject.FindGameObjectsWithTag("PhysicianHostage")[0];
-        newCivilians = GameObject.FindGameObjectsWithTag("Civilians");
-        newHostages = GameObject.FindGameObjectsWithTag("Hostages");
-        newMedicals = GameObject.FindGameObjectsWithTag("Medicals");
-
-        allNPCs.Add(physicianHostage);
-        allNPCs.AddRange(newHostages);
-        allNPCs.AddRange(newCivilians);
-        allNPCs.AddRange(newMedicals);
-
-        // Store initial positions and tags of all NPCs in the first phase node
-        StoreInitialNPCState();
-        
-        // Find key NPCs
-        FindKeyNPCs();
-        
-        // Create temporary gamma knife object
-        // CreateTemporaryGammaKnife();
         
 
         phaseList.SetCurrentToHead();
@@ -107,8 +82,6 @@ public class PhaseManager : MonoBehaviour
         // Activate waypoint movement
         mover.enabled = true;
     }
-
-
 
     private int SetEgressPhase()
     {
@@ -146,7 +119,7 @@ public class PhaseManager : MonoBehaviour
         }
         else
         {
-            // Debug.LogError("OnEgressSelected is NULL! No subscribers.");
+            Debug.LogError("OnEgressSelected is NULL! No subscribers.");
         }
         
         return phase;
@@ -154,50 +127,33 @@ public class PhaseManager : MonoBehaviour
 
     private void FindKeyNPCs()
     {
+        // find villains
         villainsInside = GameObject.FindGameObjectsWithTag("Villains");
         villainsOutside = GameObject.FindGameObjectsWithTag("OutsideVillains");
-        // superVillain = GameObject.FindGameObjectWithTag("SuperVillain");
-        // receptionist = GameObject.FindGameObjectWithTag("Receptionist");
-        
-        villains = new List<GameObject>(villainsInside);
-        villains.AddRange(villainsOutside);
-        
-        // Debug.Log($"Found {villainsInside.Length} inside villains, {villainsOutside.Length} outside villains");
-        // if (superVillain != null) Debug.Log("Found SuperVillain");
-        // if (receptionist != null) Debug.Log("Found Receptionist");
+        allVillains = new List<GameObject>(villainsInside);
+        allVillains.AddRange(villainsOutside);
+        allNPCs.AddRange(allVillains);
+
+        // find player characters
+        FD = GameObject.FindGameObjectsWithTag("FireDepartment");
+        LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
+        playerUnits = new List<GameObject>(FD);
+        playerUnits.AddRange(LLE);
+
+        // find civilians
+        physicianHostage = GameObject.FindGameObjectsWithTag("PhysicianHostage")[0];
+        newCivilians = GameObject.FindGameObjectsWithTag("Civilians");
+        newHostages = GameObject.FindGameObjectsWithTag("Hostages");
+        newMedicals = GameObject.FindGameObjectsWithTag("Medicals");
+
+        if (physicianHostage != null) allCivilians.Add(physicianHostage);
+        if (physicianHostage != null) allCivilians.AddRange(newHostages);
+        if (physicianHostage != null) allCivilians.AddRange(newCivilians);
+        if (physicianHostage != null) allCivilians.AddRange(newMedicals);
+
+        allNPCs.AddRange(allCivilians);
     }
     
-
-    private void StoreInitialNPCState()
-    {
-        if (phaseList.Head == null)
-            return;
-
-        // Store all types of NPCs initial state
-        StoreNPCTypeState("Civilians", phaseList.Head);
-        // StoreNPCTypeState("Medicals", phaseList.Head);
-        StoreNPCTypeState("Hostages", phaseList.Head);
-        StoreNPCTypeState("Villains", phaseList.Head);
-        StoreNPCTypeState("OutsideVillains", phaseList.Head);
-        StoreNPCTypeState("Receptionist", phaseList.Head);
-        
-        // Debug.Log($"Stored initial state for {phaseList.Head.NPCPositions.Count} NPCs in Phase 1");
-    }
-    
-    private void StoreNPCTypeState(string tag, PhaseNode node)
-    {
-        GameObject[] npcs = GameObject.FindGameObjectsWithTag(tag);
-        foreach (GameObject npc in npcs)
-        {
-            node.NPCPositions[npc.name] = npc.transform.position;
-            node.NPCTags[npc.name] = npc.tag;
-            
-            // Store active state as well in NPCTags by prepending "Active_" to indicate the GameObject is active
-            string activeKey = "Active_" + npc.name;
-            node.NPCTags[activeKey] = npc.activeInHierarchy ? "True" : "False";
-        }
-    }
-
     private void StartPhase()
     {
         Debug.Log($"Entering Phase: {phaseList.Current.Phase}");
@@ -205,13 +161,13 @@ public class PhaseManager : MonoBehaviour
         // First, check if we need to despawn civilians and medicals in Phase 3
         if (phaseList.Current.Phase == GamePhase.Phase3)
         {
-            DespawnRemainingCiviliansAndMedicals();
+            despawnLeftovers();
         }
         
         MoveNPCsForPhase(phaseList.Current.Phase);
     }
 
-    public void DespawnRemainingCiviliansAndMedicals()
+    public void despawnLeftovers()
     {
         // Find and disable any remaining civilians
         foreach (GameObject civilian in newCivilians)
@@ -236,9 +192,6 @@ public class PhaseManager : MonoBehaviour
             StopCoroutine(currentPhaseCoroutine);
             currentPhaseCoroutine = null;
         }
-        
-        // Store the current positions of NPCs before moving to the next phase
-        CaptureCurrentNPCState();
 
         if (phaseList.MoveNext())
         {
@@ -262,136 +215,11 @@ public class PhaseManager : MonoBehaviour
         if (phaseList.MovePrevious())
         {
             Debug.Log("Moving to previous phase.");
-            RestoreNPCsFromPhaseNode(phaseList.Current);
             StartPhase();
         }
         else
         {
             Debug.Log("Already at the first phase!");
-        }
-    }
-    
-    private void CaptureCurrentNPCState()
-    {
-        if (phaseList.Current.Next != null)
-        {
-            // Capture state even if the next phase already exists - we want to update
-            // with the latest info each time we move through phases
-            PhaseNode nextPhase = phaseList.Current.Next;
-            
-            // Clear existing data in the next phase to avoid duplicates or stale data
-            nextPhase.NPCPositions.Clear();
-            nextPhase.NPCTags.Clear();
-            
-            // Store only active NPCs' current state in the next phase
-            StoreActiveNPCsCurrentState(nextPhase);
-            
-            Debug.Log($"Updated state for next Phase {nextPhase.Phase} with {nextPhase.NPCPositions.Count} NPCs");
-            return;
-        }
-        
-        // If we're at the last node, there's no next phase to capture state for
-        Debug.Log("Already at the last phase, no need to capture state for next phase");
-    }
-    
-    private void StoreActiveNPCsCurrentState(PhaseNode targetNode)
-    {
-        // Store only active NPCs by tag type - skip disabled ones
-        StoreActiveNPCTypeState("Hostages", targetNode);
-        StoreActiveNPCTypeState("Villains", targetNode);
-        StoreActiveNPCTypeState("OutsideVillains", targetNode);
-        StoreActiveNPCTypeState("PhysicianHostage", targetNode);
-        StoreActiveNPCTypeState("Receptionist", targetNode);
-        
-        // Only store active civilians and medicals - skip disabled ones
-        if (phaseList.Current.Phase < GamePhase.Phase3)
-        {
-            StoreActiveNPCTypeState("Civilians", targetNode);
-            StoreActiveNPCTypeState("Medicals", targetNode);
-        }
-    }
-    
-    private void StoreActiveNPCTypeState(string tag, PhaseNode targetNode)
-    {
-        GameObject[] npcs = GameObject.FindGameObjectsWithTag(tag);
-        foreach (GameObject npc in npcs)
-        {
-            // Only store state for active NPCs
-            if (npc.activeInHierarchy)
-            {
-                targetNode.NPCPositions[npc.name] = npc.transform.position;
-                targetNode.NPCTags[npc.name] = npc.tag;
-                
-                // Store active state
-                string activeKey = "Active_" + npc.name;
-                targetNode.NPCTags[activeKey] = "True";
-            }
-        }
-    }
-    
-    private void RestoreNPCsFromPhaseNode(PhaseNode node)
-    {
-        Debug.Log($"Restoring NPCs to state from Phase {node.Phase}");
-        
-        // Get references to all NPCs - whether active or inactive
-        Transform[] allTransforms = Resources.FindObjectsOfTypeAll<Transform>();
-        foreach (Transform transform in allTransforms)
-        {
-            GameObject npc = transform.gameObject;
-            
-            // Check if this is one of our tracked NPCs
-            if (node.NPCPositions.ContainsKey(npc.name))
-            {
-                // Check if we should enable or disable based on stored state
-                string activeKey = "Active_" + npc.name;
-                if (node.NPCTags.ContainsKey(activeKey))
-                {
-                    bool shouldBeActive = node.NPCTags[activeKey] == "True";
-                    if (npc.activeInHierarchy != shouldBeActive)
-                    {
-                        npc.SetActive(shouldBeActive);
-                    }
-                }
-                
-                // Only proceed with position and tag restoration if the object should be active
-                if (npc.activeInHierarchy)
-                {
-                    // Reset tag to the one stored in the phase node
-                    if (node.NPCTags.ContainsKey(npc.name))
-                    {
-                        npc.tag = node.NPCTags[npc.name];
-                    }
-                    
-                    ResetNPC(npc, node);
-                }
-            }
-        }
-    }
-    
-    private void ResetNPC(GameObject npc, PhaseNode node)
-    {
-        if (node.NPCPositions.ContainsKey(npc.name))
-        {
-            // Reset position to the one stored in the phase node
-            npc.transform.position = node.NPCPositions[npc.name];
-            
-            // Reset animator if available
-            Animator animator = npc.GetComponent<Animator>();
-            if (animator != null)
-            {
-                animator.SetBool("IsWalking", false);
-                animator.SetBool("IsThreatPresent", npc.CompareTag("Hostages") || npc.CompareTag("PhysicianHostage"));
-                animator.SetBool("ToRummaging", false);
-            }
-            
-            // Reset and enable AIMover
-            AIMover mover = npc.GetComponent<AIMover>();
-            if (mover != null)
-            {
-                mover.enabled = true;
-                mover.SetTargetPosition(node.NPCPositions[npc.name]);
-                // mover.StopAllMovement(); // Stop any ongoing movement
-            }
         }
     }
 
@@ -425,9 +253,9 @@ public class PhaseManager : MonoBehaviour
         }
         
         // Hide gun
-        villains[0].transform.GetChild(1).gameObject.SetActive(false);
+        allVillains[0].transform.GetChild(1).gameObject.SetActive(false);
         
-        foreach (GameObject civilian in allNPCs)
+        foreach (GameObject civilian in allCivilians)
         {
             // Debug.Log("Enabling NPC: " + civilian);
             civilian.SetActive(true);
@@ -462,8 +290,8 @@ public class PhaseManager : MonoBehaviour
             }
         }
 
-        // Sets villains disc to green to make then try to blend in
-        foreach(GameObject villain in villains) {
+        // Sets allVillains disc to green to make then try to blend in
+        foreach(GameObject villain in allVillains) {
             GameObject disc = villain.transform.GetChild(2).gameObject;
             disc.SetActive(true);
             
@@ -490,7 +318,7 @@ public class PhaseManager : MonoBehaviour
         }
 
         // Configure all civilian WaypointMovers to despawn when they reach the last waypoint
-        foreach (GameObject civilian in allNPCs) {
+        foreach (GameObject civilian in allCivilians) {
             WaypointMover mover = civilian.GetComponent<WaypointMover>();
             if (mover != null) {
                 // Set up despawn behavior - we'll add a simple check to the component
@@ -503,10 +331,10 @@ public class PhaseManager : MonoBehaviour
             
         }
         // Shows gun
-        villains[0].transform.GetChild(1).gameObject.SetActive(true);
+        allVillains[0].transform.GetChild(1).gameObject.SetActive(true);
 
-        // Sets villains disc to red to show they are bad
-        foreach(GameObject villain in villains) {
+        // Sets allVillains disc to red to show they are bad
+        foreach(GameObject villain in allVillains) {
             GameObject disc = villain.transform.GetChild(2).gameObject;
             
             // Change the disc color to green
@@ -523,13 +351,13 @@ public class PhaseManager : MonoBehaviour
     }
 
     private void ExecutePhase3(){
-        Debug.Log($"The villains have taken {physicianHostage.name} hostage!");
+        Debug.Log($"The allVillains have taken {physicianHostage.name} hostage!");
         Animator animator = physicianHostage.GetComponent<Animator>();
         if(animator != null) animator.SetBool("IsThreatPresent", false);
     }
 
     private void ExecutePhase4(){
-        WaypointMover mover = villains[0].GetComponent<WaypointMover>();
+        WaypointMover mover = allVillains[0].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints15")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0)); //this is how we get first waypoint externally
 
@@ -541,7 +369,7 @@ public class PhaseManager : MonoBehaviour
             mover.moveSpeed = 5;
         }
 
-        mover = villains[1].GetComponent<WaypointMover>();
+        mover = allVillains[1].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints14")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -553,7 +381,7 @@ public class PhaseManager : MonoBehaviour
             mover.moveSpeed = 5;
         }
 
-        mover = villains[3].GetComponent<WaypointMover>();
+        mover = allVillains[3].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints16")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -565,7 +393,7 @@ public class PhaseManager : MonoBehaviour
             mover.moveSpeed = 5;
         }
 
-        mover = villains[4].GetComponent<WaypointMover>();
+        mover = allVillains[4].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints17")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -594,9 +422,9 @@ public class PhaseManager : MonoBehaviour
 
 
         
-        // Two villains take the physician hostage to the gamma knife room
+        // Two allVillains take the physician hostage to the gamma knife room
         if (physicianHostage != null && villainsInside != null && villainsInside.Length >= 2) {
-            Debug.Log($"Two villains are taking {physicianHostage.name} to the gamma knife room");
+            Debug.Log($"Two allVillains are taking {physicianHostage.name} to the gamma knife room");
             // // Start the work on the gamma knife
             // currentPhaseCoroutine = StartCoroutine(WorkOnGammaKnife(physicianHostage, NPCPosition));
         }
@@ -616,36 +444,36 @@ public class PhaseManager : MonoBehaviour
         }
 
 
-        WaypointMover mover = villains[2].GetComponent<WaypointMover>();
+        WaypointMover mover = allVillains[2].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints13")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
         Animator animator1 = mover.GetComponent<Animator>();
-        // Change animation to walking
+        // Change animation
         if (animator1 != null)
         {
             animator1.SetBool("IsRunning", true);
             mover.moveSpeed = 5;
         }
 
-        mover = villains[3].GetComponent<WaypointMover>();
+        mover = allVillains[3].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints24")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
         Animator animator2 = mover.GetComponent<Animator>();
-        // Change animation to walking
+        // Change animation 
         if (animator2 != null)
         {
             animator2.SetBool("IsRunning", true);
             mover.moveSpeed = 5;
         }
 
-        mover = villains[4].GetComponent<WaypointMover>();
+        mover = allVillains[4].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints25")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
         Animator animator3 = mover.GetComponent<Animator>();
-        // Change animation to walking
+        // Change animation 
         if (animator3 != null)
         {
             animator3.SetBool("IsRunning", true);
@@ -674,7 +502,7 @@ public class PhaseManager : MonoBehaviour
             unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y+9000f, unit.transform.position.z);
         }
 
-        WaypointMover mover = villains[0].GetComponent<WaypointMover>();
+        WaypointMover mover = allVillains[0].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints26")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0)); //this is how we get first waypoint externally
 
@@ -686,7 +514,7 @@ public class PhaseManager : MonoBehaviour
             mover.moveSpeed = 5;
         }
 
-        mover = villains[1].GetComponent<WaypointMover>();
+        mover = allVillains[1].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints27")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -698,7 +526,7 @@ public class PhaseManager : MonoBehaviour
             mover.moveSpeed = 5;
         }
 
-        mover = villains[2].GetComponent<WaypointMover>();
+        mover = allVillains[2].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints28")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -710,7 +538,7 @@ public class PhaseManager : MonoBehaviour
             mover.moveSpeed = 5;
         }
 
-        mover = villains[3].GetComponent<WaypointMover>();
+        mover = allVillains[3].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints29")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -722,7 +550,7 @@ public class PhaseManager : MonoBehaviour
             mover.moveSpeed = 5;
         }
 
-        mover = villains[4].GetComponent<WaypointMover>();
+        mover = allVillains[4].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints30")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -789,7 +617,7 @@ public class PhaseManager : MonoBehaviour
                 // Phase Egress 1: Adversaries move to the front emergency exit
                 Debug.Log("Phase Egress: " + egress);
                 
-                WaypointMover mover = villains[0].GetComponent<WaypointMover>();
+                WaypointMover mover = allVillains[0].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints34")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0)); //this is how we get first waypoint externally
 
@@ -801,7 +629,7 @@ public class PhaseManager : MonoBehaviour
                     mover.moveSpeed = 5;
                 }
 
-                mover = villains[1].GetComponent<WaypointMover>();
+                mover = allVillains[1].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints35")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -813,7 +641,7 @@ public class PhaseManager : MonoBehaviour
                     mover.moveSpeed = 5;
                 }
 
-                mover = villains[2].GetComponent<WaypointMover>();
+                mover = allVillains[2].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints36")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -825,7 +653,7 @@ public class PhaseManager : MonoBehaviour
                     mover.moveSpeed = 5;
                 }
 
-                mover = villains[3].GetComponent<WaypointMover>();
+                mover = allVillains[3].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints37")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -837,7 +665,7 @@ public class PhaseManager : MonoBehaviour
                     mover.moveSpeed = 5;
                 }
 
-                mover = villains[4].GetComponent<WaypointMover>();
+                mover = allVillains[4].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints38")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -896,7 +724,7 @@ public class PhaseManager : MonoBehaviour
                 // Phase Egress 2: Adversaries move to the rear emergency exit
                 Debug.Log("Phase Egress: " + egress);
                 
-                mover = villains[0].GetComponent<WaypointMover>();
+                mover = allVillains[0].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints42")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0)); //this is how we get first waypoint externally
 
@@ -908,7 +736,7 @@ public class PhaseManager : MonoBehaviour
                     mover.moveSpeed = 5;
                 }
 
-                mover = villains[1].GetComponent<WaypointMover>();
+                mover = allVillains[1].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints43")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -920,7 +748,7 @@ public class PhaseManager : MonoBehaviour
                     mover.moveSpeed = 5;
                 }
 
-                mover = villains[2].GetComponent<WaypointMover>();
+                mover = allVillains[2].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints44")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -932,7 +760,7 @@ public class PhaseManager : MonoBehaviour
                     mover.moveSpeed = 5;
                 }
 
-                mover = villains[3].GetComponent<WaypointMover>();
+                mover = allVillains[3].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints45")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -944,7 +772,7 @@ public class PhaseManager : MonoBehaviour
                     mover.moveSpeed = 5;
                 }
 
-                mover = villains[4].GetComponent<WaypointMover>();
+                mover = allVillains[4].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints46")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -1003,7 +831,7 @@ public class PhaseManager : MonoBehaviour
                 // Phase Egress 3: Adversaries move to the lobby exit
                 Debug.Log("Phase Egress: " + egress);
 
-                mover = villains[0].GetComponent<WaypointMover>();
+                mover = allVillains[0].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints50")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0)); //this is how we get first waypoint externally
 
@@ -1015,7 +843,7 @@ public class PhaseManager : MonoBehaviour
                     mover.moveSpeed = 5;
                 }
 
-                mover = villains[1].GetComponent<WaypointMover>();
+                mover = allVillains[1].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints51")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -1027,7 +855,7 @@ public class PhaseManager : MonoBehaviour
                     mover.moveSpeed = 5;
                 }
 
-                mover = villains[2].GetComponent<WaypointMover>();
+                mover = allVillains[2].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints52")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -1039,7 +867,7 @@ public class PhaseManager : MonoBehaviour
                     mover.moveSpeed = 5;
                 }
 
-                mover = villains[3].GetComponent<WaypointMover>();
+                mover = allVillains[3].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints53")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -1051,7 +879,7 @@ public class PhaseManager : MonoBehaviour
                     mover.moveSpeed = 5;
                 }
 
-                mover = villains[4].GetComponent<WaypointMover>();
+                mover = allVillains[4].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints54")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -1109,7 +937,7 @@ public class PhaseManager : MonoBehaviour
                 // Phase Egress 4: Adversaries move to the rear exit
                 Debug.Log("Phase Egress: " + egress);
                 
-                mover = villains[0].GetComponent<WaypointMover>();
+                mover = allVillains[0].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints58")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0)); //this is how we get first waypoint externally
 
@@ -1121,7 +949,7 @@ public class PhaseManager : MonoBehaviour
                     mover.moveSpeed = 5;
                 }
 
-                mover = villains[1].GetComponent<WaypointMover>();
+                mover = allVillains[1].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints59")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -1133,7 +961,7 @@ public class PhaseManager : MonoBehaviour
                     mover.moveSpeed = 5;
                 }
 
-                mover = villains[2].GetComponent<WaypointMover>();
+                mover = allVillains[2].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints60")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -1145,7 +973,7 @@ public class PhaseManager : MonoBehaviour
                     mover.moveSpeed = 5;
                 }
 
-                mover = villains[3].GetComponent<WaypointMover>();
+                mover = allVillains[3].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints61")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -1157,7 +985,7 @@ public class PhaseManager : MonoBehaviour
                     mover.moveSpeed = 5;
                 }
 
-                mover = villains[4].GetComponent<WaypointMover>();
+                mover = allVillains[4].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints62")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
 
@@ -1220,6 +1048,19 @@ public class PhaseManager : MonoBehaviour
     private void MoveNPCsForPhase(GamePhase phase)
     {
         Debug.Log($"Moving NPCs for phase: {phase}");
+        if(phase != GamePhase.Phase1 && phase != GamePhase.Phase2){
+            // Debug.Log("doing the thing");
+            foreach(GameObject npc in allNPCs){
+                WaypointMover mover = npc.GetComponent<WaypointMover>();
+                Transform temp = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount-1));
+
+                if(mover.currentWaypoint != temp){
+                    // Debug.Log("MOST CERTAINLY doing the thing---------");
+                    mover.currentWaypoint = mover.waypoints.GetNextWaypoint(temp);
+                    npc.transform.position = mover.currentWaypoint.position;
+                }
+            }
+        }
         
         // npcMove = FindObjectOfType<PhaseMovementHelper>();
         
@@ -1256,7 +1097,7 @@ public class PhaseManager : MonoBehaviour
                 // tamper alarm goes off (dispatcher and those in the building can hear).
                 // 3 baddies move to long hallway, cafeteria, and lobby - DONE
                 // rad dose hemisphere is togglable by instructor.
-                // Two villains take the physician hostage to the gamma knife room
+                // Two allVillains take the physician hostage to the gamma knife room
                 if (currentPhaseCoroutine != null) {
                     StopCoroutine(currentPhaseCoroutine);
                     currentPhaseCoroutine = null;
@@ -1278,16 +1119,8 @@ public class PhaseManager : MonoBehaviour
 
         }
         
-        // After moving NPCs for the phase, store their new positions
-        StoreCurrentPhaseState();
     }
     
-    private void StoreCurrentPhaseState()
-    {
-        // Store the state of only active NPCs in the current phase
-        StoreActiveNPCsCurrentState(phaseList.Current);
-        Debug.Log($"Stored state for {phaseList.Current.NPCPositions.Count} NPCs in Phase {phaseList.Current.Phase}");
-    }
 
     public GamePhase GetCurrentPhase(){
         return phaseList.Current.Phase;
