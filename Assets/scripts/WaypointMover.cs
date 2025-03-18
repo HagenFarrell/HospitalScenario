@@ -175,14 +175,12 @@ public class WaypointMover : MonoBehaviour
                 }
             } 
             else if (isLastWaypoint && !waypoints.canLoop && 
-                phaseManager != null && (phaseManager.GetCurrentPhase() == GamePhase.Phase5 || 
-                phaseManager.GetCurrentPhase() == GamePhase.Phase6 || phaseManager.GetCurrentPhase() == GamePhase.Phase7))
+                phaseManager != null && (phaseManager.GetCurrentPhase() == GamePhase.Phase5 || phaseManager.GetCurrentPhase() == GamePhase.Phase6))
                 {
                     // Start rummaging to get radiation source
                     if (gameObject.CompareTag("PhysicianHostage"))
                     {
                         animator.SetBool("ToRummaging", false);
-                        animator.SetBool("IsRunning", false);
 
                         // Spawn in radation source
 
