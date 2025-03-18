@@ -81,6 +81,7 @@ public class PhaseManager : MonoBehaviour
 
         // Activate waypoint movement
         mover.enabled = true;
+        physicianHostage.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
     }
 
     private int SetEgressPhase()
@@ -147,9 +148,9 @@ public class PhaseManager : MonoBehaviour
         newMedicals = GameObject.FindGameObjectsWithTag("Medicals");
 
         if (physicianHostage != null) allCivilians.Add(physicianHostage);
-        if (physicianHostage != null) allCivilians.AddRange(newHostages);
-        if (physicianHostage != null) allCivilians.AddRange(newCivilians);
-        if (physicianHostage != null) allCivilians.AddRange(newMedicals);
+        if (newHostages != null) allCivilians.AddRange(newHostages);
+        if (newCivilians != null) allCivilians.AddRange(newCivilians);
+        if (newMedicals != null) allCivilians.AddRange(newMedicals);
 
         allNPCs.AddRange(allCivilians);
     }
@@ -316,6 +317,24 @@ public class PhaseManager : MonoBehaviour
 
             temp.enableAll();
         }
+
+        foreach (GameObject hostage in newHostages)
+        {
+            // Change disk color to yellow at last waypoint
+            GameObject disc = hostage.transform.GetChild(2).gameObject;
+            Renderer discRenderer = disc.GetComponent<Renderer>();
+
+            if (discRenderer != null && !gameObject.CompareTag("PhysicianHostage")) {
+                discRenderer.material.color = Color.yellow;
+                // Debug.Log($"Changed {gameObject.name} disc to yellow at last waypoint");
+            } 
+        }
+
+        GameObject disc1 = physicianHostage.transform.GetChild(2).gameObject;
+        Renderer discRenderer1 = disc1.GetComponent<Renderer>();
+        discRenderer1.material.color = new Color(1f, 0.5f, 0f);
+
+
 
         // Configure all civilian WaypointMovers to despawn when they reach the last waypoint
         foreach (GameObject civilian in allCivilians) {
@@ -1052,6 +1071,7 @@ public class PhaseManager : MonoBehaviour
         {
             foreach (GameObject npc in allNPCs)
             {
+                npc.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
                 WaypointMover mover = npc.GetComponent<WaypointMover>();
                 if (mover != null && mover.waypoints != null)
                 {

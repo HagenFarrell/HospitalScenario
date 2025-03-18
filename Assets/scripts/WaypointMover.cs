@@ -131,21 +131,6 @@ public class WaypointMover : MonoBehaviour
                     // Debug.Log("not a hostage, despawning");
                     gameObject.SetActive(false);
                 } else {
-
-                    // Change disk color to yellow at last waypoint
-                    GameObject disc = transform.GetChild(2).gameObject;
-                    Renderer discRenderer = disc.GetComponent<Renderer>();
-
-                    if (discRenderer != null && !gameObject.CompareTag("PhysicianHostage")) {
-                        discRenderer.material.color = Color.yellow;
-                        // Debug.Log($"Changed {gameObject.name} disc to yellow at last waypoint");
-                    } 
-                    // Sets PhysicianHostage to be orange
-                    else
-                    {
-                        // Orange Color
-                        discRenderer.material.color = new Color(1f, 0.5f, 0f);;
-                    }
                     animator.SetBool("IsRunning", false);
                     animator.SetBool("IsThreatPresent", true);
                 }
@@ -175,13 +160,13 @@ public class WaypointMover : MonoBehaviour
                 }
             } 
             else if (isLastWaypoint && !waypoints.canLoop && 
-                phaseManager != null && (phaseManager.GetCurrentPhase() == GamePhase.Phase5 || phaseManager.GetCurrentPhase() == GamePhase.Phase6))
+                phaseManager != null && (phaseManager.GetCurrentPhase() == GamePhase.Phase5 || phaseManager.GetCurrentPhase() == GamePhase.Phase6 || phaseManager.GetCurrentPhase() == GamePhase.Phase7))
                 {
                     // Start rummaging to get radiation source
                     if (gameObject.CompareTag("PhysicianHostage"))
                     {
                         animator.SetBool("ToRummaging", false);
-
+                        animator.SetBool("IsRunning", false);
                         // Spawn in radation source
 
                     }
