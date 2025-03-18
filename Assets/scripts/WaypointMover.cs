@@ -12,6 +12,7 @@ public class WaypointMover : MonoBehaviour
     [SerializeField] public float moveSpeed = 2f;
 
     [SerializeField] private float distanceThreshold = 0.1f;
+    public Stack<Waypoints> waypointStorage;
 
 
     [Range(1f, 20f)]
@@ -32,6 +33,7 @@ public class WaypointMover : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        waypointStorage = new Stack<Waypoints>();
         animator = GetComponent<Animator>();
         // Set inital postion to first waypoint
         currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
