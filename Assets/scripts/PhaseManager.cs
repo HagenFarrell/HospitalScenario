@@ -74,12 +74,13 @@ public class PhaseManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.1f);
 
+        physicianHostage.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+
         // Now set the running animation and allow movement
         animator.SetBool("IsRunning", true);
 
         // Activate waypoint movement
         mover.enabled = true;
-        physicianHostage.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
     }
 
     private int SetEgressPhase()
@@ -265,7 +266,7 @@ public class PhaseManager : MonoBehaviour
             
             // Enable the WaypointMover component
             WaypointMover mover = civilian.GetComponent<WaypointMover>();
-            mover.waypointStorage.Push(mover.waypoints);
+
             if (mover != null)
             {
                 // Debug.Log(mover.waypoints.waypointsActiveInPhase + " waypoints active for " + civilian);
@@ -369,14 +370,28 @@ public class PhaseManager : MonoBehaviour
         
         // Receptionist hits duress alarm
         Debug.Log("Duress alarm activated. Dispatcher notified.");
-        physicianHostage.transform.rotation = new Quaternion(0f, physicianHostage.transform.rotation.y, 0f, 1f);
+        physicianHostage.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
 
     }
 
     private void ExecutePhase3(){
-        physicianHostage.transform.rotation = new Quaternion(0f, physicianHostage.transform.rotation.y, 0f, 1f);
-        Debug.Log($"The allVillains have taken {physicianHostage.name} hostage!");
+        
+        // Reset physicianHostage animator from bugging out
         Animator animator = physicianHostage.GetComponent<Animator>();
+        if(animator != null) {
+            animator.Rebind();  // This completely resets the animator state machine
+            animator.Update(0f); // This forces an immediate update
+            
+            // THEN set all animation parameters explicitly to known states
+            animator.SetBool("IsWalking", false);
+            animator.SetBool("IsRunning", false);
+            animator.SetBool("ToSitting", false);
+            animator.SetBool("IsThreatPresent", true);
+        }
+        
+        // THEN set position and rotation (order matters)
+        physicianHostage.transform.rotation = Quaternion.identity;
+        Debug.Log($"The allVillains have taken {physicianHostage.name} hostage!");
         if(animator != null) animator.SetBool("IsThreatPresent", false);
     }
 
@@ -1131,6 +1146,12 @@ public class PhaseManager : MonoBehaviour
                             animator.SetBool("IsRunning", false);
                             animator.SetBool("ToSitting", false);
                             animator.SetBool("IsThreatPresent", false);
+
+                            // Reset crotching for hostages
+                            if ((phase == GamePhase.Phase3 || phase == GamePhase.Phase4 || phase == GamePhase.Phase5) && npc.CompareTag("Hostages"))
+                            {
+                                animator.SetBool("IsThreatPresent", true);
+                            }
                         }
                     }
                 }
