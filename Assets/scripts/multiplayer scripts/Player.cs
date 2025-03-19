@@ -146,6 +146,7 @@ public class Player : NetworkBehaviour
         Button fireDeptButton = GameObject.Find("FireDeptButton")?.GetComponent<Button>();
         Button instructorButton = GameObject.Find("InstructorButton")?.GetComponent<Button>();
         Button dispatchButton = GameObject.Find("DispatchButton")?.GetComponent<Button>();
+        Button spectatorButton = GameObject.Find("SpectatorButton")?.GetComponent<Button>();
 
         // Debug: Check if buttons are found
         if (lawEnfButton == null)
@@ -183,6 +184,11 @@ public class Player : NetworkBehaviour
         {
             dispatchButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(dispatchButton));
             Debug.Log("dispatchButton onClick assigned.");
+        }
+        if (spectatorButton != null)
+        {
+            spectatorButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(spectatorButton));
+            Debug.Log("spectatorButton onClick assigned.");
         }
     }
 
@@ -473,6 +479,10 @@ public class Player : NetworkBehaviour
                 npcRole = "Dispatch";
                 playerRole = Roles.Dispatch;
                 ChangeDispatchView();
+                break;
+            case "SpectatorButton":
+                npcRole = "Spectator";
+                playerRole = Roles.Spectator;
                 break;
             default:
                 Debug.LogWarning($"Unknown button clicked: {button.name}");

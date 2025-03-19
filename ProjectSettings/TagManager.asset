@@ -18,6 +18,7 @@ TagManager:
   - LLE/FD Cams
   - Dispatch
   - TempWalls
+  - Spectator
   layers:
   - Default
   - TransparentFX
