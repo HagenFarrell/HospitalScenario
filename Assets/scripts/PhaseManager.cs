@@ -1161,6 +1161,20 @@ public class PhaseManager : MonoBehaviour
 
     private void ResetBackwards()
     {
+        // reset for phase 1 - Resets active waypoints
+        if (phaseList.Current.Phase == GamePhase.Phase1)
+        {
+            Waypoints[] allWaypoints = FindObjectsOfType<Waypoints>();
+            foreach (Waypoints wp in allWaypoints)
+            {
+                wp.ActiveChildLength = wp.waypointsActiveInPhase;
+                for (int i = 0; i < wp.transform.childCount; i++)
+                {
+                    wp.transform.GetChild(i).gameObject.SetActive(i < wp.waypointsActiveInPhase);
+                }
+            }
+        }
+        // Process all NPCs
         foreach (GameObject npc in allNPCs)
         {
             if(npc.activeSelf) {
@@ -1168,19 +1182,39 @@ public class PhaseManager : MonoBehaviour
                 WaypointMover mover = npc.GetComponent<WaypointMover>();
                 if (mover != null && mover.waypoints != null)
                 {
-                    Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
-                    mover.currentWaypoint = firstWaypoint;
-                    npc.transform.position = mover.currentWaypoint.position;
-                    if(mover.waypointStorage.Count > 0) mover.waypoints = mover.waypointStorage.Pop();
+                    // First get previous waypoints
+                    if(mover.waypointStorage.Count > 0) 
+                        mover.waypoints = mover.waypointStorage.Pop();
                     
-                    // Reset animations when teleporting
-                    Animator animator = npc.GetComponent<Animator>();
-                    if (animator != null)
+                    // Skip position reset for hostages in Phase 3 
+                    if (phaseList.Current.Phase == GamePhase.Phase3 && 
+                        npc.CompareTag("Hostages"))
                     {
-                        animator.SetBool("IsWalking", false);
-                        animator.SetBool("IsRunning", false);
-                        animator.SetBool("ToSitting", false);
-                        animator.SetBool("IsThreatPresent", false);
+                        // Don't reset position, but make sure animation is right
+                        Animator animator = npc.GetComponent<Animator>();
+                        if (animator != null)
+                        {
+                            animator.SetBool("IsWalking", false);
+                            animator.SetBool("IsRunning", false);
+                            animator.SetBool("IsThreatPresent", true);
+                        }
+                    }
+                    else
+                    {
+                        // Normal position reset for all other NPCs
+                        Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
+                        mover.currentWaypoint = firstWaypoint;
+                        npc.transform.position = mover.currentWaypoint.position;
+                        
+                        // Reset animations
+                        Animator animator = npc.GetComponent<Animator>();
+                        if (animator != null)
+                        {
+                            animator.SetBool("IsWalking", false);
+                            animator.SetBool("IsRunning", false);
+                            animator.SetBool("ToSitting", false);
+                            animator.SetBool("IsThreatPresent", false);
+                        }
                     }
                 }
             }
