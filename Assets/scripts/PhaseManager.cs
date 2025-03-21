@@ -1174,7 +1174,54 @@ public class PhaseManager : MonoBehaviour
                 }
             }
         }
-        // Process all NPCs
+        else if (phaseList.Current.Phase == GamePhase.Phase3)
+        {
+            // Reset physician hostage waypoints
+            if (physicianHostage != null)
+            {
+                WaypointMover mover = physicianHostage.GetComponent<WaypointMover>();
+                if (mover != null && mover.waypointStorage.Count > 0)
+                {
+                    // Pop the correct waypoint from the stack
+                    mover.waypoints = mover.waypointStorage.Pop();
+                    
+                    // Reset position to first waypoint of that path
+                    if (mover.waypoints != null && mover.waypoints.transform.childCount > 0)
+                    {
+                        Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
+                        mover.currentWaypoint = firstWaypoint;
+                        physicianHostage.transform.position = firstWaypoint.position;
+                    }
+                }
+            }
+             // Reset all villains waypoints when going back to Phase 3
+            foreach (GameObject villain in allVillains)
+            {
+                WaypointMover mover = villain.GetComponent<WaypointMover>();
+                if (mover != null && mover.waypointStorage.Count > 0)
+                {
+                    // Pop the correct waypoint from the stack
+                    mover.waypoints = mover.waypointStorage.Pop();
+                    
+                    // Reset position to first waypoint of that path
+                    if (mover.waypoints != null && mover.waypoints.transform.childCount > 0)
+                    {
+                        Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
+                        mover.currentWaypoint = firstWaypoint;
+                        villain.transform.position = firstWaypoint.position;
+                        
+                        // Reset animations
+                        Animator animator = villain.GetComponent<Animator>();
+                        if (animator != null)
+                        {
+                            animator.SetBool("IsWalking", false);
+                            animator.SetBool("IsRunning", false);
+                        }
+                    }
+                }
+            }
+        }
+        
         foreach (GameObject npc in allNPCs)
         {
             if(npc.activeSelf) {
@@ -1182,39 +1229,19 @@ public class PhaseManager : MonoBehaviour
                 WaypointMover mover = npc.GetComponent<WaypointMover>();
                 if (mover != null && mover.waypoints != null)
                 {
-                    // First get previous waypoints
-                    if(mover.waypointStorage.Count > 0) 
-                        mover.waypoints = mover.waypointStorage.Pop();
+                    Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
+                    mover.currentWaypoint = firstWaypoint;
+                    npc.transform.position = mover.currentWaypoint.position;
+                    if(mover.waypointStorage.Count > 0) mover.waypoints = mover.waypointStorage.Pop();
                     
-                    // Skip position reset for hostages in Phase 3 
-                    if (phaseList.Current.Phase == GamePhase.Phase3 && 
-                        npc.CompareTag("Hostages"))
+                    // Reset animations when teleporting
+                    Animator animator = npc.GetComponent<Animator>();
+                    if (animator != null)
                     {
-                        // Don't reset position, but make sure animation is right
-                        Animator animator = npc.GetComponent<Animator>();
-                        if (animator != null)
-                        {
-                            animator.SetBool("IsWalking", false);
-                            animator.SetBool("IsRunning", false);
-                            animator.SetBool("IsThreatPresent", true);
-                        }
-                    }
-                    else
-                    {
-                        // Normal position reset for all other NPCs
-                        Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
-                        mover.currentWaypoint = firstWaypoint;
-                        npc.transform.position = mover.currentWaypoint.position;
-                        
-                        // Reset animations
-                        Animator animator = npc.GetComponent<Animator>();
-                        if (animator != null)
-                        {
-                            animator.SetBool("IsWalking", false);
-                            animator.SetBool("IsRunning", false);
-                            animator.SetBool("ToSitting", false);
-                            animator.SetBool("IsThreatPresent", false);
-                        }
+                        animator.SetBool("IsWalking", false);
+                        animator.SetBool("IsRunning", false);
+                        animator.SetBool("ToSitting", false);
+                        animator.SetBool("IsThreatPresent", false);
                     }
                 }
             }
