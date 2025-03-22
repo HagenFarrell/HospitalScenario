@@ -166,6 +166,12 @@ public class Waypoints : MonoBehaviour
         return transform.GetChild(nextIndex);
     }
 
+    public void ResetToPhaseSettings()
+    {
+        ActiveChildLength = waypointsActiveInPhase; // Reset to phase-specific value
+        UpdateWaypointVisibility();
+    }
+
     public void enableAll(){
         // Debug.Log("enabling all");
         foreach(Transform t in transform){

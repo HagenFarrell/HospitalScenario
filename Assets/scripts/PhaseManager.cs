@@ -28,6 +28,7 @@ public class PhaseManager : MonoBehaviour
     private List<GameObject> allVillains;
     private List<GameObject> allNPCs;
     private int egress;
+    private bool reverting;
     public delegate void EgressSelectedHandler(int egressPhase);
     public static event EgressSelectedHandler OnEgressSelected;
 
@@ -186,6 +187,7 @@ public class PhaseManager : MonoBehaviour
 
     public void NextPhase()
     {
+        reverting = false;
         // Stop any ongoing coroutines from the current phase
         if (currentPhaseCoroutine != null)
         {
@@ -207,6 +209,7 @@ public class PhaseManager : MonoBehaviour
 
     public void PreviousPhase()
     {
+        reverting = true;
         // Stop any ongoing coroutines
         if (currentPhaseCoroutine != null)
         {
@@ -296,7 +299,7 @@ public class PhaseManager : MonoBehaviour
         // Sets allVillains disc to green to make then try to blend in
         foreach(GameObject villain in allVillains) {
             WaypointMover mover = villain.GetComponent<WaypointMover>();
-            mover.waypointStorage.Push(mover.waypoints);
+            // if(reverting) mover.waypointStorage.Push(mover.waypoints);
             GameObject disc = villain.transform.GetChild(2).gameObject;
             disc.SetActive(true);
             
@@ -399,7 +402,7 @@ public class PhaseManager : MonoBehaviour
         WaypointMover mover = allVillains[0].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints15")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0)); //this is how we get first waypoint externally
-        mover.waypointStorage.Push(mover.waypoints);
+        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
         Animator animator = mover.GetComponent<Animator>();
         // Change animation to walking
@@ -412,7 +415,7 @@ public class PhaseManager : MonoBehaviour
         mover = allVillains[1].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints14")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        mover.waypointStorage.Push(mover.waypoints);
+        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
         Animator animator1 = mover.GetComponent<Animator>();
         // Change animation to walking
@@ -425,7 +428,7 @@ public class PhaseManager : MonoBehaviour
         mover = allVillains[3].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints16")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        mover.waypointStorage.Push(mover.waypoints);
+        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
         Animator animator2 = mover.GetComponent<Animator>();
         // Change animation to walking
@@ -438,7 +441,7 @@ public class PhaseManager : MonoBehaviour
         mover = allVillains[4].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints17")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        mover.waypointStorage.Push(mover.waypoints);
+        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
         Animator animator3 = mover.GetComponent<Animator>();
         // Change animation to walking
@@ -462,7 +465,7 @@ public class PhaseManager : MonoBehaviour
 
         mover.waypoints = GameObject.Find("Waypoints18")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        mover.waypointStorage.Push(mover.waypoints);
+        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
         // Debug.Log($"Two Villains are taking {physicianHostage.name} to the gamma knife room");
         // Debug.Log($"{villainsInside[2].name} stays behind in the lobby");
@@ -479,7 +482,7 @@ public class PhaseManager : MonoBehaviour
         WaypointMover mover = allVillains[2].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints13")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        mover.waypointStorage.Push(mover.waypoints);
+        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
         Animator animator1 = mover.GetComponent<Animator>();
         // Change animation
@@ -492,7 +495,7 @@ public class PhaseManager : MonoBehaviour
         mover = allVillains[3].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints24")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        mover.waypointStorage.Push(mover.waypoints);
+        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
         Animator animator2 = mover.GetComponent<Animator>();
         // Change animation 
@@ -505,7 +508,7 @@ public class PhaseManager : MonoBehaviour
         mover = allVillains[4].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints25")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        mover.waypointStorage.Push(mover.waypoints);
+        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
         Animator animator3 = mover.GetComponent<Animator>();
         // Change animation 
@@ -540,7 +543,7 @@ public class PhaseManager : MonoBehaviour
         WaypointMover mover = allVillains[0].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints26")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        mover.waypointStorage.Push(mover.waypoints);
+        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
         Animator animator = mover.GetComponent<Animator>();
         // Change animation to walking
@@ -553,7 +556,7 @@ public class PhaseManager : MonoBehaviour
         mover = allVillains[1].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints27")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        mover.waypointStorage.Push(mover.waypoints);
+        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
         Animator animator1 = mover.GetComponent<Animator>();
         // Change animation to walking
@@ -566,7 +569,7 @@ public class PhaseManager : MonoBehaviour
         mover = allVillains[2].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints28")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        mover.waypointStorage.Push(mover.waypoints);
+        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
         animator1 = mover.GetComponent<Animator>();
         // Change animation to walking
@@ -579,7 +582,7 @@ public class PhaseManager : MonoBehaviour
         mover = allVillains[3].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints29")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        mover.waypointStorage.Push(mover.waypoints);
+        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
         Animator animator2 = mover.GetComponent<Animator>();
         // Change animation to walking
@@ -592,7 +595,7 @@ public class PhaseManager : MonoBehaviour
         mover = allVillains[4].GetComponent<WaypointMover>();
         mover.waypoints = GameObject.Find("Waypoints30")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        mover.waypointStorage.Push(mover.waypoints);
+        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
         Animator animator3 = mover.GetComponent<Animator>();
         // Change animation to walking
@@ -614,7 +617,7 @@ public class PhaseManager : MonoBehaviour
         }
         mover.waypoints = GameObject.Find("Waypoints31")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        mover.waypointStorage.Push(mover.waypoints);
+        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
         // Remaining hostages get rounded up
         mover = newHostages[0].GetComponent<WaypointMover>();
@@ -629,7 +632,7 @@ public class PhaseManager : MonoBehaviour
         }
         mover.waypoints = GameObject.Find("Waypoints32")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        mover.waypointStorage.Push(mover.waypoints);
+        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
         // Remaining hostages get rounded up
         mover = newHostages[1].GetComponent<WaypointMover>();
@@ -644,7 +647,7 @@ public class PhaseManager : MonoBehaviour
         }
         mover.waypoints = GameObject.Find("Waypoints33")?.GetComponent<Waypoints>();
         mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        mover.waypointStorage.Push(mover.waypoints);
+        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
     }
 
     private void ExecuteEgressPhase(int selectedEgress)
@@ -663,7 +666,7 @@ public class PhaseManager : MonoBehaviour
                 WaypointMover mover = allVillains[0].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints34")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 Animator animator = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -676,7 +679,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[1].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints35")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 Animator animator1 = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -689,7 +692,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[2].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints36")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 animator1 = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -702,7 +705,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[3].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints37")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 Animator animator2 = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -715,7 +718,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[4].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints38")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 Animator animator3 = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -737,7 +740,7 @@ public class PhaseManager : MonoBehaviour
                 }
                 mover.waypoints = GameObject.Find("Waypoints39")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 // Remaining hostages get rounded up
                 mover = newHostages[0].GetComponent<WaypointMover>();
@@ -752,7 +755,7 @@ public class PhaseManager : MonoBehaviour
                 }
                 mover.waypoints = GameObject.Find("Waypoints40")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 // Remaining hostages get rounded up
                 mover = newHostages[1].GetComponent<WaypointMover>();
@@ -767,7 +770,7 @@ public class PhaseManager : MonoBehaviour
                 }
                 mover.waypoints = GameObject.Find("Waypoints41")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
 
                 break;
@@ -778,7 +781,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[0].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints42")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 animator = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -791,7 +794,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[1].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints43")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 animator1 = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -804,7 +807,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[2].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints44")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 animator1 = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -817,7 +820,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[3].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints45")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 animator2 = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -830,7 +833,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[4].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints46")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 animator3 = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -852,7 +855,7 @@ public class PhaseManager : MonoBehaviour
                 }
                 mover.waypoints = GameObject.Find("Waypoints47")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 // Remaining hostages get rounded up
                 mover = newHostages[0].GetComponent<WaypointMover>();
@@ -867,7 +870,7 @@ public class PhaseManager : MonoBehaviour
                 }
                 mover.waypoints = GameObject.Find("Waypoints48")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 // Remaining hostages get rounded up
                 mover = newHostages[1].GetComponent<WaypointMover>();
@@ -882,7 +885,7 @@ public class PhaseManager : MonoBehaviour
                 }
                 mover.waypoints = GameObject.Find("Waypoints49")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
 
                 break;
@@ -893,7 +896,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[0].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints50")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 animator = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -906,7 +909,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[1].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints51")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 animator1 = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -919,7 +922,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[2].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints52")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 animator1 = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -932,7 +935,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[3].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints53")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 animator2 = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -945,7 +948,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[4].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints54")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 animator3 = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -967,7 +970,7 @@ public class PhaseManager : MonoBehaviour
                 }
                 mover.waypoints = GameObject.Find("Waypoints55")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 // Remaining hostages get rounded up
                 mover = newHostages[0].GetComponent<WaypointMover>();
@@ -982,7 +985,7 @@ public class PhaseManager : MonoBehaviour
                 }
                 mover.waypoints = GameObject.Find("Waypoints56")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 // Remaining hostages get rounded up
                 mover = newHostages[1].GetComponent<WaypointMover>();
@@ -997,7 +1000,7 @@ public class PhaseManager : MonoBehaviour
                 }
                 mover.waypoints = GameObject.Find("Waypoints57")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 break;
             case 4: // v
@@ -1007,7 +1010,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[0].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints58")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 animator = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -1020,7 +1023,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[1].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints59")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 animator1 = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -1033,7 +1036,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[2].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints60")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 animator1 = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -1046,7 +1049,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[3].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints61")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 animator2 = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -1059,7 +1062,7 @@ public class PhaseManager : MonoBehaviour
                 mover = allVillains[4].GetComponent<WaypointMover>();
                 mover.waypoints = GameObject.Find("Waypoints62")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 animator3 = mover.GetComponent<Animator>();
                 // Change animation to walking
@@ -1081,7 +1084,7 @@ public class PhaseManager : MonoBehaviour
                 }
                 mover.waypoints = GameObject.Find("Waypoints63")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 // Remaining hostages get rounded up
                 mover = newHostages[0].GetComponent<WaypointMover>();
@@ -1096,7 +1099,7 @@ public class PhaseManager : MonoBehaviour
                 }
                 mover.waypoints = GameObject.Find("Waypoints64")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 // Remaining hostages get rounded up
                 mover = newHostages[1].GetComponent<WaypointMover>();
@@ -1111,7 +1114,7 @@ public class PhaseManager : MonoBehaviour
                 }
                 mover.waypoints = GameObject.Find("Waypoints65")?.GetComponent<Waypoints>();
                 mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                mover.waypointStorage.Push(mover.waypoints);
+                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
 
                 break;
             default:
@@ -1133,7 +1136,7 @@ public class PhaseManager : MonoBehaviour
                     if (mover != null && mover.waypoints != null)
                     {
                         Transform lastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
-                        mover.waypointStorage.Push(mover.waypoints);
+                        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
                         
                         mover.currentWaypoint = lastWaypoint;
                         npc.transform.position = mover.currentWaypoint.position;
@@ -1159,27 +1162,63 @@ public class PhaseManager : MonoBehaviour
         }
     }
 
+    private void SaveWaypointState()
+    {
+        foreach (GameObject npc in allNPCs)
+        {
+            if (npc.activeSelf)
+            {
+                WaypointMover mover = npc.GetComponent<WaypointMover>();
+                if (mover != null && mover.waypoints != null)
+                {
+                    Animator animator = npc.GetComponent<Animator>();
+                    bool isWalking = animator != null && animator.GetBool("IsWalking");
+                    bool isRunning = animator != null && animator.GetBool("IsRunning");
+                    bool isSitting = animator != null && animator.GetBool("ToSitting");
+
+                    var state = new WaypointState(
+                        mover.waypoints,
+                        mover.waypoints.ActiveChildLength,
+                        mover.waypoints.isMovingForward,
+                        mover.waypoints.canLoop,
+                        isWalking,
+                        isRunning,
+                        isSitting
+                    );
+
+                    mover.waypointStorage.Push(state);
+                }
+            }
+        }
+    }
+
     private void ResetBackwards()
     {
         foreach (GameObject npc in allNPCs)
         {
-            if(npc.activeSelf) {
-                npc.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+            if (npc.activeSelf)
+            {
+                npc.transform.rotation = Quaternion.identity;
                 WaypointMover mover = npc.GetComponent<WaypointMover>();
-                if (mover != null && mover.waypoints != null)
+                if (mover != null && mover.waypoints != null && mover.waypointStorage.Count > 0)
                 {
+                    var state = mover.waypointStorage.Pop();
+                    mover.waypoints = state.waypoints;
+                    mover.waypoints.ActiveChildLength = state.activeChildLength;
+                    mover.waypoints.isMovingForward = state.isMovingForward;
+                    mover.waypoints.canLoop = state.canLoop;
+
                     Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
                     mover.currentWaypoint = firstWaypoint;
-                    npc.transform.position = mover.currentWaypoint.position;
-                    if(mover.waypointStorage.Count > 0) mover.waypoints = mover.waypointStorage.Pop();
-                    
-                    // Reset animations when teleporting
+                    npc.transform.position = firstWaypoint.position;
+
+                    // Restore animation states
                     Animator animator = npc.GetComponent<Animator>();
                     if (animator != null)
                     {
-                        animator.SetBool("IsWalking", false);
-                        animator.SetBool("IsRunning", false);
-                        animator.SetBool("ToSitting", false);
+                        animator.SetBool("IsWalking", state.isWalking);
+                        animator.SetBool("IsRunning", state.isRunning);
+                        animator.SetBool("ToSitting", state.isSitting);
                         animator.SetBool("IsThreatPresent", false);
                     }
                 }
@@ -1191,11 +1230,15 @@ public class PhaseManager : MonoBehaviour
     {
 
         Debug.Log($"Moving NPCs for phase: {phase}");
+        
+        if (!reverting)
+        {
+            SaveWaypointState();
+        }
 
         switch (phase)
         {
             case GamePhase.Phase1:
-                // If coming back to Phase1, NPCs should already be reset to initial positions
                 ExecutePhase1();
                 break;
                 
@@ -1212,7 +1255,6 @@ public class PhaseManager : MonoBehaviour
                 break;
                 
             case GamePhase.Phase4:
-            // add animation for tampering with machine
                 if (currentPhaseCoroutine != null) {
                     StopCoroutine(currentPhaseCoroutine);
                     currentPhaseCoroutine = null;
@@ -1221,11 +1263,6 @@ public class PhaseManager : MonoBehaviour
                 
                 break;
             case GamePhase.Phase5:
-                // law enforcement spawns in. 
-                // tamper alarm goes off (dispatcher and those in the building can hear).
-                // 3 baddies move to long hallway, cafeteria, and lobby - DONE
-                // rad dose hemisphere is togglable by instructor.
-                // Two allVillains take the physician hostage to the gamma knife room
                 if (currentPhaseCoroutine != null) {
                     StopCoroutine(currentPhaseCoroutine);
                     currentPhaseCoroutine = null;
@@ -1234,9 +1271,6 @@ public class PhaseManager : MonoBehaviour
 
                 break;
             case GamePhase.Phase6:
-                // // VFD pulls up
-                // // source goes into canister into backpack
-                // // all adversaries and physicianhostage group up & get ready to leave
                 ExecutePhase6();
                 
                 break;
