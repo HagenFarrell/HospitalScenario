@@ -229,17 +229,13 @@ public class PhaseManager : MonoBehaviour
     }
 
     private GameObject getRadSource(){
-        GameObject[] temp = GameObject.FindGameObjectsWithTag("RadiationSource");
-        if(temp.Length > 0) return temp[0];
-        else{
-            Debug.LogWarning("gamma source null???");
-            return null;
-        }
+        return allVillains[0].transform.GetChild(4).gameObject;
     }
 
     // Phase 1 with new waypoint paths
     private void ExecutePhase1()
     {
+        // Debug.Log("executing phase numero uno");
         if(playerUnits == null || playerUnits.Count == 0){
             GameObject temp = GameObject.Find("Player Units");
             temp.transform.position = new Vector3(temp.transform.position.x, temp.transform.position.y-9000f, temp.transform.position.z);
@@ -250,7 +246,7 @@ public class PhaseManager : MonoBehaviour
         }
         
         currentPhase = 1;
-        Debug.Log("Executing Phase 1: NPCs begin waypoint movement");
+        // Debug.Log("Executing Phase 1: NPCs begin waypoint movement");
         gammaKnifeObject = getRadSource();
         if (gammaKnifeObject != null) {
             gammaKnifeObject.SetActive(false);
@@ -287,11 +283,13 @@ public class PhaseManager : MonoBehaviour
                     animator.SetBool("IsRunning", false);
                     animator.SetBool("ToSitting", true);
                 } else {
+                    Debug.Log("going for a walk");
                     if (animator != null)
                     {
+                        // Debug.Log("Animator NOT null for " + civilian);
                         animator.SetBool("IsWalking", true);
                         animator.SetBool("IsRunning", false); // this is fine right
-                    }
+                    } else Debug.LogError("Animator null for " + civilian);
                 }
             }
         }
@@ -473,6 +471,13 @@ public class PhaseManager : MonoBehaviour
     }
 
     private void ExecutePhase5(){
+         if (gammaKnifeObject != null) {
+            Debug.Log("gammaknifeobject SPAWNING!!!!");
+            gammaKnifeObject.SetActive(true);
+            gammaKnifeObject.transform.GetChild(0).gameObject.SetActive(true);
+            // gammaKnifeObject.transform.localScale = new Vector3(25f, 25f, 25f);
+        }
+
         if(LLE == null || LLE.Length == 0) LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
         foreach(GameObject unit in LLE){
             unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y+9000f, unit.transform.position.z);
@@ -525,12 +530,7 @@ public class PhaseManager : MonoBehaviour
             animator4.SetBool("ToRummaging", false);
         }
 
-        if (gammaKnifeObject != null) {
-            Debug.Log("gammaknifeobject spawning");
-            gammaKnifeObject.SetActive(true);
-            gammaKnifeObject.transform.GetChild(0).gameObject.SetActive(true);
-            // gammaKnifeObject.transform.localScale = new Vector3(25f, 25f, 25f);
-        }
+       
 
     }
 
@@ -1204,7 +1204,10 @@ public class PhaseManager : MonoBehaviour
                 {
                     var state = mover.waypointStorage.Pop();
                     mover.waypoints = state.waypoints;
+                    Debug.Log("child length state: " + state.activeChildLength);
+                    Debug.Log("child length current: " + mover.waypoints.ActiveChildLength);
                     mover.waypoints.ActiveChildLength = state.activeChildLength;
+                    
                     mover.waypoints.isMovingForward = state.isMovingForward;
                     mover.waypoints.canLoop = state.canLoop;
 
@@ -1231,10 +1234,7 @@ public class PhaseManager : MonoBehaviour
 
         Debug.Log($"Moving NPCs for phase: {phase}");
         
-        if (!reverting)
-        {
-            SaveWaypointState();
-        }
+        
 
         switch (phase)
         {
@@ -1279,6 +1279,11 @@ public class PhaseManager : MonoBehaviour
 
                 break;
 
+        }
+
+        if (!reverting)
+        {
+            SaveWaypointState();
         }
         
     }
