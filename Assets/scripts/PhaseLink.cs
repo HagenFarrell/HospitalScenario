@@ -8,16 +8,12 @@ namespace PhaseLink
         public GamePhase Phase { get; private set; }
         public PhaseNode Previous { get; set; }
         public PhaseNode Next { get; set; }
-        public Dictionary<string, Vector3> NPCPositions { get; set; } = new Dictionary<string, Vector3>();
-        public Dictionary<string, string> NPCTags { get; set; } = new Dictionary<string, string>();
 
         public PhaseNode(GamePhase phase)
         {
             Phase = phase;
             Previous = null;
             Next = null;
-            NPCPositions = new Dictionary<string, Vector3>();
-            NPCTags = new Dictionary<string, string>();
         }
     }
 
@@ -74,15 +70,6 @@ namespace PhaseLink
                 return true;
             }
             return false;
-        }
-
-        public void StoreNPCState(PhaseNode node, GameObject npc)
-        {
-            if (node != null)
-            {
-                node.NPCPositions[npc.name] = npc.transform.position;
-                node.NPCTags[npc.name] = npc.tag;
-            }
         }
     }
 }

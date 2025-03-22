@@ -12,6 +12,7 @@ public class WaypointMover : MonoBehaviour
     [SerializeField] public float moveSpeed = 2f;
 
     [SerializeField] private float distanceThreshold = 0.1f;
+    public Stack<WaypointState> waypointStorage;
 
 
     [Range(1f, 20f)]
@@ -32,6 +33,7 @@ public class WaypointMover : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        waypointStorage = new Stack<WaypointState>();
         animator = GetComponent<Animator>();
         // Set inital postion to first waypoint
         currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
@@ -88,9 +90,9 @@ public class WaypointMover : MonoBehaviour
             
             // For Phase 1, check against the active waypoints limit
             int lastActiveIndex;
-            if (phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase1 && !waypoints.PathBranching) {
+            if (phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase1) {
                 // In Phase 1 with no branching, the last active waypoint is one less than the count
-                lastActiveIndex = waypoints.waypointsActiveInPhase - 1;
+                lastActiveIndex = waypoints.ActiveChildLength - 1;
             } else {
                 // Otherwise, the last active waypoint is the last child
                 lastActiveIndex = currentWaypoint.parent.childCount - 1;
@@ -102,7 +104,7 @@ public class WaypointMover : MonoBehaviour
             // Check if this is the first waypoint
             bool isFirstWaypoint = currentWaypoint.GetSiblingIndex() == 0;
 
-            if (isLastWaypoint && !waypoints.canLoop && waypoints.waypointsActiveInPhase > 1 &&
+            if (isLastWaypoint && !waypoints.canLoop && waypoints.ActiveChildLength > 1 &&
                 phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase1) {
                 // Reverse direction
                 waypoints.isMovingForward = false;
@@ -111,7 +113,7 @@ public class WaypointMover : MonoBehaviour
                 currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
                 return;
             }
-            else if (isFirstWaypoint && !waypoints.isMovingForward && !waypoints.canLoop && waypoints.waypointsActiveInPhase > 1 &&
+            else if (isFirstWaypoint && !waypoints.isMovingForward && !waypoints.canLoop && waypoints.ActiveChildLength > 1 &&
                 phaseManager != null && phaseManager.GetCurrentPhase() == GamePhase.Phase1) {
                 // Change direction to forward again
                 waypoints.isMovingForward = true;
@@ -131,21 +133,6 @@ public class WaypointMover : MonoBehaviour
                     // Debug.Log("not a hostage, despawning");
                     gameObject.SetActive(false);
                 } else {
-
-                    // Change disk color to yellow at last waypoint
-                    GameObject disc = transform.GetChild(2).gameObject;
-                    Renderer discRenderer = disc.GetComponent<Renderer>();
-
-                    if (discRenderer != null && !gameObject.CompareTag("PhysicianHostage")) {
-                        discRenderer.material.color = Color.yellow;
-                        // Debug.Log($"Changed {gameObject.name} disc to yellow at last waypoint");
-                    } 
-                    // Sets PhysicianHostage to be orange
-                    else
-                    {
-                        // Orange Color
-                        discRenderer.material.color = new Color(1f, 0.5f, 0f);;
-                    }
                     animator.SetBool("IsRunning", false);
                     animator.SetBool("IsThreatPresent", true);
                 }
@@ -175,15 +162,13 @@ public class WaypointMover : MonoBehaviour
                 }
             } 
             else if (isLastWaypoint && !waypoints.canLoop && 
-                phaseManager != null && (phaseManager.GetCurrentPhase() == GamePhase.Phase5 || 
-                phaseManager.GetCurrentPhase() == GamePhase.Phase6 || phaseManager.GetCurrentPhase() == GamePhase.Phase7))
+                phaseManager != null && (phaseManager.GetCurrentPhase() == GamePhase.Phase5 || phaseManager.GetCurrentPhase() == GamePhase.Phase6 || phaseManager.GetCurrentPhase() == GamePhase.Phase7))
                 {
                     // Start rummaging to get radiation source
                     if (gameObject.CompareTag("PhysicianHostage"))
                     {
                         animator.SetBool("ToRummaging", false);
                         animator.SetBool("IsRunning", false);
-
                         // Spawn in radation source
 
                     }
@@ -203,7 +188,7 @@ public class WaypointMover : MonoBehaviour
         else
         {
             // If path is not looping, only rotate if not at the last waypoint
-            if (currentWaypoint.GetSiblingIndex() < waypoints.transform.childCount && waypoints.waypointsActiveInPhase > 1)
+            if (currentWaypoint.GetSiblingIndex() < waypoints.transform.childCount && waypoints.ActiveChildLength > 1)
             {
                 // Not at the last waypoint, so continue rotating
                 RotateTowardsWaypoint();
