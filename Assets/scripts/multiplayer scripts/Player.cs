@@ -366,13 +366,13 @@ public class Player : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha0) && playerRole == Roles.Instructor) // Next phase
         {
             phaseManager.NextPhase();
-            if (phaseManager.currentPhase == 2) SoundAlarm();
+            if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) SoundAlarm();
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha9) && playerRole == Roles.Instructor) // Previous phase
         {
             phaseManager.PreviousPhase();
-            if (phaseManager.currentPhase == 2) SoundAlarm();
+            if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) SoundAlarm();
         }
 
         if (Input.GetKeyDown(KeyCode.T) && playerRole == Roles.Instructor) // toggle big dome

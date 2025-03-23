@@ -15,6 +15,7 @@ public class Waypoints : MonoBehaviour
     [SerializeField] public bool isMovingForward = true; // Sets path to reverse after at last waypoint
 
     [SerializeField] public int waypointsActiveInPhase; // Number of waypoints active in Phase 1
+    [SerializeField] private GamePhase activeInPhase;
     public int ActiveChildLength;
     PhaseManager phasemanager;
 
@@ -25,6 +26,10 @@ public class Waypoints : MonoBehaviour
         phasemanager = FindObjectOfType<PhaseManager>();
         ActiveChildLength = waypointsActiveInPhase;
         UpdateWaypointVisibility();
+    }
+
+    public GamePhase getActivity(){
+        return activeInPhase;
     }
     
     // Simple method to update waypoint visibility

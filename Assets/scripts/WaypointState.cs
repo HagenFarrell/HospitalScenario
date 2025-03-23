@@ -1,4 +1,3 @@
-[System.Serializable]
 public class WaypointState
 {
     public Waypoints waypoints;
