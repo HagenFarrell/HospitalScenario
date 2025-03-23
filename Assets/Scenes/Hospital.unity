@@ -19424,6 +19424,7 @@ MonoBehaviour:
   maxForce: 100
   slowingRadius: 2
   seperationRadius: 1
+  pathWeight: 0.4
   pathUpdateInterval: 8
 --- !u!114 &1462633071
 MonoBehaviour:
@@ -25715,7 +25716,9 @@ MonoBehaviour:
   playerPrefab: {fileID: 5394392922838474995, guid: 5339326e38c63a34fb24b0b42938dea5, type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
-  spawnPrefabs: []
+  spawnPrefabs:
+  - {fileID: 5394392922838474995, guid: 5339326e38c63a34fb24b0b42938dea5, type: 3}
+  - {fileID: 1456792384392801643, guid: e2d8dc3dce106494dae4d2f1a8ae05fd, type: 3}
 --- !u!4 &1852266154
 Transform:
   m_ObjectHideFlags: 0
@@ -26326,6 +26329,7 @@ MonoBehaviour:
   maxForce: 100
   slowingRadius: 2
   seperationRadius: 1
+  pathWeight: 0.4
   pathUpdateInterval: 8
 --- !u!1 &1893689277
 GameObject:
@@ -28018,6 +28022,7 @@ MonoBehaviour:
   maxForce: 100
   slowingRadius: 2
   seperationRadius: 1
+  pathWeight: 0.4
   pathUpdateInterval: 8
 --- !u!1 &2053380732
 GameObject:
@@ -28626,6 +28631,7 @@ MonoBehaviour:
   maxForce: 100
   slowingRadius: 2
   seperationRadius: 1
+  pathWeight: 0.4
   pathUpdateInterval: 8
 --- !u!1 &2113161954
 GameObject:
