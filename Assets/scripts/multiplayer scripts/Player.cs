@@ -699,44 +699,43 @@ public class Player : NetworkBehaviour
     }
 
     [Command]
-        private void CmdSpawnRadEyeTool()
-            {
-                if (radeyeToolPrefab == null)
-                {
-                    Debug.LogError("RadEyeTool prefab is not assigned in Player!");
-                    return;
-                }
-
-                GameObject toolInstance = Instantiate(radeyeToolPrefab, transform.position, Quaternion.identity);
-                NetworkServer.Spawn(toolInstance, connectionToClient);
-                RpcAttachRadEyeTool(toolInstance);
-            }
-
-
-    [ClientRpc]
-        private void RpcAttachRadEyeTool(GameObject toolInstance)
+    private void CmdSpawnRadEyeTool()
+    {
+        if (radeyeToolPrefab == null)
         {
-            if (!isLocalPlayer) return;
-
-            radeyeToolInstance = toolInstance.GetComponent<RadEyeTool>();
-            if (radeyeToolInstance == null)
-            {
-                Debug.LogError("Failed to find RadEyeTool script on spawned object!");
-                return;
-            }
-
-            // Store world position before parenting
-            Vector3 adjustedPosition = transform.position + new Vector3(1.0f, -0.5f, 0.5f);
-
-                // Attach the tool to the player safely
-            radeyeToolInstance.transform.SetParent(transform, true); 
-
-                // Set world position after parenting to avoid reset
-            radeyeToolInstance.transform.position = adjustedPosition;
-
-                // Adjust the rotation to face a specific direction
-            radeyeToolInstance.transform.localRotation = Quaternion.Euler(-30, 180, 0); // Adjust rotation as needed
-
-            Debug.Log("RadEyeTool successfully attached to player with adjusted position and rotation.");
+            Debug.LogError("RadEyeTool prefab is not assigned in Player!");
+            return;
         }
+
+        GameObject toolInstance = Instantiate(radeyeToolPrefab, transform.position, Quaternion.identity);
+        NetworkServer.Spawn(toolInstance, connectionToClient);
+
+        // Pass this player's netId to the client to attach the tool correctly
+        TargetAttachRadEyeTool(connectionToClient, toolInstance, netId);
+    }
+
+
+
+    [TargetRpc]
+    private void TargetAttachRadEyeTool(NetworkConnection target, GameObject toolInstance, uint ownerNetId)
+    {
+        radeyeToolInstance = toolInstance.GetComponent<RadEyeTool>();
+        if (radeyeToolInstance == null)
+        {
+            Debug.LogError("Failed to find RadEyeTool script on spawned object!");
+            return;
+        }
+
+        radeyeToolInstance.AssignPlayer(ownerNetId); // <-- important!
+
+        // Attach the tool to this player
+        Vector3 adjustedPosition = transform.position + new Vector3(1.0f, -0.5f, 0.5f);
+        radeyeToolInstance.transform.SetParent(transform, true);
+        radeyeToolInstance.transform.position = adjustedPosition;
+        radeyeToolInstance.transform.localRotation = Quaternion.Euler(-30, 180, 0);
+
+        Debug.Log("RadEyeTool successfully attached to local player.");
+    }
+
+
 }
