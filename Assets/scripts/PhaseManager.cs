@@ -8,10 +8,8 @@ public class PhaseManager : MonoBehaviour
     private PhaseLinkedList phaseList;
     // private PhaseMovementHelper npcMove;
     private Player playerRole;
-    private Coroutine currentPhaseCoroutine;
-    // private HostageTriggerArea hostageArea;
     
-    // Reference to temporary gamma knife object
+    // radiaoctive object
     public GameObject gammaKnifeObject;
     
     // References to different NPC groups
@@ -27,15 +25,13 @@ public class PhaseManager : MonoBehaviour
     private GameObject physicianHostage;
     private List<GameObject> allVillains;
     private List<GameObject> allNPCs;
+    // other
     private int runSpeed;
-    // private GameObject pathObject;
-    // private bool sameOld;
-    private int egress;
     private bool reverting;
+    // egress
     public delegate void EgressSelectedHandler(int egressPhase);
     public static event EgressSelectedHandler OnEgressSelected;
-
-    // public int currentPhase;
+    private int egress;
 
     private void Start()
     {
@@ -202,21 +198,14 @@ public class PhaseManager : MonoBehaviour
             medical.SetActive(false);
         }
     }
-
     public void NextPhase()
     {
         reverting = false;
-        // Stop any ongoing coroutines from the current phase
-        if (currentPhaseCoroutine != null)
-        {
-            StopCoroutine(currentPhaseCoroutine);
-            currentPhaseCoroutine = null;
-        }
 
         if (phaseList.MoveNext())
         {
-            ResetForward(phaseList.Current.Phase);
             Debug.Log("Moving to next phase.");
+            ResetForward();
             StartPhase();
         }
         else
@@ -224,16 +213,10 @@ public class PhaseManager : MonoBehaviour
             Debug.Log("Already at the last phase!");
         }
     }
-
     public void PreviousPhase()
     {
         reverting = true;
-        // Stop any ongoing coroutines
-        if (currentPhaseCoroutine != null)
-        {
-            StopCoroutine(currentPhaseCoroutine);
-            currentPhaseCoroutine = null;
-        }
+
         if (phaseList.MovePrevious())
         {
             if(OnEgressSelected == null) OnEgressSelected += ExecuteEgressPhase;
@@ -244,9 +227,15 @@ public class PhaseManager : MonoBehaviour
         else
         {
             Debug.Log("Already at the first phase!");
+            ClearStack();
         }
     }
-
+    private void ClearStack(){
+        foreach(GameObject npc in allNPCs){
+            WaypointMover mover = npc.GetComponent<WaypointMover>();
+            mover.waypointStorage.Clear();
+        }
+    }
     private GameObject getRadSource(){
         return allVillains[0].transform.GetChild(4).gameObject;
     }
@@ -258,7 +247,6 @@ public class PhaseManager : MonoBehaviour
             unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y-9000f, unit.transform.position.z);
         }
     }
-
     private void HandleStartCivs()
     {
         foreach (GameObject civilian in allCivilians)
@@ -297,7 +285,6 @@ public class PhaseManager : MonoBehaviour
             }
         }
     }
-
     private void Phase2CivPaths(){
         foreach(GameObject npc in allCivilians){
             WaypointMover mover = npc.GetComponent<WaypointMover>();
@@ -340,7 +327,6 @@ public class PhaseManager : MonoBehaviour
             discRenderer.material.color = Color.yellow;
         }
     }
-
     private void UpdateVillainDiscs(Color color){
         foreach(GameObject villain in allVillains) {
             GameObject disc = villain.transform.GetChild(2).gameObject;
@@ -357,13 +343,11 @@ public class PhaseManager : MonoBehaviour
         GameObject weapon = allVillains[0].transform.GetChild(1).gameObject;
         weapon.SetActive(!weapon.activeSelf);
     }
-
     private void Alarming(){
         // Receptionist hits duress alarm
         Debug.Log("Duress alarm activated. Dispatcher notified.");
         physicianHostage.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
     }
-
     private void ExecuteEgressPhase(int selectedEgress)
     {
         if(OnEgressSelected == null) return;
@@ -406,8 +390,46 @@ public class PhaseManager : MonoBehaviour
             } 
         }
     }
-    private void ResetForward(GamePhase phase)
+    private void ResetCurrent(){
+        foreach(GameObject npc in allNPCs){
+            if (npc.activeSelf)
+            {
+                npc.transform.rotation = Quaternion.identity;
+                WaypointMover mover = npc.GetComponent<WaypointMover>();
+                if (mover != null && mover.waypoints != null && mover.waypointStorage.Count > 0)
+                {
+                    var state = mover.waypointStorage.Peek();
+                    mover.waypoints = state.waypoints;
+                    mover.waypoints.ActiveChildLength = state.activeChildLength;
+                    
+                    mover.waypoints.isMovingForward = state.isMovingForward;
+                    mover.waypoints.canLoop = state.canLoop;
+                    if(mover.waypointStorage.Peek().sameOld){
+                        Transform LastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
+                        mover.currentWaypoint = LastWaypoint;
+                        npc.transform.position = LastWaypoint.position;
+                    }
+                    else {
+                        Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
+                        mover.currentWaypoint = firstWaypoint;
+                        npc.transform.position = firstWaypoint.position;
+                    }
+
+                    // Restore animation states
+                    Animator animator = npc.GetComponent<Animator>();
+                    if (animator != null)
+                    {
+                        animator.SetBool("IsWalking", state.isWalking);
+                        animator.SetBool("IsRunning", state.isRunning);
+                        animator.SetBool("ToSitting", state.isSitting);
+                    }
+                }
+            }
+        }
+    }
+    private void ResetForward()
     {
+        GamePhase phase = GetCurrentPhase();
         if (phase != GamePhase.Phase1 && phase != GamePhase.Phase2)
         {
             foreach (GameObject npc in allNPCs)
@@ -443,6 +465,57 @@ public class PhaseManager : MonoBehaviour
             }
         }
     }
+    private void ResetBackwards()
+    {
+        foreach (GameObject npc in allNPCs)
+        {
+            if (npc.activeSelf)
+            {
+                npc.transform.rotation = Quaternion.identity;
+                WaypointMover mover = npc.GetComponent<WaypointMover>();
+                if (mover != null && mover.waypoints != null && mover.waypointStorage.Count > 0)
+                {
+                    if (mover.waypointStorage.Count == 0){
+                        Debug.LogWarning($"No stored states for {npc.name}!");
+                        continue;
+                    }
+                    var state = mover.waypointStorage.Pop();
+                    mover.waypoints = state.waypoints;
+                    mover.waypoints.ActiveChildLength = state.activeChildLength;
+                    
+                    mover.waypoints.isMovingForward = state.isMovingForward;
+                    mover.waypoints.canLoop = state.canLoop;
+                    if(mover.waypointStorage.Peek().sameOld){
+                        Debug.Log("same old for " + npc);
+                        Transform LastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
+                        if (LastWaypoint != null)
+                        {
+                            mover.currentWaypoint = LastWaypoint;
+                            npc.transform.position = LastWaypoint.position;
+                        }
+                        else
+                        {
+                            Debug.LogError($"Invalid LastWaypoint for {npc.name}!");
+                        }
+                    }
+                    else {
+                        Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
+                        mover.currentWaypoint = firstWaypoint;
+                        npc.transform.position = firstWaypoint.position;
+                    }
+
+                    // Restore animation states
+                    Animator animator = npc.GetComponent<Animator>();
+                    if (animator != null)
+                    {
+                        animator.SetBool("IsWalking", state.isWalking);
+                        animator.SetBool("IsRunning", state.isRunning);
+                        animator.SetBool("ToSitting", state.isSitting);
+                    }
+                }
+            }
+        }
+    }
     private void SaveWaypointState()
     {
         foreach (GameObject npc in allNPCs)
@@ -460,9 +533,10 @@ public class PhaseManager : MonoBehaviour
                     bool isWalking = animator != null && animator.GetBool("IsWalking");
                     bool isRunning = animator != null && animator.GetBool("IsRunning");
                     bool isSitting = animator != null && animator.GetBool("ToSitting");
-                    bool old = false;
-                    if(mover.waypointStorage.Count > 0) old = mover.waypoints == mover.waypointStorage.Peek().waypoints;
-                    if(GetCurrentPhase() == GamePhase.Phase5) old = true; //bandaid fix, to be changed
+                    bool sameOld = false;
+                    if(mover.waypointStorage.Count > 0) sameOld = mover.waypoints == mover.waypointStorage.Peek().waypoints;
+                    if(GetCurrentPhase() == GamePhase.Phase4) sameOld = false; //bandaid fix, to be changed
+                    if(GetCurrentPhase() == GamePhase.Phase5) sameOld = true; //bandaid fix, to be changed
                     var state = new WaypointState(
                         mover.waypoints,
                         mover.waypoints.ActiveChildLength,
@@ -471,51 +545,10 @@ public class PhaseManager : MonoBehaviour
                         isWalking,
                         isRunning,
                         isSitting,
-                        old
+                        sameOld
                     );
                     
                     mover.waypointStorage.Push(state);
-                }
-            }
-        }
-    }
-    private void ResetCurrent(){
-        foreach(GameObject npc in allNPCs){
-            if (npc.activeSelf)
-            {
-                npc.transform.rotation = Quaternion.identity;
-                WaypointMover mover = npc.GetComponent<WaypointMover>();
-                if (mover != null && mover.waypoints != null && mover.waypointStorage.Count > 0)
-                {
-                    var state = mover.waypointStorage.Peek();
-                    // Debug.Log("state waypoints: " + state.waypoints);
-                    // Debug.Log("national waypoints: " + mover.waypoints);
-                    mover.waypoints = state.waypoints;
-                    // Debug.Log("child length state: " + state.activeChildLength);
-                    // Debug.Log("child length current: " + mover.waypoints.ActiveChildLength);
-                    mover.waypoints.ActiveChildLength = state.activeChildLength;
-                    
-                    mover.waypoints.isMovingForward = state.isMovingForward;
-                    mover.waypoints.canLoop = state.canLoop;
-                    if(mover.waypointStorage.Peek().sameOld){
-                        Transform LastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
-                        mover.currentWaypoint = LastWaypoint;
-                        npc.transform.position = LastWaypoint.position;
-                    }
-                    else {
-                        Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
-                        mover.currentWaypoint = firstWaypoint;
-                        npc.transform.position = firstWaypoint.position;
-                    }
-
-                    // Restore animation states
-                    Animator animator = npc.GetComponent<Animator>();
-                    if (animator != null)
-                    {
-                        animator.SetBool("IsWalking", state.isWalking);
-                        animator.SetBool("IsRunning", state.isRunning);
-                        animator.SetBool("ToSitting", state.isSitting);
-                    }
                 }
             }
         }
@@ -547,54 +580,6 @@ public class PhaseManager : MonoBehaviour
                     // Debug.LogWarning("Sitting? " + state.isSitting);
 
                     // if(npc == physicianHostage) Debug.Log(npc + " saving waypoint: " + state.waypoints + "for phase " + GetCurrentPhase());
-                }
-            }
-        }
-    }
-    private void ResetBackwards()
-    {
-        foreach (GameObject npc in allNPCs)
-        {
-            if (npc.activeSelf)
-            {
-                npc.transform.rotation = Quaternion.identity;
-                WaypointMover mover = npc.GetComponent<WaypointMover>();
-                if (mover != null && mover.waypoints != null && mover.waypointStorage.Count > 0)
-                {
-                    if (mover.waypointStorage.Count == 0){
-                        Debug.LogWarning($"No stored states for {npc.name}!");
-                        continue;
-                    }
-                    var state = mover.waypointStorage.Pop();
-                    // Debug.Log("state waypoints: " + state.waypoints);
-                    // Debug.Log("national waypoints: " + mover.waypoints);
-                    mover.waypoints = state.waypoints;
-                    // Debug.Log("child length state: " + state.activeChildLength);
-                    // Debug.Log("child length current: " + mover.waypoints.ActiveChildLength);
-                    mover.waypoints.ActiveChildLength = state.activeChildLength;
-                    
-                    mover.waypoints.isMovingForward = state.isMovingForward;
-                    mover.waypoints.canLoop = state.canLoop;
-                    // Debug.LogWarning("same old waypoint: " + mover.waypointStorage.Peek().sameOld + " for " + npc);
-                    if(mover.waypointStorage.Peek().sameOld){
-                        Transform LastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
-                        mover.currentWaypoint = LastWaypoint;
-                        npc.transform.position = LastWaypoint.position;
-                    }
-                    else {
-                        Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
-                        mover.currentWaypoint = firstWaypoint;
-                        npc.transform.position = firstWaypoint.position;
-                    }
-
-                    // Restore animation states
-                    Animator animator = npc.GetComponent<Animator>();
-                    if (animator != null)
-                    {
-                        animator.SetBool("IsWalking", state.isWalking);
-                        animator.SetBool("IsRunning", state.isRunning);
-                        animator.SetBool("ToSitting", state.isSitting);
-                    }
                 }
             }
         }
@@ -743,11 +728,11 @@ public class PhaseManager : MonoBehaviour
             animator.SetBool("IsWalking", false);
             animator.SetBool("IsRunning", false);
             animator.SetBool("ToSitting", false);
+            animator.SetBool("IsThreatPresent", false);
         }
         
         // THEN set position and rotation (order matters)
         npc.transform.rotation = Quaternion.identity;
-        if(animator != null) animator.SetBool("IsThreatPresent", false);
     }
     
 }
