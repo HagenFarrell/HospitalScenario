@@ -97,18 +97,26 @@ public class RadEyeTool : NetworkBehaviour
 
     void AssignRadiationSource()
     {
-        GameObject foundSource = GameObject.FindWithTag("RadiationSource");
+        GameObject grandparent = GameObject.Find("Villain League");
+        if (grandparent != null)
+        {
+            Transform parent = grandparent.transform.Find("Villain 1");
+            if (parent != null)
+            {
+                Transform child = parent.Find("GammaProjector");
+                if (child != null && child.CompareTag("RadiationSource"))
+                {
+                    source = child;
+                    Debug.Log($"Assigned radiation source: {source.name}");
+                    return;
+                }
+            }
+        }
 
-        if (foundSource != null)
-        {
-            source = foundSource.transform;
-            Debug.Log($"Assigned radiation source: {source.name}");
-        }
-        else
-        {
-            Debug.LogError("Radiation source not found! Make sure the source has the 'RadiationSource' tag.");
-        }
+        Debug.LogError("Radiation source not found! Make sure the hierarchy and tag are correct.");
     }
+
+
 
     void SetToolVisibility(bool state)
     {
