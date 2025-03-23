@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
 public class AIMover : MonoBehaviour
 {
@@ -294,7 +295,16 @@ public class AIMover : MonoBehaviour
         currentVelocity = Vector3.ClampMagnitude(currentVelocity, maxSpeed);
 
         // Update the agents position based on the new velocity calculated.
-        transform.position = Vector3.Lerp(transform.position, transform.position + currentVelocity * Time.deltaTime, 0.5f);
+        Vector3 targetMove = transform.position + currentVelocity * Time.deltaTime;
+
+        if (!NetworkServer.active)  // Smooth movement only on clients
+        {
+            transform.position = Vector3.Lerp(transform.position, targetMove, Time.deltaTime * 10f);
+        }
+        else
+        {
+            transform.position = targetMove;
+        }
 
 
         // Animate on move.

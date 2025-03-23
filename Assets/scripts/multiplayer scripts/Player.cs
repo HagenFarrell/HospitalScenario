@@ -19,6 +19,7 @@ public class Player : NetworkBehaviour
     private List<GameObject> DispatchCams;
     private AudioSource alarmNoise;
     [SyncVar] private Vector3 syncedPosition;
+    private Vector3 lastSentPosition;
 
 
     [SerializeField] private GameObject radeyePrefab; // Reference to the Radeye prefab
@@ -312,14 +313,16 @@ public class Player : NetworkBehaviour
 
         // Create movement vector relative to the camera's facing direction
         moveDirection = (transform.right * moveX + transform.forward * moveZ + transform.up * moveY).normalized;
-        Vector3 movement = Vector3.Lerp(Vector3.zero, moveDirection * moveSpeed * Time.deltaTime, 0.2f);
+        Vector3 movement = moveDirection * moveSpeed * Time.deltaTime;
+
 
         // Apply movement locally
         transform.position += movement;
 
-        if (isLocalPlayer && movement.magnitude > 0.01f)
+        if (isLocalPlayer && Vector3.Distance(transform.position, lastSentPosition) > 0.05f)
         {
             // Send movement request to server    
+            lastSentPosition = transform.position;
             CmdMove(transform.position);
         }
     }
@@ -340,7 +343,9 @@ public class Player : NetworkBehaviour
         // Only update the position if this is not the local player
         if (!isLocalPlayer)
         {
-            transform.position = Vector3.Lerp(transform.position, newPosition, 0.3f);
+            // Replace the Lerp with a direct translation:
+            transform.position = newPosition;
+
         }
     }
 
