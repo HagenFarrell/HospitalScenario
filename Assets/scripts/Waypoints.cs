@@ -14,17 +14,17 @@ public class Waypoints : MonoBehaviour
 
     [SerializeField] public bool isMovingForward = true; // Sets path to reverse after at last waypoint
 
-    [SerializeField] public bool PathBranching = false; // Sets path to be phase 1 if false and if true runs aways phase 2 
     [SerializeField] public int waypointsActiveInPhase; // Number of waypoints active in Phase 1
-    int ActiveChildLength = 0;
+    public int ActiveChildLength;
     PhaseManager phasemanager;
 
 
     
     private void Start()
     {
-        UpdateWaypointVisibility();
         phasemanager = FindObjectOfType<PhaseManager>();
+        ActiveChildLength = waypointsActiveInPhase;
+        UpdateWaypointVisibility();
     }
     
     // Simple method to update waypoint visibility
@@ -32,7 +32,7 @@ public class Waypoints : MonoBehaviour
     {
         for (int i = 0; i < transform.childCount; i++)
         {
-            transform.GetChild(i).gameObject.SetActive(PathBranching || i < waypointsActiveInPhase);
+            transform.GetChild(i).gameObject.SetActive(i < ActiveChildLength);
         }
     }
 
@@ -77,7 +77,7 @@ public class Waypoints : MonoBehaviour
 
     public Transform GetNextWaypoint(Transform currentWaypoint)
     {
-        if (currentWaypoint == null || waypointsActiveInPhase == 1)
+        if (currentWaypoint == null || ActiveChildLength == 1)
         {
             // Returns first waypoint
             return transform.GetChild(0);
@@ -97,9 +97,9 @@ public class Waypoints : MonoBehaviour
             // Do not go to next node if disabled
             if (nextIndex < transform.childCount && !transform.GetChild(nextIndex).gameObject.activeSelf)
             {
-                if(!canLoop) { 
+                if(!canLoop && phasemanager != null) { 
                     if(phasemanager.GetCurrentPhase() == GamePhase.Phase1){
-                        Debug.Log("at last node, moving fro");
+                        // Debug.Log("at last node, moving fro");
                         isMovingForward = !isMovingForward;
                         return transform.GetChild(nextIndex-1);
                     }
@@ -166,12 +166,17 @@ public class Waypoints : MonoBehaviour
         return transform.GetChild(nextIndex);
     }
 
+    public void ResetToPhaseSettings()
+    {
+        ActiveChildLength = waypointsActiveInPhase; // Reset to phase-specific value
+        UpdateWaypointVisibility();
+    }
+
     public void enableAll(){
         // Debug.Log("enabling all");
         foreach(Transform t in transform){
             t.gameObject.SetActive(true);
             ActiveChildLength++;
-            waypointsActiveInPhase++;
         }
     }
 }
