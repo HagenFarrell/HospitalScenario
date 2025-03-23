@@ -19,8 +19,10 @@ public class Player : NetworkBehaviour
     private List<GameObject> DispatchCams;
     private AudioSource alarmNoise;
     [SyncVar] private Vector3 syncedPosition;
-    private Vector3 lastSentPosition;
 
+    private Vector3 lastSentPosition;
+    private float lastMoveTime;
+    private float ignoreServerUpdateDuration = 0.2f; // Ignore server update for 0.2s after local move
 
     [SerializeField] private GameObject radeyePrefab; // Reference to the Radeye prefab
     private GameObject radeyeInstance; // Holds the instantiated Radeye tool
@@ -319,12 +321,17 @@ public class Player : NetworkBehaviour
         // Apply movement locally
         transform.position += movement;
 
-        if (isLocalPlayer && Vector3.Distance(transform.position, lastSentPosition) > 0.05f)
+        if (isLocalPlayer && movement.magnitude > 0.01f)
         {
-            // Send movement request to server    
-            lastSentPosition = transform.position;
-            CmdMove(transform.position);
+            lastMoveTime = Time.time;
+
+            if (Vector3.Distance(transform.position, lastSentPosition) > 0.05f)
+            {
+                lastSentPosition = transform.position;
+                CmdMove(transform.position);
+            }
         }
+
     }
 
     [Command]
@@ -343,9 +350,15 @@ public class Player : NetworkBehaviour
         // Only update the position if this is not the local player
         if (!isLocalPlayer)
         {
-            // Replace the Lerp with a direct translation:
-            transform.position = newPosition;
-
+            transform.position = Vector3.Lerp(transform.position, newPosition, Time.deltaTime * 10f);
+        }
+        else
+        {
+            // Skip server correction if we moved very recently (to prevent snapping)
+            if (Time.time - lastMoveTime > ignoreServerUpdateDuration)
+            {
+                transform.position = Vector3.Lerp(transform.position, newPosition, 0.5f);
+            }
         }
     }
 
