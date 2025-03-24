@@ -465,6 +465,7 @@ public class PhaseManager : MonoBehaviour
     {
         if(OnEgressSelected == null) return;
         OnEgressSelected -= ExecuteEgressPhase; 
+        SaveWaypointState();
 
         Debug.Log($"Egress phase {selectedEgress} selected!");
         egress = selectedEgress;
