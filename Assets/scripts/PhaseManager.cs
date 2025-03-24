@@ -14,6 +14,9 @@ public class PhaseManager : MonoBehaviour
     // References to different NPC groups
     private GameObject[] villainsInside;
     private GameObject[] villainsOutside;
+    [SerializeField] private GameObject PlayerUnitsObject;
+    [SerializeField] private GameObject VillainLeagueObject;
+    [SerializeField] private GameObject CiviliansObject;
     private List<GameObject> playerUnits;
     private GameObject[] FD;
     private GameObject[] LLE;
@@ -25,7 +28,7 @@ public class PhaseManager : MonoBehaviour
     private List<GameObject> allVillains;
     private List<GameObject> allNPCs;
     // other
-    private int runSpeed;
+    private float runSpeed;
     private bool reverting;
     // egress
     public delegate void EgressSelectedHandler(int egressPhase);
@@ -40,19 +43,16 @@ public class PhaseManager : MonoBehaviour
             phaseList.AddPhase(phase);
         phaseList.SetCurrentToHead();
 
-        allCivilians = new List<GameObject>();
-        allVillains = new List<GameObject>();
-        allNPCs = new List<GameObject>();
-
         if(gammaKnifeObject == null) gammaKnifeObject = getRadSource();
         if (gammaKnifeObject != null) {
             gammaKnifeObject.SetActive(false);
         }
-        runSpeed = 5;
+        runSpeed = 0.5f;
 
         
         OnEgressSelected += ExecuteEgressPhase;
         FindKeyNPCs();
+        HidePlayers();
         StartPhase();
     }
 
@@ -136,31 +136,139 @@ public class PhaseManager : MonoBehaviour
 
     private void FindKeyNPCs()
     {
-        // find villains
-        villainsInside = GameObject.FindGameObjectsWithTag("Villains");
-        villainsOutside = GameObject.FindGameObjectsWithTag("OutsideVillains");
-        allVillains = new List<GameObject>(villainsInside);
-        allVillains.AddRange(villainsOutside);
+        // Initialize lists
+        allVillains = new List<GameObject>();
+        playerUnits = new List<GameObject>();
+        allCivilians = new List<GameObject>();
+        allNPCs = new List<GameObject>();
+
+        // Find villains - use serialized reference first
+        if (VillainLeagueObject != null)
+        {
+            foreach (Transform child in VillainLeagueObject.transform)
+            {
+                if (child.CompareTag("Villains") || child.CompareTag("OutsideVillains"))
+                {
+                    allVillains.Add(child.gameObject);
+                }
+            }
+        }
+        else
+        {
+            // Fall back to tag search
+            villainsInside = GameObject.FindGameObjectsWithTag("Villains");
+            villainsOutside = GameObject.FindGameObjectsWithTag("OutsideVillains");
+            allVillains.AddRange(villainsInside);
+            allVillains.AddRange(villainsOutside);
+        }
+
+        // Find player units - use serialized reference first
+        if (PlayerUnitsObject != null)
+        {
+            foreach (Transform child in PlayerUnitsObject.transform)
+            {
+                if (child.CompareTag("FireDepartment") || child.CompareTag("LawEnforcement"))
+                {
+                    playerUnits.Add(child.gameObject);
+                }
+            }
+            
+            List<GameObject> fdList = new List<GameObject>();
+            foreach (GameObject unit in playerUnits)
+            {
+                if (unit.CompareTag("FireDepartment"))
+                {
+                    fdList.Add(unit);
+                }
+            }
+            FD = fdList.ToArray();
+            
+            List<GameObject> lleList = new List<GameObject>();
+            foreach (GameObject unit in playerUnits)
+            {
+                if (unit.CompareTag("LawEnforcement"))
+                {
+                    lleList.Add(unit);
+                }
+            }
+            LLE = lleList.ToArray();
+        }
+        else
+        {
+            // Fall back to tag search
+            FD = GameObject.FindGameObjectsWithTag("FireDepartment");
+            LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
+            playerUnits.AddRange(FD);
+            playerUnits.AddRange(LLE);
+        }
+
+        // Find civilians - use serialized reference first
+        if (CiviliansObject != null)
+        {
+            foreach (Transform child in CiviliansObject.transform)
+            {
+                if (child.CompareTag("PhysicianHostage") || 
+                    child.CompareTag("Hostages") || 
+                    child.CompareTag("Civilians") || 
+                    child.CompareTag("Medicals"))
+                {
+                    allCivilians.Add(child.gameObject);
+                    
+                    // Special handling for physician hostage
+                    if (child.CompareTag("PhysicianHostage"))
+                    {
+                        physicianHostage = child.gameObject;
+                    }
+                }
+            }
+            
+            List<GameObject> civiliansList = new List<GameObject>();
+            List<GameObject> hostagesList = new List<GameObject>();
+            List<GameObject> medicalsList = new List<GameObject>();
+            
+            foreach (GameObject civilian in allCivilians)
+            {
+                if (civilian.CompareTag("Civilians"))
+                {
+                    civiliansList.Add(civilian);
+                }
+                else if (civilian.CompareTag("Hostages"))
+                {
+                    hostagesList.Add(civilian);
+                }
+                else if (civilian.CompareTag("Medicals"))
+                {
+                    medicalsList.Add(civilian);
+                }
+            }
+            
+            newCivilians = civiliansList.ToArray();
+            newHostages = hostagesList.ToArray();
+            newMedicals = medicalsList.ToArray();
+        }
+        else
+        {
+            // Fall back to tag search
+            GameObject[] physicianHostages = GameObject.FindGameObjectsWithTag("PhysicianHostage");
+            physicianHostage = physicianHostages.Length > 0 ? physicianHostages[0] : null;
+            
+            newCivilians = GameObject.FindGameObjectsWithTag("Civilians");
+            newHostages = GameObject.FindGameObjectsWithTag("Hostages");
+            newMedicals = GameObject.FindGameObjectsWithTag("Medicals");
+
+            if (physicianHostage != null) allCivilians.Add(physicianHostage);
+            if (newHostages != null) allCivilians.AddRange(newHostages);
+            if (newCivilians != null) allCivilians.AddRange(newCivilians);
+            if (newMedicals != null) allCivilians.AddRange(newMedicals);
+        }
+
         allNPCs.AddRange(allVillains);
-
-        // find player characters
-        FD = GameObject.FindGameObjectsWithTag("FireDepartment");
-        LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
-        playerUnits = new List<GameObject>(FD);
-        playerUnits.AddRange(LLE);
-
-        // find civilians
-        physicianHostage = GameObject.FindGameObjectsWithTag("PhysicianHostage")[0];
-        newCivilians = GameObject.FindGameObjectsWithTag("Civilians");
-        newHostages = GameObject.FindGameObjectsWithTag("Hostages");
-        newMedicals = GameObject.FindGameObjectsWithTag("Medicals");
-
-        if (physicianHostage != null) allCivilians.Add(physicianHostage);
-        if (newHostages != null) allCivilians.AddRange(newHostages);
-        if (newCivilians != null) allCivilians.AddRange(newCivilians);
-        if (newMedicals != null) allCivilians.AddRange(newMedicals);
-
         allNPCs.AddRange(allCivilians);
+
+        if (allVillains.Count == 0) Debug.LogWarning("No villains found!");
+        if (playerUnits.Count == 0) Debug.LogWarning("No player units found!");
+        if (allCivilians.Count == 0) Debug.LogWarning("No civilians found!");
+        if (physicianHostage == null) Debug.LogWarning("Physician hostage not found!");
     }
     
     private void StartPhase()
@@ -226,6 +334,7 @@ public class PhaseManager : MonoBehaviour
         foreach(GameObject npc in allNPCs){
             WaypointMover mover = npc.GetComponent<WaypointMover>();
             mover.waypointStorage.Clear();
+            mover.waypoints.ResetToPhase1Settings();
         }
     }
     private GameObject getRadSource(){
@@ -233,9 +342,26 @@ public class PhaseManager : MonoBehaviour
     }
     private void HidePlayers(){
         if(playerUnits == null || playerUnits.Count == 0){
+            Debug.LogError("Player units null, attempting to locate");
             GameObject temp = GameObject.Find("Player Units");
         }
         foreach(GameObject unit in playerUnits){
+            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y-9000f, unit.transform.position.z);
+        }
+    }
+    private void HideLLE(){
+        if(LLE == null || LLE.Length == 0){
+            LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
+        }
+        foreach(GameObject unit in LLE){
+            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y-9000f, unit.transform.position.z);
+        }
+    }
+    private void HideFD(){
+        if(FD == null || FD.Length == 0){
+            FD = GameObject.FindGameObjectsWithTag("FireDepartment");
+        }
+        foreach(GameObject unit in FD){
             unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y-9000f, unit.transform.position.z);
         }
     }
@@ -258,7 +384,7 @@ public class PhaseManager : MonoBehaviour
                     mover.enabled = true;
                     mover.despawnAtLastWaypoint = false;
                 }
-                if(mover.waypoints.waypointsActiveInPhase == 1){
+                if(mover.waypoints.waypointsActiveInPhase1 == 1){
                     animator.SetBool("IsWalking", false);
                     animator.SetBool("IsRunning", false);
                     animator.SetBool("ToSitting", true);
@@ -345,9 +471,10 @@ public class PhaseManager : MonoBehaviour
 
         foreach (GameObject npc in allNPCs)
         {
-            if (!npc.activeSelf) continue;
+            if (!npc.activeSelf || (npc.CompareTag("Civilians") || npc.CompareTag("Medicals"))) continue;
 
             WaypointMover mover = npc.GetComponent<WaypointMover>();
+            if(mover.paths == null) mover.paths = mover.waypoints.transform.parent.gameObject;
             if (mover == null || mover.paths == null || mover.waypoints == null)
             {
                 Debug.LogWarning($"NPC {npc.name} has missing WaypointMover or path references.");
@@ -560,10 +687,10 @@ public class PhaseManager : MonoBehaviour
             }
         }
     }
-    private void SpawnGammaKnife(){
+    private void ToggleGammaKnife(){
         if (gammaKnifeObject != null) {
-            gammaKnifeObject.SetActive(true);
-            gammaKnifeObject.transform.GetChild(0).gameObject.SetActive(true);
+            gammaKnifeObject.SetActive(!gammaKnifeObject.activeSelf);
+            gammaKnifeObject.transform.GetChild(0).gameObject.SetActive(gammaKnifeObject.activeSelf);
         }
     }
     private void SpawnLLE(){
@@ -578,13 +705,10 @@ public class PhaseManager : MonoBehaviour
             unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y+9000f, unit.transform.position.z);
         }
     }
-    private void MoveNPCsForPhase(GamePhase phase)
-    {
-
+    private void MoveNPCsForPhase(GamePhase phase){
         Debug.Log($"Moving NPCs for phase: {phase}");
         
-        if (!reverting)
-        {
+        if (!reverting){
             SaveWaypointState();
         }
         UpdatePaths();
@@ -613,15 +737,21 @@ public class PhaseManager : MonoBehaviour
                 break;
                 
             case GamePhase.Phase4:
-                // blank, lonely, and sad.
+                if(reverting) {
+                    HideLLE();
+                    ToggleGammaKnife();
+                }
                 break;
             case GamePhase.Phase5:
-                SpawnLLE();
-                SpawnGammaKnife();
+                if(!reverting) {
+                    SpawnLLE();
+                    ToggleGammaKnife();
+                }
+                else HideFD();
 
                 break;
             case GamePhase.Phase6:
-                SpawnFD();
+                if(!reverting) SpawnFD();
                 
                 break;
             case GamePhase.Phase7:
@@ -644,11 +774,12 @@ public class PhaseManager : MonoBehaviour
     {
         foreach (GameObject npc in allNPCs)
         {
-            if (!npc.activeSelf) {
+            if (!npc.activeSelf || (npc.CompareTag("Civilians") || npc.CompareTag("Medicals"))) {
                 continue;
             }
 
             WaypointMover mover = npc.GetComponent<WaypointMover>();
+            if(mover.paths == null) mover.paths = mover.waypoints.transform.parent.gameObject;
             if (mover == null || mover.paths == null || mover.waypoints == null)
             {
                 Debug.LogWarning($"NPC {npc.name} has missing WaypointMover or path references.");

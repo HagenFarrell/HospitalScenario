@@ -8,8 +8,8 @@ public class WaypointMover : MonoBehaviour
     // Stores a referece to the waypoint system this object will use
     [SerializeField] public Waypoints waypoints;
 
-    [Range(1f, 10f)]
-    [SerializeField] public float moveSpeed = 2f;
+    [Range(0.01f, 10f)]
+    [SerializeField] public float moveSpeed = 0.5f;
 
     [SerializeField] private float distanceThreshold = 0.1f;
     public Stack<WaypointState> waypointStorage;
@@ -64,9 +64,9 @@ public class WaypointMover : MonoBehaviour
             // Speed Change for Walking/Running
             if (phaseManager != null) {
                 if (phaseManager.GetCurrentPhase() == GamePhase.Phase1) {
-                    moveSpeed = 1f;
+                    moveSpeed = 0.2f;
                 } else if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) {
-                    moveSpeed = 5f;
+                    moveSpeed = 0.5f;
                 }
             }
 
