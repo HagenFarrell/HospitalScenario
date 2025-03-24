@@ -6,7 +6,6 @@ using System.Collections;
 public class PhaseManager : MonoBehaviour
 {
     private PhaseLinkedList phaseList;
-    // private PhaseMovementHelper npcMove;
     private Player playerRole;
     
     // radiaoctive object
@@ -48,7 +47,6 @@ public class PhaseManager : MonoBehaviour
         if(gammaKnifeObject == null) gammaKnifeObject = getRadSource();
         if (gammaKnifeObject != null) {
             gammaKnifeObject.SetActive(false);
-            // gammaKnifeObject.transform.GetChild(0).localScale = new Vector3(1.125f, 1.125f, 1.125f);
         }
         runSpeed = 5;
 
@@ -100,14 +98,12 @@ public class PhaseManager : MonoBehaviour
 
     private int SetEgressPhase()
     {
-        // Debug.Log("Awaiting Egress Selection...");
         playerRole = FindObjectOfType<Player>();
         if(playerRole == null){
             Debug.LogError("playerRole null");
         }
         if (playerRole.getPlayerRole() == Player.Roles.Instructor)
         {
-            // Debug.Log("Instructor! Hi!!!");
             if (Input.GetKeyDown(KeyCode.Z)) return TriggerEgressSelected(1);
             if (Input.GetKeyDown(KeyCode.X)) return TriggerEgressSelected(2);
             if (Input.GetKeyDown(KeyCode.C)) return TriggerEgressSelected(3);
@@ -125,11 +121,9 @@ public class PhaseManager : MonoBehaviour
 
     private int TriggerEgressSelected(int phase)
     {
-        // Debug.Log($"TriggerEgressSelected called with phase {phase}");
 
         if (OnEgressSelected != null)
         {
-            // Debug.Log("Triggering OnEgressSelected event");
             OnEgressSelected.Invoke(phase);
         }
         else
@@ -187,14 +181,12 @@ public class PhaseManager : MonoBehaviour
         // Find and disable any remaining civilians
         foreach (GameObject civilian in newCivilians)
         {
-            // Debug.Log($"Phase 3: Despawning civilian {civilian.name}");
             civilian.SetActive(false);
         }
         
         // Find and disable any remaining medicals
         foreach (GameObject medical in newMedicals)
         {
-            // Debug.Log($"Phase 3: Despawning medical {medical.name}");
             medical.SetActive(false);
         }
     }
@@ -251,7 +243,6 @@ public class PhaseManager : MonoBehaviour
     {
         foreach (GameObject civilian in allCivilians)
         {
-            // Debug.Log("Enabling NPC: " + civilian);
             civilian.SetActive(true);
             // Set animation state to walking
             Animator animator = civilian.GetComponent<Animator>();
@@ -263,23 +254,19 @@ public class PhaseManager : MonoBehaviour
             {
                 if (mover.waypoints != null && mover.waypoints.transform.childCount > 0)
                 {
-                    // Debug.Log("Resetting to initial waypoint");
                     mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null);
                     mover.enabled = true;
                     mover.despawnAtLastWaypoint = false;
                 }
                 if(mover.waypoints.waypointsActiveInPhase == 1){
-                    // Debug.Log("Sitting down");
                     animator.SetBool("IsWalking", false);
                     animator.SetBool("IsRunning", false);
                     animator.SetBool("ToSitting", true);
                 } else {
-                    // Debug.Log("going for a walk");
                     if (animator != null)
                     {
-                        // Debug.Log("Animator NOT null for " + civilian);
                         animator.SetBool("IsWalking", true);
-                        animator.SetBool("IsRunning", false); // this is fine right
+                        animator.SetBool("IsRunning", false);
                     } else Debug.LogError("Animator null for " + civilian);
                 }
             }
@@ -339,7 +326,7 @@ public class PhaseManager : MonoBehaviour
         }
     }
     private void ToggleGun(){
-        // Shows gun
+        // toggles gun
         GameObject weapon = allVillains[0].transform.GetChild(1).gameObject;
         weapon.SetActive(!weapon.activeSelf);
     }
@@ -351,7 +338,7 @@ public class PhaseManager : MonoBehaviour
     private void ExecuteEgressPhase(int selectedEgress)
     {
         if(OnEgressSelected == null) return;
-        OnEgressSelected -= ExecuteEgressPhase; // Unsubscribe to prevent multiple calls
+        OnEgressSelected -= ExecuteEgressPhase; 
 
         Debug.Log($"Egress phase {selectedEgress} selected!");
         egress = selectedEgress;
@@ -440,7 +427,6 @@ public class PhaseManager : MonoBehaviour
                     if (mover != null && mover.waypoints != null)
                     {
                         Transform lastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
-                        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
                         
                         mover.currentWaypoint = lastWaypoint;
                         npc.transform.position = mover.currentWaypoint.position;
@@ -454,7 +440,7 @@ public class PhaseManager : MonoBehaviour
                             animator.SetBool("ToSitting", false);
                             animator.SetBool("IsThreatPresent", false);
 
-                            // Reset crotching for hostages
+                            // Reset crouching for hostages
                             if ((phase == GamePhase.Phase3 || phase == GamePhase.Phase4 || phase == GamePhase.Phase5) && npc.CompareTag("Hostages"))
                             {
                                 animator.SetBool("IsThreatPresent", true);
@@ -526,7 +512,6 @@ public class PhaseManager : MonoBehaviour
                 if (mover != null && mover.waypoints != null)
                 {
                     if(mover.waypointStorage == null){
-                        // Debug.LogError("Waypointstorage null??");
                         mover.waypointStorage = new Stack<WaypointState>();
                     }
                     Animator animator = npc.GetComponent<Animator>();
@@ -555,13 +540,10 @@ public class PhaseManager : MonoBehaviour
     }
     private void SaveAnimationState()
     {
-        // Debug.Log("ayup ONE!!!!!--------");
         foreach (GameObject npc in allNPCs)
         {
-            // Debug.Log("ayup 2");
             if (npc.activeSelf)
             {
-                // Debug.LogWarning(GetCurrentPhase());
                 WaypointMover mover = npc.GetComponent<WaypointMover>();
                 if (mover != null && mover.waypoints != null)
                 {
@@ -574,12 +556,6 @@ public class PhaseManager : MonoBehaviour
                     var state = mover.waypointStorage.Pop();
                     state.updateAnimator(isWalking, isRunning, isSitting);
                     mover.waypointStorage.Push(state);
-
-                    // Debug.LogWarning("Walking? " + state.isWalking);
-                    // Debug.LogWarning("Running? " + state.isRunning);
-                    // Debug.LogWarning("Sitting? " + state.isSitting);
-
-                    // if(npc == physicianHostage) Debug.Log(npc + " saving waypoint: " + state.waypoints + "for phase " + GetCurrentPhase());
                 }
             }
         }
@@ -637,8 +613,7 @@ public class PhaseManager : MonoBehaviour
                 break;
                 
             case GamePhase.Phase4:
-                
-                
+                // blank, lonely, and sad.
                 break;
             case GamePhase.Phase5:
                 SpawnLLE();
@@ -660,7 +635,6 @@ public class PhaseManager : MonoBehaviour
         }
         
     }
-    
 
     public GamePhase GetCurrentPhase(){
         return phaseList.Current.Phase;
@@ -671,7 +645,6 @@ public class PhaseManager : MonoBehaviour
         foreach (GameObject npc in allNPCs)
         {
             if (!npc.activeSelf) {
-                // Debug.Log(npc + "is inactive");
                 continue;
             }
 
@@ -683,20 +656,17 @@ public class PhaseManager : MonoBehaviour
                 continue;
             }
             if(mover.waypoints.ActiveChildLength < 2 && GetCurrentPhase() == GamePhase.Phase1) {
-                // Debug.Log("not enough active kids in " + npc);
                 continue;
             }
 
             GamePhase currentPhase = GetCurrentPhase();
 
             Transform pathsTransform = mover.paths.transform;
-            // Debug.Log("updating path for " + npc);
             for (int i = mover.pathidx; i < pathsTransform.childCount; i++)
             {
                 Transform pathTransform = pathsTransform.GetChild(i);
                 Waypoints waypoints = pathTransform.GetComponent<Waypoints>();
                 if(waypoints == null || waypoints.transform.childCount == 0){
-                    // Debug.LogWarning("Waypoints null, so " + npc + " wont update their paths");
                     continue;
                 }else if (waypoints.getActivity() == currentPhase){
                     mover.waypoints = waypoints;
