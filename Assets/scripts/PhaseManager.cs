@@ -331,11 +331,11 @@ public class PhaseManager : MonoBehaviour
         }
     }
     private void ClearStack(){
-        foreach(GameObject npc in allNPCs){
-            WaypointMover mover = npc.GetComponent<WaypointMover>();
-            mover.waypointStorage.Clear();
-            mover.waypoints.ResetToPhase1Settings();
-        }
+        // foreach(GameObject npc in allNPCs){
+        //     WaypointMover mover = npc.GetComponent<WaypointMover>();
+        //     mover.waypointStorage.Clear();
+        //     mover.waypoints.ResetToPhase1Settings();
+        // }
     }
     private GameObject getRadSource(){
         return allVillains[0].transform.GetChild(4).gameObject;
@@ -383,6 +383,9 @@ public class PhaseManager : MonoBehaviour
                     mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null);
                     mover.enabled = true;
                     mover.despawnAtLastWaypoint = false;
+                    civilian.transform.position = mover.currentWaypoint.transform.position;
+                    mover.waypoints.ResetToPhase1Settings();
+                    resetAnimator(civilian);
                 }
                 if(mover.waypoints.waypointsActiveInPhase1 == 1){
                     animator.SetBool("IsWalking", false);
@@ -421,6 +424,18 @@ public class PhaseManager : MonoBehaviour
                 StartCoroutine(WaitForGetUpAnimation(animator, mover));
             }
             
+        }
+    }
+    private void InitializeDiscColors(){
+        GameObject disc = physicianHostage.transform.GetChild(2).gameObject;
+        Renderer discRenderer = disc.GetComponent<Renderer>();
+        foreach (GameObject npc in allNPCs)
+        {
+            // Change disk color to green
+            disc = npc.transform.GetChild(2).gameObject;
+
+            discRenderer = disc.GetComponent<Renderer>();
+            discRenderer.material.color = Color.green;
         }
     }
     private void UpdateHostageDiscs(){
@@ -493,7 +508,7 @@ public class PhaseManager : MonoBehaviour
                 mover.waypoints = waypoints;
                 mover.currentWaypoint = waypoints.GetNextWaypoint(waypoints.transform.GetChild(0));
                 mover.pathidx = mover.paths.transform.childCount-1;
-                if(mover.waypoints.ActiveChildLength != mover.waypoints.transform.childCount-1) 
+                if(GetCurrentPhase() != GamePhase.Phase1) 
                     mover.waypoints.enableAll();
 
                 Animator animator = mover.GetComponent<Animator>();
@@ -511,15 +526,16 @@ public class PhaseManager : MonoBehaviour
             {
                 npc.transform.rotation = Quaternion.identity;
                 WaypointMover mover = npc.GetComponent<WaypointMover>();
-                if (mover != null && mover.waypoints != null && mover.waypointStorage.Count > 0)
+                if (mover != null && mover.waypoints != null && phaseList.state.Count > 0)
                 {
-                    var state = mover.waypointStorage.Peek();
+                    // var state = mover.waypointStorage.Peek();
+                    var state = phaseList.state[npc];
                     mover.waypoints = state.waypoints;
                     mover.waypoints.ActiveChildLength = state.activeChildLength;
                     
                     mover.waypoints.isMovingForward = state.isMovingForward;
                     mover.waypoints.canLoop = state.canLoop;
-                    if(mover.waypointStorage.Peek().sameOld){
+                    if(state.sameOld){
                         Transform LastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
                         mover.currentWaypoint = LastWaypoint;
                         npc.transform.position = LastWaypoint.position;
@@ -554,6 +570,7 @@ public class PhaseManager : MonoBehaviour
                     WaypointMover mover = npc.GetComponent<WaypointMover>();
                     if (mover != null && mover.waypoints != null)
                     {
+                        
                         Transform lastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
                         
                         mover.currentWaypoint = lastWaypoint;
@@ -587,18 +604,19 @@ public class PhaseManager : MonoBehaviour
             {
                 npc.transform.rotation = Quaternion.identity;
                 WaypointMover mover = npc.GetComponent<WaypointMover>();
-                if (mover != null && mover.waypoints != null && mover.waypointStorage.Count > 0)
+                if (mover != null && mover.waypoints != null && phaseList.state.Count > 0)
                 {
-                    if (mover.waypointStorage.Count == 0){
+                    if (!phaseList.state.ContainsKey(npc)){
                         Debug.LogWarning($"No stored states for {npc.name}!");
                         continue;
                     }
-                    var state = mover.waypointStorage.Pop();
+                    // var state = mover.waypointStorage.Pop();
+                    var state = phaseList.state[npc];
                     mover.waypoints = state.waypoints;
                     mover.waypoints.ActiveChildLength = state.activeChildLength;
                     mover.waypoints.isMovingForward = state.isMovingForward;
                     mover.waypoints.canLoop = state.canLoop;
-                    if(mover.waypointStorage.Peek().sameOld && GetCurrentPhase() != GamePhase.Phase6){
+                    if(state.sameOld && GetCurrentPhase() != GamePhase.Phase6){
                         Transform LastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
                         if (LastWaypoint != null)
                         {
@@ -637,15 +655,15 @@ public class PhaseManager : MonoBehaviour
                 WaypointMover mover = npc.GetComponent<WaypointMover>();
                 if (mover != null && mover.waypoints != null)
                 {
-                    if(mover.waypointStorage == null){
-                        mover.waypointStorage = new Stack<WaypointState>();
+                    if(phaseList.state == null){
+                        phaseList.state = new Dictionary<GameObject, WaypointState>();
                     }
                     Animator animator = npc.GetComponent<Animator>();
                     bool isWalking = animator != null && animator.GetBool("IsWalking");
                     bool isRunning = animator != null && animator.GetBool("IsRunning");
                     bool isSitting = animator != null && animator.GetBool("ToSitting");
                     bool sameOld = false;
-                    if(mover.waypointStorage.Count > 0) sameOld = mover.waypoints == mover.waypointStorage.Peek().waypoints;
+                    if(phaseList.state.ContainsKey(npc)) sameOld = mover.waypoints == phaseList.state[npc].waypoints;
                     if(GetCurrentPhase() == GamePhase.Phase4) sameOld = false; //bandaid fix, to be changed
                     if(GetCurrentPhase() == GamePhase.Phase5) sameOld = true; //bandaid fix, to be changed
                     var state = new WaypointState(
@@ -659,10 +677,43 @@ public class PhaseManager : MonoBehaviour
                         sameOld
                     );
                     
-                    mover.waypointStorage.Push(state);
+                    if(!phaseList.state.ContainsKey(npc)) phaseList.state.Add(npc, state);
                 }
             }
         }
+        // foreach (GameObject npc in allNPCs)
+        // {
+        //     if (npc.activeSelf)
+        //     {
+        //         WaypointMover mover = npc.GetComponent<WaypointMover>();
+        //         if (mover != null && mover.waypoints != null)
+        //         {
+        //             if(mover.waypointStorage == null){
+        //                 mover.waypointStorage = new Stack<WaypointState>();
+        //             }
+        //             Animator animator = npc.GetComponent<Animator>();
+        //             bool isWalking = animator != null && animator.GetBool("IsWalking");
+        //             bool isRunning = animator != null && animator.GetBool("IsRunning");
+        //             bool isSitting = animator != null && animator.GetBool("ToSitting");
+        //             bool sameOld = false;
+        //             if(mover.waypointStorage.Count > 0) sameOld = mover.waypoints == mover.waypointStorage.Peek().waypoints;
+        //             if(GetCurrentPhase() == GamePhase.Phase4) sameOld = false; //bandaid fix, to be changed
+        //             if(GetCurrentPhase() == GamePhase.Phase5) sameOld = true; //bandaid fix, to be changed
+        //             var state = new WaypointState(
+        //                 mover.waypoints,
+        //                 mover.waypoints.ActiveChildLength,
+        //                 mover.waypoints.isMovingForward,
+        //                 mover.waypoints.canLoop,
+        //                 isWalking,
+        //                 isRunning,
+        //                 isSitting,
+        //                 sameOld
+        //             );
+                    
+        //             mover.waypointStorage.Push(state);
+        //         }
+        //     }
+        // }
     }
     private void SaveAnimationState()
     {
@@ -679,12 +730,31 @@ public class PhaseManager : MonoBehaviour
                     bool isSitting = animator != null && animator.GetBool("ToSitting");
 
 
-                    var state = mover.waypointStorage.Pop();
+                    var state = phaseList.state[npc];
                     state.updateAnimator(isWalking, isRunning, isSitting);
-                    mover.waypointStorage.Push(state);
+                    phaseList.state[npc] = state;
                 }
             }
         }
+        // foreach (GameObject npc in allNPCs)
+        // {
+        //     if (npc.activeSelf)
+        //     {
+        //         WaypointMover mover = npc.GetComponent<WaypointMover>();
+        //         if (mover != null && mover.waypoints != null)
+        //         {
+        //             Animator animator = npc.GetComponent<Animator>();
+        //             bool isWalking = animator != null && animator.GetBool("IsWalking");
+        //             bool isRunning = animator != null && animator.GetBool("IsRunning");
+        //             bool isSitting = animator != null && animator.GetBool("ToSitting");
+
+
+        //             var state = mover.waypointStorage.Pop();
+        //             state.updateAnimator(isWalking, isRunning, isSitting);
+        //             mover.waypointStorage.Push(state);
+        //         }
+        //     }
+        // }
     }
     private void ToggleGammaKnife(){
         if (gammaKnifeObject != null) {
@@ -717,17 +787,17 @@ public class PhaseManager : MonoBehaviour
             case GamePhase.Phase1:
                 HandleStartCivs();
                 SaveAnimationState();
-                UpdateVillainDiscs(Color.green); // they're "blending in" with the other civilians
+                InitializeDiscColors();
                 if(allVillains[0].transform.GetChild(1).gameObject.activeSelf) ToggleGun();
                 break;
                 
             case GamePhase.Phase2:
-                if(!allVillains[0].transform.GetChild(1).gameObject.activeSelf) ToggleGun();
                 Alarming();
                 Phase2CivPaths();
                 DespawnOnEscape();
                 UpdateHostageDiscs();
                 UpdateVillainDiscs(Color.red);
+                if(!allVillains[0].transform.GetChild(1).gameObject.activeSelf) ToggleGun();
                 break;
                 
             case GamePhase.Phase3:
@@ -774,6 +844,7 @@ public class PhaseManager : MonoBehaviour
         foreach (GameObject npc in allNPCs)
         {
             if (!npc.activeSelf || (npc.CompareTag("Civilians") || npc.CompareTag("Medicals"))) {
+                Debug.Log(npc + " not chosen-------------");
                 continue;
             }
 
@@ -786,6 +857,7 @@ public class PhaseManager : MonoBehaviour
                 continue;
             }
             if(mover.waypoints.ActiveChildLength < 2 && GetCurrentPhase() == GamePhase.Phase1) {
+                Debug.Log(npc + " active child length 1 or less, sitting?");
                 continue;
             }
 
@@ -797,12 +869,14 @@ public class PhaseManager : MonoBehaviour
                 Transform pathTransform = pathsTransform.GetChild(i);
                 Waypoints waypoints = pathTransform.GetComponent<Waypoints>();
                 if(waypoints == null || waypoints.transform.childCount == 0){
+                    Debug.LogWarning(npc + " waypoints nul!!!!!!!!!l!!!!!!!!!!======");
                     continue;
                 }else if (waypoints.getActivity() == currentPhase){
+                    // Debug.Log(npc + " !---! " + waypoints + " active in current phase: " + waypoints.getActivity());
                     mover.waypoints = waypoints;
                     mover.currentWaypoint = waypoints.GetNextWaypoint(waypoints.transform.GetChild(0));
                     mover.pathidx = i;
-                    if(mover.waypoints.ActiveChildLength != mover.waypoints.transform.childCount-1) 
+                    if(currentPhase != GamePhase.Phase1) 
                         mover.waypoints.enableAll();
 
                     Animator animator = mover.GetComponent<Animator>();
@@ -812,7 +886,8 @@ public class PhaseManager : MonoBehaviour
                         mover.moveSpeed = runSpeed;
                     }
                     break;
-                } 
+                }
+                // else Debug.Log(npc + " !---! " + waypoints + " not active in current phase: " + waypoints.getActivity());
             }
         }
     }

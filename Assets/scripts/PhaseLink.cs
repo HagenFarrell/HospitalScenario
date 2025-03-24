@@ -22,6 +22,7 @@ namespace PhaseLink
         public PhaseNode Head { get; private set; }
         public PhaseNode Tail { get; private set; }
         public PhaseNode Current { get; private set; }
+        public Dictionary<GameObject, WaypointState> state = new Dictionary<GameObject, WaypointState>();
 
         public PhaseLinkedList()
         {

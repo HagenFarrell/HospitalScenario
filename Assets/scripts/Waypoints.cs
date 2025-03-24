@@ -180,7 +180,8 @@ public class Waypoints : MonoBehaviour
 
     public void ResetToPhase1Settings()
     {
-        ActiveChildLength = waypointsActiveInPhase1; // Reset to phase-specific value
+        // Debug.Log("resetttgiggenhgreuibiabduadbqwdubqwbu---------------------!");
+        ActiveChildLength = waypointsActiveInPhase1; // Reset to phase1 value
         UpdateWaypointVisibility();
     }
 
