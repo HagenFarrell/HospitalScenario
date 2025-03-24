@@ -60,7 +60,7 @@ public class Player : NetworkBehaviour
     private GameObject[] moveableChars; // Array of gameobjects that this player is allowed to interact with
     private List<GameObject> selectedChars = new List<GameObject>();
 
-    [SerializeField] private Camera playerCamera; // Assign the camera in the Inspector
+    [SerializeField] public Camera playerCamera; // Assign the camera in the Inspector
 
     public static Player LocalPlayerInstance { get; private set; }
 
@@ -331,7 +331,7 @@ public class Player : NetworkBehaviour
     {
         if(radeyeToolInstance != null && radeyeToolInstance.IsActive())
         {
-            Debug.Log("NPC movement is disabled while radeye tool is active");
+            //Debug.Log("NPC movement is disabled while radeye tool is active");
             return;
         }
         
