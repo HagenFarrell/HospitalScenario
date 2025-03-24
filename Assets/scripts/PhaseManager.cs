@@ -595,11 +595,9 @@ public class PhaseManager : MonoBehaviour
                     var state = mover.waypointStorage.Pop();
                     mover.waypoints = state.waypoints;
                     mover.waypoints.ActiveChildLength = state.activeChildLength;
-                    
                     mover.waypoints.isMovingForward = state.isMovingForward;
                     mover.waypoints.canLoop = state.canLoop;
-                    if(mover.waypointStorage.Peek().sameOld){
-                        Debug.Log("same old for " + npc);
+                    if(mover.waypointStorage.Peek().sameOld && GetCurrentPhase() != GamePhase.Phase6){
                         Transform LastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
                         if (LastWaypoint != null)
                         {

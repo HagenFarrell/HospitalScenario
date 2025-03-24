@@ -1943,7 +1943,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 419972998}
-  moveSpeed: 0.2
+  moveSpeed: 0.1
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -2513,7 +2513,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1353610702}
-  moveSpeed: 0.2
+  moveSpeed: 0.1
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -3959,7 +3959,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1620479334}
-  moveSpeed: 0.2
+  moveSpeed: 0.1
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -4049,7 +4049,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1407856820}
-  moveSpeed: 0.2
+  moveSpeed: 0.1
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -13793,7 +13793,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1230452550}
-  moveSpeed: 0.2
+  moveSpeed: 0.1
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -14290,7 +14290,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1231079126}
-  moveSpeed: 0.2
+  moveSpeed: 0.1
   distanceThreshold: 0.1
   paths: {fileID: 1789888672}
   pathidx: 0
@@ -15191,7 +15191,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1688805227}
-  moveSpeed: 0.2
+  moveSpeed: 0.1
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -15281,7 +15281,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1345142901}
-  moveSpeed: 0.2
+  moveSpeed: 0.1
   distanceThreshold: 0.1
   paths: {fileID: 1446883711}
   pathidx: 0
@@ -18859,7 +18859,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 254171036}
-  moveSpeed: 0.2
+  moveSpeed: 0.1
   distanceThreshold: 0.1
   paths: {fileID: 1553169170}
   pathidx: 0
@@ -19592,7 +19592,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1502477845}
-  moveSpeed: 0.2
+  moveSpeed: 0.1
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -21711,7 +21711,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1555593262}
-  moveSpeed: 0.2
+  moveSpeed: 0.1
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -23264,7 +23264,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1612030858}
-  moveSpeed: 0.2
+  moveSpeed: 0.1
   distanceThreshold: 0.1
   paths: {fileID: 2108740342}
   pathidx: 0
@@ -23384,7 +23384,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 860167708}
-  moveSpeed: 0.2
+  moveSpeed: 0.1
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -25905,7 +25905,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 889932724}
-  moveSpeed: 0.2
+  moveSpeed: 0.1
   distanceThreshold: 0.1
   paths: {fileID: 554009497}
   pathidx: 0
@@ -26385,7 +26385,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 606944126}
-  moveSpeed: 0.2
+  moveSpeed: 0.1
   distanceThreshold: 0.1
   paths: {fileID: 127835570}
   pathidx: 0
@@ -27311,7 +27311,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 308913738}
-  moveSpeed: 0.2
+  moveSpeed: 0.1
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0

@@ -6,8 +6,8 @@ using System.Linq;
 
 public class Player : NetworkBehaviour
 {
-    public float moveSpeed = 10f; // Horizontal movement speed
-    public float verticalSpeed = 5f; // Vertical movement speed
+    public float moveSpeed = 2f; // Horizontal movement speed
+    public float verticalSpeed = 1f; // Vertical movement speed
     public float mouseSensitivity = 100f; // Sensitivity for mouse look
     public float smoothingSpeed = 0.1f; // Determines how smooth the movement is
 
