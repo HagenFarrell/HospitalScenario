@@ -14,6 +14,13 @@
 # They also could contain extremely sensitive data
 /[Mm]emoryCaptures/
 
+.vsconfig
+.idea/
+.idea.BirdSimulator/
+.plastic/
+/[Mm]y project.exe
+/[Mm]y project_Data/
+
 # Ignore this as well, not needed.
 /[Mm]ono[Bb]leeding[Ee]dge/
 
