@@ -64,7 +64,7 @@ public class WaypointMover : MonoBehaviour
             // Speed Change for Walking/Running
             if (phaseManager != null) {
                 if (phaseManager.GetCurrentPhase() == GamePhase.Phase1) {
-                    moveSpeed = 1f;
+                    moveSpeed = 2f;
                 } else if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) {
                     moveSpeed = 5f;
                 }

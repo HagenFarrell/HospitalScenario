@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028292, g: 0.22571306, b: 0.30692118, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -506,7 +506,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &26660392
 Transform:
   m_ObjectHideFlags: 0
@@ -1118,7 +1118,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &62151212
 Transform:
   m_ObjectHideFlags: 0
@@ -1231,7 +1231,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &69702933
 Transform:
   m_ObjectHideFlags: 0
@@ -1321,7 +1321,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &72373357
 Transform:
   m_ObjectHideFlags: 0
@@ -1495,7 +1495,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 8
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1001 &96379088
@@ -1895,7 +1895,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 419972998}
-  moveSpeed: 1
+  moveSpeed: 2
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -2128,7 +2128,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &145472963
@@ -2396,7 +2396,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1353610702}
-  moveSpeed: 1
+  moveSpeed: 2
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -2533,7 +2533,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 5
   ActiveChildLength: 0
 --- !u!1 &180009161
@@ -2701,7 +2701,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 3
   ActiveChildLength: 0
 --- !u!1 &192444622
@@ -2970,7 +2970,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &222017932
@@ -3018,7 +3018,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &222018981
 Transform:
   m_ObjectHideFlags: 0
@@ -3084,7 +3084,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 5
   ActiveChildLength: 0
 --- !u!1 &234977103
@@ -3133,7 +3133,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &235409674
 Transform:
   m_ObjectHideFlags: 0
@@ -3230,7 +3230,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &248088295
 Transform:
   m_ObjectHideFlags: 0
@@ -3296,9 +3296,9 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 1
   activeInPhase: 0
-  ActiveChildLength: 0
+  ActiveChildLength: 1
 --- !u!1 &254608362
 GameObject:
   m_ObjectHideFlags: 0
@@ -3314,7 +3314,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &254608363
 Transform:
   m_ObjectHideFlags: 0
@@ -3494,7 +3494,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &270412129
 Transform:
   m_ObjectHideFlags: 0
@@ -3588,7 +3588,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 8
+  waypointsActiveInPhase1: 0
   activeInPhase: 5
   ActiveChildLength: 0
 --- !u!1 &287527001
@@ -3762,7 +3762,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!4 &308913739
@@ -3806,7 +3806,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1620479334}
-  moveSpeed: 1
+  moveSpeed: 2
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -3896,7 +3896,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1407856820}
-  moveSpeed: 1
+  moveSpeed: 2
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -4062,7 +4062,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 8
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &355080934
@@ -4426,7 +4426,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &372119331
 Transform:
   m_ObjectHideFlags: 0
@@ -4456,7 +4456,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &373820494
 Transform:
   m_ObjectHideFlags: 0
@@ -4742,7 +4742,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &390415918
 Transform:
   m_ObjectHideFlags: 0
@@ -4990,9 +4990,9 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 4
+  waypointsActiveInPhase1: 3
   activeInPhase: 0
-  ActiveChildLength: 0
+  ActiveChildLength: 3
 --- !u!1001 &423513936
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5135,7 +5135,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &427119681
@@ -5287,7 +5287,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &453288966
 Transform:
   m_ObjectHideFlags: 0
@@ -5503,7 +5503,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 8
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1001 &472086677
@@ -5760,7 +5760,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 4
   ActiveChildLength: 0
 --- !u!1 &507129112
@@ -6093,7 +6093,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &535520475
@@ -6111,7 +6111,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &535520476
 Transform:
   m_ObjectHideFlags: 0
@@ -6141,7 +6141,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &537443367
 Transform:
   m_ObjectHideFlags: 0
@@ -6438,7 +6438,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &565345522
 Transform:
   m_ObjectHideFlags: 0
@@ -6620,7 +6620,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &584987508
 Transform:
   m_ObjectHideFlags: 0
@@ -6957,7 +6957,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1001 &612733919
@@ -7646,7 +7646,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &694762004
 Transform:
   m_ObjectHideFlags: 0
@@ -7895,7 +7895,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &711347005
 Transform:
   m_ObjectHideFlags: 0
@@ -7925,7 +7925,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &711604840
 Transform:
   m_ObjectHideFlags: 0
@@ -7985,7 +7985,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &721444473
 Transform:
   m_ObjectHideFlags: 0
@@ -8128,7 +8128,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 4
   ActiveChildLength: 0
 --- !u!1 &727652542
@@ -8206,7 +8206,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &734984061
 Transform:
   m_ObjectHideFlags: 0
@@ -8303,7 +8303,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 3
   ActiveChildLength: 0
 --- !u!1 &750202069
@@ -8351,7 +8351,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &750921448
 Transform:
   m_ObjectHideFlags: 0
@@ -8417,7 +8417,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 5
   ActiveChildLength: 0
 --- !u!1 &757698825
@@ -8763,7 +8763,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &778330985
@@ -8999,7 +8999,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &807932340
@@ -9235,7 +9235,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &837140335
@@ -9661,9 +9661,9 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 9
+  waypointsActiveInPhase1: 8
   activeInPhase: 1
-  ActiveChildLength: 0
+  ActiveChildLength: 8
 --- !u!1 &860776947
 GameObject:
   m_ObjectHideFlags: 0
@@ -9679,7 +9679,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &860776948
 Transform:
   m_ObjectHideFlags: 0
@@ -9746,7 +9746,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &875408608
@@ -9799,7 +9799,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &875503185
@@ -9969,7 +9969,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &902246228
@@ -10053,7 +10053,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &909404557
@@ -10101,7 +10101,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &911004726
 Transform:
   m_ObjectHideFlags: 0
@@ -10394,7 +10394,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &931584053
@@ -10412,7 +10412,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &931584054
 Transform:
   m_ObjectHideFlags: 0
@@ -10442,7 +10442,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &933043624
 Transform:
   m_ObjectHideFlags: 0
@@ -10472,7 +10472,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &933811647
 Transform:
   m_ObjectHideFlags: 0
@@ -11003,6 +11003,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gammaKnifeObject: {fileID: 1233492371}
+  PlayerUnitsObject: {fileID: 1654711325}
+  VillainLeagueObject: {fileID: 351348093}
+  CiviliansObject: {fileID: 1741503574}
 --- !u!4 &995635510
 Transform:
   m_ObjectHideFlags: 0
@@ -11032,7 +11035,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &997997715
 Transform:
   m_ObjectHideFlags: 0
@@ -11263,7 +11266,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 9
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1001 &1002501342
@@ -11384,9 +11387,9 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 10
+  waypointsActiveInPhase1: 5
   activeInPhase: 0
-  ActiveChildLength: 0
+  ActiveChildLength: 5
 --- !u!1 &1008140728
 GameObject:
   m_ObjectHideFlags: 0
@@ -11402,7 +11405,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1008140729
 Transform:
   m_ObjectHideFlags: 0
@@ -11527,7 +11530,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 9
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &1015733491
@@ -11813,7 +11816,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1043043786
 Transform:
   m_ObjectHideFlags: 0
@@ -12884,7 +12887,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1109080265
 Transform:
   m_ObjectHideFlags: 0
@@ -12944,7 +12947,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1110088498
 Transform:
   m_ObjectHideFlags: 0
@@ -13381,7 +13384,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1230452550}
-  moveSpeed: 1
+  moveSpeed: 2
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -13532,7 +13535,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 5
   ActiveChildLength: 0
 --- !u!1 &1150555690
@@ -13550,7 +13553,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1150555691
 Transform:
   m_ObjectHideFlags: 0
@@ -13922,7 +13925,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 5
   ActiveChildLength: 0
 --- !u!1001 &1191675950
@@ -14099,7 +14102,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 8
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &1198064077
@@ -14177,7 +14180,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1201300058
 Transform:
   m_ObjectHideFlags: 0
@@ -14418,9 +14421,9 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 9
+  waypointsActiveInPhase1: 9
   activeInPhase: 0
-  ActiveChildLength: 0
+  ActiveChildLength: 9
 --- !u!1 &1230689436
 GameObject:
   m_ObjectHideFlags: 0
@@ -14498,7 +14501,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &1233492371 stripped
@@ -14719,7 +14722,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1688805227}
-  moveSpeed: 1
+  moveSpeed: 2
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -14741,7 +14744,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1257376559
 Transform:
   m_ObjectHideFlags: 0
@@ -14771,7 +14774,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1257423142
 Transform:
   m_ObjectHideFlags: 0
@@ -14958,7 +14961,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &1271238665
@@ -15059,7 +15062,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1273870665
 Transform:
   m_ObjectHideFlags: 0
@@ -15089,7 +15092,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1274625935
 Transform:
   m_ObjectHideFlags: 0
@@ -15183,7 +15186,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 3
   ActiveChildLength: 0
 --- !u!1 &1280526680
@@ -15267,7 +15270,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 5
   ActiveChildLength: 0
 --- !u!1 &1286626052
@@ -15285,7 +15288,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1286626053
 Transform:
   m_ObjectHideFlags: 0
@@ -15345,7 +15348,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1293950339
 Transform:
   m_ObjectHideFlags: 0
@@ -15533,7 +15536,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1307065763
 Transform:
   m_ObjectHideFlags: 0
@@ -15660,7 +15663,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 4
   ActiveChildLength: 0
 --- !u!1 &1320101101
@@ -15678,7 +15681,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1320101102
 Transform:
   m_ObjectHideFlags: 0
@@ -15708,7 +15711,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1325174262
 Transform:
   m_ObjectHideFlags: 0
@@ -15867,7 +15870,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 9
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &1332291258
@@ -16112,7 +16115,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1001 &1347747353
@@ -16323,9 +16326,9 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 5
+  waypointsActiveInPhase1: 3
   activeInPhase: 0
-  ActiveChildLength: 0
+  ActiveChildLength: 3
 --- !u!1001 &1356829879
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -16543,7 +16546,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1367049924
 Transform:
   m_ObjectHideFlags: 0
@@ -16841,7 +16844,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1377549254
 Transform:
   m_ObjectHideFlags: 0
@@ -16938,7 +16941,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 3
   ActiveChildLength: 0
 --- !u!1 &1399869171
@@ -17152,9 +17155,9 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 8
+  waypointsActiveInPhase1: 8
   activeInPhase: 0
-  ActiveChildLength: 0
+  ActiveChildLength: 8
 --- !u!1001 &1413619016
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -17388,7 +17391,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1435142411
 Transform:
   m_ObjectHideFlags: 0
@@ -17676,7 +17679,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &1453004610
@@ -18347,7 +18350,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 254171036}
-  moveSpeed: 1
+  moveSpeed: 2
   distanceThreshold: 0.1
   paths: {fileID: 1553169170}
   pathidx: 0
@@ -18700,7 +18703,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1498790632
 Transform:
   m_ObjectHideFlags: 0
@@ -18730,7 +18733,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1500911312
 Transform:
   m_ObjectHideFlags: 0
@@ -18902,9 +18905,9 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 3
+  waypointsActiveInPhase1: 3
   activeInPhase: 0
-  ActiveChildLength: 0
+  ActiveChildLength: 3
 --- !u!1001 &1509373111
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -19075,7 +19078,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1516673896
 Transform:
   m_ObjectHideFlags: 0
@@ -19113,7 +19116,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1502477845}
-  moveSpeed: 1
+  moveSpeed: 2
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -19231,7 +19234,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1522601453
 Transform:
   m_ObjectHideFlags: 0
@@ -19364,7 +19367,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 9
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1001 &1527823854
@@ -19745,9 +19748,9 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 4
+  waypointsActiveInPhase1: 3
   activeInPhase: 0
-  ActiveChildLength: 0
+  ActiveChildLength: 3
 --- !u!1001 &1556613381
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -19917,7 +19920,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1563500255
 Transform:
   m_ObjectHideFlags: 0
@@ -20471,7 +20474,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &1612848307
@@ -20689,9 +20692,9 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 11
+  waypointsActiveInPhase1: 12
   activeInPhase: 0
-  ActiveChildLength: 0
+  ActiveChildLength: 12
 --- !u!1 &1624521578
 GameObject:
   m_ObjectHideFlags: 0
@@ -20866,7 +20869,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &1633215374
@@ -20918,7 +20921,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &1634507638
@@ -20996,7 +20999,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1635859059
 Transform:
   m_ObjectHideFlags: 0
@@ -21061,7 +21064,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &1647676308
@@ -21232,7 +21235,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 1555593262}
-  moveSpeed: 1
+  moveSpeed: 2
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -21552,7 +21555,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1663996485
 Transform:
   m_ObjectHideFlags: 0
@@ -21582,7 +21585,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1667066857
 Transform:
   m_ObjectHideFlags: 0
@@ -21706,7 +21709,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1675328011
 Transform:
   m_ObjectHideFlags: 0
@@ -21905,9 +21908,9 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 10
+  waypointsActiveInPhase1: 11
   activeInPhase: 0
-  ActiveChildLength: 0
+  ActiveChildLength: 11
 --- !u!1001 &1692742379
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -22019,7 +22022,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &1699326018
@@ -22037,7 +22040,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1699326019
 Transform:
   m_ObjectHideFlags: 0
@@ -22765,7 +22768,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1758636482
 Transform:
   m_ObjectHideFlags: 0
@@ -22833,7 +22836,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 860167708}
-  moveSpeed: 1
+  moveSpeed: 2
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -23154,7 +23157,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 9
+  waypointsActiveInPhase1: 0
   activeInPhase: 5
   ActiveChildLength: 0
 --- !u!1 &1783481586
@@ -23340,7 +23343,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1001 &1794966651
@@ -24046,7 +24049,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &1833936090
@@ -24875,7 +24878,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1878880459
 Transform:
   m_ObjectHideFlags: 0
@@ -25269,7 +25272,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1907592126
 Transform:
   m_ObjectHideFlags: 0
@@ -25530,7 +25533,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1934967247
 Transform:
   m_ObjectHideFlags: 0
@@ -25815,7 +25818,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1001 &1985299274
@@ -25964,7 +25967,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1995067942
 Transform:
   m_ObjectHideFlags: 0
@@ -26153,7 +26156,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &2006539427
@@ -26531,7 +26534,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2030587616
 Transform:
   m_ObjectHideFlags: 0
@@ -26561,7 +26564,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2030785156
 Transform:
   m_ObjectHideFlags: 0
@@ -26591,7 +26594,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2033029926
 Transform:
   m_ObjectHideFlags: 0
@@ -26629,7 +26632,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypoints: {fileID: 308913738}
-  moveSpeed: 1
+  moveSpeed: 2
   distanceThreshold: 0.1
   paths: {fileID: 0}
   pathidx: 0
@@ -26841,7 +26844,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &2053552805
@@ -27111,7 +27114,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2071980086
 Transform:
   m_ObjectHideFlags: 0
@@ -27278,7 +27281,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2089304094
 Transform:
   m_ObjectHideFlags: 0
@@ -27557,7 +27560,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &2108551455
@@ -27678,7 +27681,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 0
   ActiveChildLength: 0
 --- !u!1 &2119800954
@@ -27849,7 +27852,7 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase: 1
+  waypointsActiveInPhase1: 0
   activeInPhase: 3
   ActiveChildLength: 0
 --- !u!1 &2137606682
