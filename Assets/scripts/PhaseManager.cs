@@ -385,6 +385,7 @@ public class PhaseManager : MonoBehaviour
                     mover.despawnAtLastWaypoint = false;
                     civilian.transform.position = mover.currentWaypoint.transform.position;
                     mover.waypoints.ResetToPhase1Settings();
+                    mover.pathidx = 0;
                     resetAnimator(civilian);
                 }
                 if(mover.waypoints.waypointsActiveInPhase1 == 1){
@@ -844,7 +845,7 @@ public class PhaseManager : MonoBehaviour
         foreach (GameObject npc in allNPCs)
         {
             if (!npc.activeSelf || (npc.CompareTag("Civilians") || npc.CompareTag("Medicals"))) {
-                Debug.Log(npc + " not chosen-------------");
+                // Debug.Log(npc + " not chosen-------------");
                 continue;
             }
 
@@ -854,10 +855,11 @@ public class PhaseManager : MonoBehaviour
             {
                 Debug.LogWarning($"NPC {npc.name} has missing WaypointMover or path references.");
                 resetAnimator(npc);
+                //
                 continue;
             }
             if(mover.waypoints.ActiveChildLength < 2 && GetCurrentPhase() == GamePhase.Phase1) {
-                Debug.Log(npc + " active child length 1 or less, sitting?");
+                // Debug.Log(npc + " active child length 1 or less, sitting?");
                 continue;
             }
 
@@ -869,7 +871,6 @@ public class PhaseManager : MonoBehaviour
                 Transform pathTransform = pathsTransform.GetChild(i);
                 Waypoints waypoints = pathTransform.GetComponent<Waypoints>();
                 if(waypoints == null || waypoints.transform.childCount == 0){
-                    Debug.LogWarning(npc + " waypoints nul!!!!!!!!!l!!!!!!!!!!======");
                     continue;
                 }else if (waypoints.getActivity() == currentPhase){
                     // Debug.Log(npc + " !---! " + waypoints + " active in current phase: " + waypoints.getActivity());
