@@ -1,4 +1,0 @@
-repository "My project@AtlasInfinitum@cloud"
-  path "/"
-    br "/main"
-    co "/main"
