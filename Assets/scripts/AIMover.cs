@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
-public class AIMover : MonoBehaviour
+public class AIMover : NetworkBehaviour
 {
     private Animator animator;
 
@@ -42,7 +42,16 @@ public class AIMover : MonoBehaviour
      * Private set: means only the class containing this property can modify the value. 
      * (So this class we are currently in. :D )
      */
-    public bool isAtDestination { get; private set; }
+    [SyncVar]
+    private bool syncedIsAtDestination;
+
+    public bool isAtDestination
+    {
+        get => syncedIsAtDestination;
+        private set => syncedIsAtDestination = value;
+    }
+
+
 
     // Maintain a reference globally about the current speed of the AI.
     // Private backing field
@@ -161,7 +170,8 @@ public class AIMover : MonoBehaviour
             if (currentWaypoint >= path.Count)
             {
                 // Debug.Log("Reached final waypoint");
-                isAtDestination = true;
+                if (NetworkServer.active)
+                    syncedIsAtDestination = true;
             }
         }
     }
