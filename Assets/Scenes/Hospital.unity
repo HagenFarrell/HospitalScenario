@@ -3495,7 +3495,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
-  m_IsActive: 0
 --- !u!4 &270412129
 Transform:
   m_ObjectHideFlags: 0
@@ -7171,6 +7170,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 2419546ba5b73c5419b51881bdfc77c2, type: 3}
       propertyPath: m_Name
       value: FireTruck
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 2419546ba5b73c5419b51881bdfc77c2, type: 3}
+      propertyPath: m_TagString
+      value: FireDepartmentVehicle
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2419546ba5b73c5419b51881bdfc77c2, type: 3}
@@ -16517,7 +16520,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1359928028
 Transform:
   m_ObjectHideFlags: 0
@@ -17980,6 +17983,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PoliceCar (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 1c037097523355349887b71dace2c6ad, type: 3}
+      propertyPath: m_TagString
+      value: LawEnforcementVehicle
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1c037097523355349887b71dace2c6ad, type: 3}
 --- !u!1 &1459562318
@@ -18412,6 +18419,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 71e1c438c4f662b46b683b8f05a79f5d, type: 3}
       propertyPath: m_Name
       value: FireSUV
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 71e1c438c4f662b46b683b8f05a79f5d, type: 3}
+      propertyPath: m_TagString
+      value: FireDepartmentVehicle
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 71e1c438c4f662b46b683b8f05a79f5d, type: 3}
@@ -18964,6 +18975,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PoliceCar
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 1c037097523355349887b71dace2c6ad, type: 3}
+      propertyPath: m_TagString
+      value: LawEnforcementVehicle
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1c037097523355349887b71dace2c6ad, type: 3}
 --- !u!1 &1509936371
@@ -19480,7 +19495,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1534315858
 Transform:
   m_ObjectHideFlags: 0
