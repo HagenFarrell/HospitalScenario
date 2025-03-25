@@ -89,3 +89,4 @@ crashlytics-build.properties
 
 #builds folder
 /Builds
+.DS_Store
