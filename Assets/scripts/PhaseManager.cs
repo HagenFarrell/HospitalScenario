@@ -43,13 +43,24 @@ public class PhaseManager : NetworkBehaviour
     public static PhaseManager Instance {get; private set; }
     [SyncVar(hook = nameof(OnPhaseChanged))]
     private GamePhase syncedPhase;
-
+    private bool isMirrorInitialization = false;
+    
     private void Awake()
     {
+        // This runs before Mirror's processing
+        isMirrorInitialization = true;
+        gameObject.SetActive(true); // Force active
         Instance = this;
     }
+    
     private void Start()
     {
+        gameObject.SetActive(true);
+        Debug.Log("PhaseManager START");
+        //gameObject.SetActive(true);
+        //debug for checking why phasehandling starts turned off
+        Debug.Log($"PhaseManager isServer: {isServer}, isClient: {isClient}, hasAuthority: {hasAuthority}");
+
         phaseList = new PhaseLinkedList();
         // Define the phases
         foreach (GamePhase phase in System.Enum.GetValues(typeof(GamePhase)))
@@ -83,6 +94,9 @@ public class PhaseManager : NetworkBehaviour
 
     private void Update()
     {
+        
+        Debug.Log($"PhaseManager Awake - Active: {gameObject.activeSelf}, NetId: {GetComponent<NetworkIdentity>().netId}");
+        Instance = this;
         if (phaseList == null || phaseList.Current == null)
         {
             Debug.LogError("phaseList or phaseList.Current is null!");
@@ -1015,5 +1029,26 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
         syncedPhase = newPhase; //triggers hook on clients
     }
 
+    private void OnEnable()
+    {
+        if (NetworkServer.active || NetworkClient.active)
+        {
+            Debug.Log("PhaseHandling re-enabled by Mirror");
+            // Reinitialize components if needed
+            if (phaseList == null) Start();
+        }
+    }
+
+
+    private void OnDisable()
+    {
+        if (isMirrorInitialization || NetworkServer.active || NetworkClient.active)
+        {
+            Debug.Log("PhaseHandling disabled by Mirror (expected during network setup)");
+            isMirrorInitialization = false;
+            return;
+        }
+        Debug.LogError("PhaseHandling disabled unexpectedly!");
+    }
 
 }

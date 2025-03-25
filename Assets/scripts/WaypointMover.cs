@@ -74,6 +74,22 @@ public class WaypointMover : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //Debug
+
+        Debug.Log("In WaypointMover update");
+        if (PhaseManager.Instance == null || !PhaseManager.Instance.gameObject.activeInHierarchy)
+        {
+            return; // Wait for Mirror to finish setup
+        }
+
+        if (!PhaseManager.Instance.gameObject.activeInHierarchy)
+        {
+            Debug.LogWarning($"PhaseHandling GameObject is inactive! Active: {PhaseManager.Instance.gameObject.activeSelf}, " + $"In Hierarchy: {PhaseManager.Instance.gameObject.activeInHierarchy}");
+            return;
+        }
+        //Debug.Log($"PhaseManager.Instance = {PhaseManager.Instance}");
+        //gameObject.SetActive(true);
+        //Debug.Log("")
         if (isWaitingForAnimation) return;
 
         transform.position = Vector3.MoveTowards(transform.position, currentWaypoint.position, moveSpeed * Time.deltaTime);
