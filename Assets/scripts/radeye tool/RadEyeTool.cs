@@ -41,7 +41,7 @@ public class RadEyeTool : NetworkBehaviour
        if (isActive && Input.GetMouseButtonDown(0))
 {
     Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-    //Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red, 2f); // Visualize ray
+    Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red, 2f); // Visualize ray
     
     // Use SphereCast instead of Raycast for better hit detection
     float sphereRadius = 0.5f;
@@ -133,24 +133,11 @@ public class RadEyeTool : NetworkBehaviour
             return 0f;
         }
 
-        Vector3 direction = (objectPosition - source.position).normalized;
         float distance = Vector3.Distance(source.position, objectPosition);
-        RaycastHit[] hits = Physics.RaycastAll(source.position, direction, distance);
-        
-        int blockingObjects = 0;
-        foreach(RaycastHit hit in hits)
-        {
-            if(Vector3.Distance(hit.point, objectPosition) < 0.1f) continue;
-            blockingObjects++;
-        }
-        
-        Debug.Log("Number of objects hit are: " + blockingObjects);
-        
-        float attentuation = 0.7f;
         float radiation = radiationGraph.Evaluate(distance);
-        float finalRadiation = radiation * Mathf.Pow(attentuation, blockingObjects);
-        
-        return finalRadiation;
+
+        Debug.Log($" Clicked Object at {objectPosition} | Distance: {distance}m | Radiation: {radiation} R");
+        return radiation;
     }
 
     void DisplayRadiation(float radiation, bool validTarget)
