@@ -19,23 +19,32 @@ public class PauseMenu : MonoBehaviour
         pauseMenuUI.SetActive(false);
 
         // Add button listener
-        pauseButton.onClick.AddListener(TogglePauseMenu);
         Time.timeScale = 1;
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            TogglePauseMenu();
+        }
     }
 
     public void TogglePauseMenu()
     {
-        isPaused = !isPaused;
-        pauseMenuUI.SetActive(isPaused);
 
+        isPaused = !isPaused;
+        
         if (isPaused)
         {
             Debug.Log("Pausing game...");
+            pauseMenuUI.SetActive(true);
             Time.timeScale = 0;
         }
         else
         {
             Debug.Log("Resuming game...");
+            pauseMenuUI.SetActive(false);
             Time.timeScale = 1;
         }
     }

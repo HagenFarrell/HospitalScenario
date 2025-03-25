@@ -76,7 +76,7 @@ public class WaypointMover : MonoBehaviour
     {
         //Debug
 
-        Debug.Log("In WaypointMover update");
+        // Debug.Log("In WaypointMover update"); //a debug log every frame is lethal
         if (PhaseManager.Instance == null || !PhaseManager.Instance.gameObject.activeInHierarchy)
         {
             return; // Wait for Mirror to finish setup

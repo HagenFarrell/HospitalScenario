@@ -8,12 +8,14 @@ namespace PhaseLink
         public GamePhase Phase { get; private set; }
         public PhaseNode Previous { get; set; }
         public PhaseNode Next { get; set; }
+        public Dictionary<GameObject, WaypointState> State { get; private set; }
 
         public PhaseNode(GamePhase phase)
         {
             Phase = phase;
             Previous = null;
             Next = null;
+            State = new Dictionary<GameObject, WaypointState>();
         }
     }
 
@@ -22,7 +24,6 @@ namespace PhaseLink
         public PhaseNode Head { get; private set; }
         public PhaseNode Tail { get; private set; }
         public PhaseNode Current { get; private set; }
-        public Dictionary<GameObject, WaypointState> state = new Dictionary<GameObject, WaypointState>();
 
         public PhaseLinkedList()
         {
@@ -39,6 +40,7 @@ namespace PhaseLink
             {
                 Head = newNode;
                 Tail = newNode;
+                Current = Head;
             }
             else
             {
@@ -47,7 +49,6 @@ namespace PhaseLink
                 Tail = newNode;
             }
         }
-
         public void SetCurrentToHead()
         {
             Current = Head;
