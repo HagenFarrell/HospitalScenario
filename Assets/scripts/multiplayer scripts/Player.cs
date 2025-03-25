@@ -428,8 +428,14 @@ public class Player : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.T) && playerRole == Roles.Instructor) // toggle big dome
         {
-            GameObject bubble = phaseManager.gammaKnifeObject.transform.GetChild(0).gameObject;
-            bubble.SetActive(!bubble.activeSelf);
+            phaseManager.CmdToggleBubble();
+            //GameObject bubble = phaseManager.gammaKnifeObject.transform.GetChild(0).gameObject;
+            //bubble.SetActive(!bubble.activeSelf);
+             if (isLocalPlayer)
+            {
+                GameObject bubble = phaseManager.gammaKnifeObject.transform.GetChild(0).gameObject;
+                bubble.SetActive(!bubble.activeSelf);
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.U)) // Undo last action
@@ -628,15 +634,23 @@ public class Player : NetworkBehaviour
         {
             if (NetworkIdentity.spawned.TryGetValue(npcNetIds[i], out NetworkIdentity npcIdentity))
             {
+                GameObject npc = npcIdentity.gameObject;
                 AIMover mover = npcIdentity.GetComponent<AIMover>();
                 if (mover != null)
                 {
-                    Debug.Log($"RpcExecuteMovement: NPC {npcIdentity.name} moving to {targetPositions[i]}");
+                    //Debug.Log($"RpcExecuteMovement: NPC {npcIdentity.name} moving to {targetPositions[i]}");
                     mover.SetTargetPosition(targetPositions[i]);
+                }
+                
+                if (npc.CompareTag("LawEnforcement"))
+                {
+                    // Set armed unit status on the server
+                    mover.SetArmedUnit(true);
                 }
             }
         }
     }
+    
 
     [Command]
     private void CmdMoveNPCs(uint[] npcNetIds, Vector3 targetPosition)
@@ -647,7 +661,7 @@ public class Player : NetworkBehaviour
             return;
         }
 
-        Debug.Log($"Server: Moving {npcNetIds.Length} NPCs to {targetPosition}");
+        //Debug.Log($"Server: Moving {npcNetIds.Length} NPCs to {targetPosition}");
 
         List<GameObject> npcObjects = new List<GameObject>();
 
@@ -681,7 +695,13 @@ public class Player : NetworkBehaviour
                 for (int i = 0; i < npcObjects.Count; i++)
                 {
                     AIMover mover = npcObjects[i].GetComponent<AIMover>();
-
+                    
+                    if (npcObjects[i].CompareTag("LawEnforcement"))
+                    {
+                        // Set armed unit status on the server
+                        mover.SetArmedUnit(true);
+                    }
+                    
                     if (mover != null)
                     {
                         Debug.Log($"Setting NPC {npcObjects[i].name} to move to: {npcPositions[i]}");

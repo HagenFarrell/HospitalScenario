@@ -44,6 +44,8 @@ public class PhaseManager : NetworkBehaviour
     [SyncVar(hook = nameof(OnPhaseChanged))]
     private GamePhase syncedPhase;
     private bool isMirrorInitialization = false;
+    //[SyncVar(hook = nameof(OnBubbleStateChanged))]
+    private bool isBubbleActive;
     
     private void Awake()
     {
@@ -996,6 +998,21 @@ public class PhaseManager : NetworkBehaviour
         }
     }
 
+    [Command(requiresAuthority = false)]
+    public void CmdToggleBubble()
+    {
+        GameObject bubble = gammaKnifeObject.transform.GetChild(0).gameObject;
+        bool newState = !bubble.activeSelf;
+        bubble.SetActive(newState);
+        RpcToggleBubble(newState);
+    }
+
+    [ClientRpc]
+    public void RpcToggleBubble(bool state)
+    {
+        GameObject bubble = gammaKnifeObject.transform.GetChild(0).gameObject;
+        bubble.SetActive(state);
+    }
 
     private void OnDisable()
     {
