@@ -20,6 +20,8 @@ TagManager:
   - TempWalls
   - RadiationSource
   - Spectator
+  - LawEnforcementVehicle
+  - FireDepartmentVehicle
   layers:
   - Default
   - TransparentFX
