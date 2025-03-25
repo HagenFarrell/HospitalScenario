@@ -2,8 +2,9 @@ using UnityEngine;
 using System.Collections.Generic;
 using PhaseLink;
 using System.Collections;
+using Mirror;
 
-public class PhaseManager : MonoBehaviour
+public class PhaseManager : NetworkBehaviour
 {
     private PhaseLinkedList phaseList;
     private Player playerRole;
@@ -37,29 +38,65 @@ public class PhaseManager : MonoBehaviour
     public static event EgressSelectedHandler OnEgressSelected;
     private int egress;
 
+
+    //new netcdoe
+    public static PhaseManager Instance {get; private set; }
+    [SyncVar(hook = nameof(OnPhaseChanged))]
+    private GamePhase syncedPhase;
+    private bool isMirrorInitialization = false;
+    
+    private void Awake()
+    {
+        // This runs before Mirror's processing
+        isMirrorInitialization = true;
+        gameObject.SetActive(true); // Force active
+        Instance = this;
+    }
+    
     private void Start()
     {
+        gameObject.SetActive(true);
+        Debug.Log("PhaseManager START");
+        //gameObject.SetActive(true);
+        //debug for checking why phasehandling starts turned off
+        Debug.Log($"PhaseManager isServer: {isServer}, isClient: {isClient}, hasAuthority: {hasAuthority}");
+
         phaseList = new PhaseLinkedList();
         // Define the phases
         foreach (GamePhase phase in System.Enum.GetValues(typeof(GamePhase)))
             phaseList.AddPhase(phase);
         phaseList.SetCurrentToHead();
+        
+        runSpeed = 5f;
+        OnEgressSelected += ExecuteEgressPhase;
+        FindKeyNPCs();
+        HidePlayers();
+
+        //netcode
+        if (isServer)
+        {
+            SetPhase(GamePhase.Phase1); //instructor sets 1st phase, triggers sync
+        }
 
         if(gammaKnifeObject == null) gammaKnifeObject = getRadSource();
         if (gammaKnifeObject != null) {
             gammaKnifeObject.SetActive(false);
         }
-        runSpeed = 5f;
+        //runSpeed = 5f;
 
-        
+        /*
         OnEgressSelected += ExecuteEgressPhase;
         FindKeyNPCs();
         HidePlayers();
         StartPhase();
+        */
     }
 
     private void Update()
     {
+        
+        Debug.Log($"PhaseManager Awake - Active: {gameObject.activeSelf}, NetId: {GetComponent<NetworkIdentity>().netId}");
+        Instance = this;
         if (phaseList == null || phaseList.Current == null)
         {
             Debug.LogError("phaseList or phaseList.Current is null!");
@@ -955,4 +992,63 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
         npc.transform.rotation = Quaternion.identity;
     }
     
+
+    private void OnPhaseChanged(GamePhase oldPhase, GamePhase newPhase)
+    {
+        Debug.Log($"Phase changed from {oldPhase} to {newPhase}");
+
+        phaseList.SetCurrentTo(newPhase);//locally updating
+        StartPhase();//every client now runs startPhase together including host
+    }
+
+    [Command(requiresAuthority = false)]
+    public void CmdNextPhase()
+    {
+        if (!isServer) return;
+
+        if (phaseList.MoveNext())
+        {
+            SetPhase(phaseList.Current.Phase); //triggers OnPhaseChanged on all clients
+        }
+    }
+
+    [Command(requiresAuthority = false)]
+    public void CmdPreviousPhase()
+    {
+        if (!isServer) return;
+
+        if (phaseList.MovePrevious())
+        {
+            SetPhase(phaseList.Current.Phase); //same
+        }
+    }
+
+    [Server]
+    public void SetPhase(GamePhase newPhase)
+    {
+        syncedPhase = newPhase; //triggers hook on clients
+    }
+
+    private void OnEnable()
+    {
+        if (NetworkServer.active || NetworkClient.active)
+        {
+            Debug.Log("PhaseHandling re-enabled by Mirror");
+            // Reinitialize components if needed
+            if (phaseList == null) Start();
+        }
+    }
+
+
+    private void OnDisable()
+    {
+        if (isMirrorInitialization || NetworkServer.active || NetworkClient.active)
+        {
+            Debug.Log("PhaseHandling disabled by Mirror (expected during network setup)");
+            isMirrorInitialization = false;
+            return;
+        }
+        Debug.LogError("PhaseHandling disabled unexpectedly!");
+    }
+
 }
