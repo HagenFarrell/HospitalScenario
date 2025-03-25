@@ -349,13 +349,13 @@ public class PhaseManager : NetworkBehaviour
 
         if (phaseList.MoveNext())
         {
-            Debug.Log("Moving to next phase.");
+            // Debug.Log("Moving to next phase.");
             ResetForward();
             StartPhase();
         }
         else
         {
-            Debug.Log("Already at the last phase!");
+            Debug.LogWarning("Already at the last phase!");
         }
     }
     public void PreviousPhase()
@@ -365,13 +365,13 @@ public class PhaseManager : NetworkBehaviour
         if (phaseList.MovePrevious())
         {
             if(OnEgressSelected == null) OnEgressSelected += ExecuteEgressPhase;
+            // Debug.Log("Moving to previous phase.");
             ResetBackwards();
-            Debug.Log("Moving to previous phase.");
             StartPhase();
         }
         else
         {
-            Debug.Log("Already at the first phase!");
+            Debug.LogWarning("Already at the first phase!");
         }
     }
     private GameObject getRadSource(){
@@ -967,6 +967,7 @@ public class PhaseManager : NetworkBehaviour
 
         if (phaseList.MoveNext())
         {
+            ResetForward();
             SetPhase(phaseList.Current.Phase); //triggers OnPhaseChanged on all clients
         }
     }
@@ -994,7 +995,13 @@ public class PhaseManager : NetworkBehaviour
         {
             Debug.Log("PhaseHandling re-enabled by Mirror");
             // Reinitialize components if needed
-            if (phaseList == null) Start();
+            if (phaseList == null){
+                phaseList = new PhaseLinkedList();
+                // Define the phases
+                foreach (GamePhase phase in System.Enum.GetValues(typeof(GamePhase)))
+                    phaseList.AddPhase(phase);
+                phaseList.SetCurrentToHead();
+            }
         }
     }
 
