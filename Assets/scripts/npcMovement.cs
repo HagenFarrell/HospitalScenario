@@ -184,7 +184,7 @@ private IEnumerator updateFormationPositions(GameObject[] npcs, Vector3 formatio
      * rowSpacing: distance between sucessive rows.
      * colSpacing: horizontal spacing between each NPC in a row.
      */
-    private Vector3 ComputeTriangleSlot(int index, Vector3 apex, Vector3 forward, float rowSpacing, float colSpacing)
+    public Vector3 ComputeTriangleSlot(int index, Vector3 apex, Vector3 forward, float rowSpacing, float colSpacing)
     {
         var row = 0;
         var count = 0;
