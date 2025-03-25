@@ -428,8 +428,14 @@ public class Player : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.T) && playerRole == Roles.Instructor) // toggle big dome
         {
-            GameObject bubble = phaseManager.gammaKnifeObject.transform.GetChild(0).gameObject;
-            bubble.SetActive(!bubble.activeSelf);
+            phaseManager.CmdToggleBubble();
+            //GameObject bubble = phaseManager.gammaKnifeObject.transform.GetChild(0).gameObject;
+            //bubble.SetActive(!bubble.activeSelf);
+             if (isLocalPlayer)
+            {
+                GameObject bubble = phaseManager.gammaKnifeObject.transform.GetChild(0).gameObject;
+                bubble.SetActive(!bubble.activeSelf);
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.U)) // Undo last action
