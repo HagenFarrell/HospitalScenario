@@ -309,13 +309,36 @@ public class AIMover : MonoBehaviour
         isRunningExternally = running;
         animator.SetBool("IsRunning", running);
     }
-
+    
+    public void SetHoldingWeapon(bool isHolding)
+    {
+        animator.SetBool("IsHoldingWeapon", isHolding);
+    }
+    
+    public bool IsArmedUnit { get; private set; } = false;
+    
+    public void SetArmedUnit(bool isArmed)
+    {
+        IsArmedUnit = isArmed;
+        SetHoldingWeapon(isArmed);
+        SetRunning(isArmed);
+    }
+    
     // Modify UpdateAnimation to respect external running
     private void UpdateAnimation()
     {
         if (animator != null)
         {
             float currentSpeed = currentVelocity.magnitude;
+            
+            if (IsArmedUnit)
+            {
+                animator.SetBool("IsRunning", true);
+                animator.SetInteger("CharacterState", currentSpeed > 0.1f ? 1 : 0);
+                animator.SetBool("IsHoldingWeapon", true);
+                animator.SetBool(walkingHash, false);
+                return;
+            }
 
             if (isRunningExternally) // If externally set to run, ignore walking logic
             {
@@ -323,7 +346,7 @@ public class AIMover : MonoBehaviour
                 animator.SetBool("IsRunning", true);
                 return;
             }
-
+            
             // Standard walking logic
             bool shouldBeIdle =
                 isAtDestination ||
@@ -359,7 +382,13 @@ public class AIMover : MonoBehaviour
         target.position = newPosition;
         currentWaypoint = 0;
         isAtDestination = false;
-    
+        
+        if (IsArmedUnit)
+        {
+            animator.SetBool("IsRunning", true);
+            animator.SetBool("IsHoldingWeapon", true);
+        }
+        
         // Calculate path immediately without waiting
         if (pathfinder != null)
         {
@@ -388,5 +417,4 @@ public class AIMover : MonoBehaviour
     {
         StopAllCoroutines(); // Stop all active coroutines in a specific NPC (for cleanup when despawning)
     }
-
 }
