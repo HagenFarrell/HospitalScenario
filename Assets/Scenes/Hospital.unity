@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028292, g: 0.22571306, b: 0.30692118, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -6926,6 +6926,7 @@ GameObject:
   m_Component:
   - component: {fileID: 375449046}
   - component: {fileID: 375449045}
+  - component: {fileID: 375449047}
   m_Layer: 0
   m_Name: PhaseHandling
   m_TagString: Untagged
@@ -6945,6 +6946,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7df47dadfdc4e0f449f8f412e93b9b31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
   gammaKnifeObject: {fileID: 211504683}
   PlayerUnitsObject: {fileID: 1654711325}
   VillainLeagueObject: {fileID: 1136594592}
@@ -6963,6 +6966,23 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 17
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &375449047
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 375449044}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneId: 2390443594
+  serverOnly: 0
+  visible: 0
+  m_AssetId: 
+  hasSpawned: 0
 --- !u!1 &382111823
 GameObject:
   m_ObjectHideFlags: 0

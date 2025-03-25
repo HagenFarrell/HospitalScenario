@@ -2,8 +2,9 @@ using UnityEngine;
 using System.Collections.Generic;
 using PhaseLink;
 using System.Collections;
+using Mirror;
 
-public class PhaseManager : MonoBehaviour
+public class PhaseManager : NetworkBehaviour
 {
     private PhaseLinkedList phaseList;
     private Player playerRole;
@@ -37,6 +38,16 @@ public class PhaseManager : MonoBehaviour
     public static event EgressSelectedHandler OnEgressSelected;
     private int egress;
 
+
+    //new netcdoe
+    public static PhaseManager Instance {get; private set; }
+    [SyncVar(hook = nameof(OnPhaseChanged))]
+    private GamePhase syncedPhase;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
     private void Start()
     {
         phaseList = new PhaseLinkedList();
@@ -44,18 +55,30 @@ public class PhaseManager : MonoBehaviour
         foreach (GamePhase phase in System.Enum.GetValues(typeof(GamePhase)))
             phaseList.AddPhase(phase);
         phaseList.SetCurrentToHead();
+        
+        runSpeed = 5f;
+        OnEgressSelected += ExecuteEgressPhase;
+        FindKeyNPCs();
+        HidePlayers();
+
+        //netcode
+        if (isServer)
+        {
+            SetPhase(GamePhase.Phase1); //instructor sets 1st phase, triggers sync
+        }
 
         if(gammaKnifeObject == null) gammaKnifeObject = getRadSource();
         if (gammaKnifeObject != null) {
             gammaKnifeObject.SetActive(false);
         }
-        runSpeed = 5f;
+        //runSpeed = 5f;
 
-        
+        /*
         OnEgressSelected += ExecuteEgressPhase;
         FindKeyNPCs();
         HidePlayers();
         StartPhase();
+        */
     }
 
     private void Update()
@@ -955,4 +978,42 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
         npc.transform.rotation = Quaternion.identity;
     }
     
+
+    private void OnPhaseChanged(GamePhase oldPhase, GamePhase newPhase)
+    {
+        Debug.Log($"Phase changed from {oldPhase} to {newPhase}");
+
+        phaseList.SetCurrentTo(newPhase);//locally updating
+        StartPhase();//every client now runs startPhase together including host
+    }
+
+    [Command(requiresAuthority = false)]
+    public void CmdNextPhase()
+    {
+        if (!isServer) return;
+
+        if (phaseList.MoveNext())
+        {
+            SetPhase(phaseList.Current.Phase); //triggers OnPhaseChanged on all clients
+        }
+    }
+
+    [Command(requiresAuthority = false)]
+    public void CmdPreviousPhase()
+    {
+        if (!isServer) return;
+
+        if (phaseList.MovePrevious())
+        {
+            SetPhase(phaseList.Current.Phase); //same
+        }
+    }
+
+    [Server]
+    public void SetPhase(GamePhase newPhase)
+    {
+        syncedPhase = newPhase; //triggers hook on clients
+    }
+
+
 }

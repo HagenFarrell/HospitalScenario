@@ -235,7 +235,7 @@ public class Player : NetworkBehaviour
     {
         if (!isLocalPlayer)
         {
-            transform.position = new Vector3(transform.position.x, 6f, transform.position.z); // Adjust height
+            transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z); // Adjust height
         }
         else
         {
@@ -410,17 +410,19 @@ public class Player : NetworkBehaviour
 
     private void HandlePhaseManagement()
     {
-        if (phaseManager == null) return;
+        if (phaseManager == null || !isLocalPlayer || playerRole != Roles.Instructor) return;
 
         if (Input.GetKeyDown(KeyCode.Alpha0) && playerRole == Roles.Instructor) // Next phase
         {
-            phaseManager.NextPhase();
+            phaseManager.CmdNextPhase();
+            //phaseManager.NextPhase();
             if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) SoundAlarm();
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha9) && playerRole == Roles.Instructor) // Previous phase
         {
-            phaseManager.PreviousPhase();
+           phaseManager.CmdPreviousPhase();
+            // phaseManager.PreviousPhase();
             if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) SoundAlarm();
         }
 

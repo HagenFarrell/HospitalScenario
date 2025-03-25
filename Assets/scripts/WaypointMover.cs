@@ -37,18 +37,39 @@ public class WaypointMover : MonoBehaviour
     {
         waypointStorage = new Stack<WaypointState>();
         animator = GetComponent<Animator>();
-        // Set inital postion to first waypoint
-        currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
+
+        if (waypoints == null)
+        {
+            Debug.LogError($"WaypointMover on {gameObject.name} has no Waypoints assigned!");
+            enabled = false;
+            return;
+        }
+
+        currentWaypoint = waypoints.GetNextWaypoint(null);
+        if (currentWaypoint == null)
+        {
+            Debug.LogError($"WaypointMover on {gameObject.name}: first waypoint returned null!");
+            enabled = false;
+            return;
+        }
+
         transform.position = currentWaypoint.position;
 
-        // Set the next waypoint target
+        // Set next target
         currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
-        transform.LookAt(currentWaypoint);
-        
-        paths = waypoints.transform.parent.gameObject;
-        pathidx = 0;
+        if (currentWaypoint == null)
+        {
+            Debug.LogWarning($"WaypointMover on {gameObject.name}: next waypoint is null (might be at the end of path).");
+            enabled = false;
+            return;
+        }
 
+        transform.LookAt(currentWaypoint);
+
+        paths = waypoints.transform.parent?.gameObject;
+        pathidx = 0;
     }
+
 
     // Update is called once per frame
     void Update()
