@@ -132,12 +132,25 @@ public class RadEyeTool : NetworkBehaviour
             Debug.LogWarning(" Radiation source is not assigned yet.");
             return 0f;
         }
-
+        
+        Vector3 direction = (objectPosition - source.position).normalized;
         float distance = Vector3.Distance(source.position, objectPosition);
+        RaycastHit[] hits = Physics.RaycastAll(source.position, direction, distance);
+        
+        int blockingObjects = 0;
+        foreach(RaycastHit hit in hits)
+        {
+            if(Vector3.Distance(hit.point, objectPosition) < 0.1f) continue;
+            blockingObjects++;
+        }
+        
+        Debug.Log("Number of objects hit are: " + blockingObjects);
+        
+        float attentuation = 0.8f;
         float radiation = radiationGraph.Evaluate(distance);
-
-        Debug.Log($" Clicked Object at {objectPosition} | Distance: {distance}m | Radiation: {radiation} R");
-        return radiation;
+        float finalRadiation = radiation * Mathf.Pow(attentuation, blockingObjects);
+        
+        return finalRadiation;
     }
 
     void DisplayRadiation(float radiation, bool validTarget)
