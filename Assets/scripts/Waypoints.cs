@@ -6,15 +6,16 @@ using UnityEngine.UIElements;
 
 public class Waypoints : MonoBehaviour
 {
-    [Range(0f, 2f)] // Range Slider for range of size
+    [Range(0f, 10f)] // Range Slider for range of size
     [SerializeField] private float size = 1f; // Set size of waypoint sphere
 
     [Header("Path Settings")]
     [SerializeField] public bool canLoop = true; // Sets path to be looped or not
 
     [SerializeField] public bool isMovingForward = true; // Sets path to reverse after at last waypoint
-
-    [SerializeField] public int waypointsActiveInPhase; // Number of waypoints active in Phase 1
+    [Range(0f, 20f)] 
+    [SerializeField] public int waypointsActiveInPhase1; // Number of waypoints active in Phase 1
+    [SerializeField] private GamePhase activeInPhase;
     public int ActiveChildLength;
     PhaseManager phasemanager;
 
@@ -22,9 +23,20 @@ public class Waypoints : MonoBehaviour
     
     private void Start()
     {
+        // // if we manually set active waypoints without updating the variable, it should update itself from 0.
+        // if(waypointsActiveInPhase1 == 0){
+        //     for(int i=0; i<transform.childCount; i++){
+        //         if(!transform.GetChild(i).gameObject.activeSelf) break;
+        //         waypointsActiveInPhase1++;
+        //     }
+        // }
         phasemanager = FindObjectOfType<PhaseManager>();
-        ActiveChildLength = waypointsActiveInPhase;
+        ActiveChildLength = waypointsActiveInPhase1;
         UpdateWaypointVisibility();
+    }
+
+    public GamePhase getActivity(){
+        return activeInPhase;
     }
     
     // Simple method to update waypoint visibility
@@ -45,7 +57,7 @@ public class Waypoints : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        ActiveChildLength = 0;
+        if(phasemanager == null )ActiveChildLength = waypointsActiveInPhase1;
 
         foreach (Transform t in transform)
         {
@@ -62,9 +74,9 @@ public class Waypoints : MonoBehaviour
         {
             if (transform.GetChild(i + 1).gameObject.activeSelf)
             {
-            // Draws lines based on where they are in the Hierarchy top down.
-            Gizmos.DrawLine(transform.GetChild(i).position, transform.GetChild(i + 1).position);
-            ActiveChildLength++;
+                // Draws lines based on where they are in the Hierarchy top down.
+                Gizmos.DrawLine(transform.GetChild(i).position, transform.GetChild(i + 1).position);
+                // ActiveChildLength++;
             }
         }
 
@@ -85,7 +97,7 @@ public class Waypoints : MonoBehaviour
 
         // Gets the index of the current waypoint
         int currentIndex = currentWaypoint.GetSiblingIndex();
-        // Stores the index of the next waypoint to trabel towards
+        // Stores the index of the next waypoint to travel towards
         int nextIndex = currentIndex;
 
         // Check for if moving forward on the path
@@ -153,7 +165,7 @@ public class Waypoints : MonoBehaviour
                 else 
                 {
                     if(phasemanager.GetCurrentPhase() == GamePhase.Phase1){
-                        Debug.Log("back to uhh first node, moving fro");
+                        // Debug.Log("back to uhh first node, moving fro");
                         isMovingForward = !isMovingForward;
                         return transform.GetChild(currentIndex+1);
                     }
@@ -166,9 +178,10 @@ public class Waypoints : MonoBehaviour
         return transform.GetChild(nextIndex);
     }
 
-    public void ResetToPhaseSettings()
+    public void ResetToPhase1Settings()
     {
-        ActiveChildLength = waypointsActiveInPhase; // Reset to phase-specific value
+        // Debug.Log("resetttgiggenhgreuibiabduadbqwdubqwbu---------------------!");
+        ActiveChildLength = waypointsActiveInPhase1; // Reset to phase1 value
         UpdateWaypointVisibility();
     }
 

@@ -13,6 +13,8 @@ public class WaypointMover : MonoBehaviour
 
     [SerializeField] private float distanceThreshold = 0.1f;
     public Stack<WaypointState> waypointStorage;
+    public GameObject paths;
+    public int pathidx;
 
 
     [Range(1f, 20f)]
@@ -42,6 +44,9 @@ public class WaypointMover : MonoBehaviour
         // Set the next waypoint target
         currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
         transform.LookAt(currentWaypoint);
+        
+        paths = waypoints.transform.parent.gameObject;
+        pathidx = 0;
 
     }
 
@@ -59,7 +64,7 @@ public class WaypointMover : MonoBehaviour
             // Speed Change for Walking/Running
             if (phaseManager != null) {
                 if (phaseManager.GetCurrentPhase() == GamePhase.Phase1) {
-                    moveSpeed = 1f;
+                    moveSpeed = 2f;
                 } else if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) {
                     moveSpeed = 5f;
                 }

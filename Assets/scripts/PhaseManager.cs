@@ -6,20 +6,22 @@ using System.Collections;
 public class PhaseManager : MonoBehaviour
 {
     private PhaseLinkedList phaseList;
-    // private PhaseMovementHelper npcMove;
     private Player playerRole;
-    private Coroutine currentPhaseCoroutine;
-    // private HostageTriggerArea hostageArea;
     
-    // Reference to temporary gamma knife object
+    // radiaoctive object
     public GameObject gammaKnifeObject;
     
     // References to different NPC groups
     private GameObject[] villainsInside;
     private GameObject[] villainsOutside;
+    [SerializeField] private GameObject PlayerUnitsObject;
+    [SerializeField] private GameObject VillainLeagueObject;
+    [SerializeField] private GameObject CiviliansObject;
     private List<GameObject> playerUnits;
     private GameObject[] FD;
     private GameObject[] LLE;
+    private GameObject[] LLEVehicles;
+    private GameObject[] FDVehicles;
     private List<GameObject> allCivilians;
     private GameObject[] newCivilians;
     private GameObject[] newHostages;
@@ -27,45 +29,51 @@ public class PhaseManager : MonoBehaviour
     private GameObject physicianHostage;
     private List<GameObject> allVillains;
     private List<GameObject> allNPCs;
-    // private bool sameOld;
-    private int egress;
+    // other
+    private float runSpeed;
     private bool reverting;
+    // egress
     public delegate void EgressSelectedHandler(int egressPhase);
     public static event EgressSelectedHandler OnEgressSelected;
-
-    public int currentPhase;
+    private int egress;
 
     private void Start()
     {
-        currentPhase = 1;
-        // sameOld = false;
         phaseList = new PhaseLinkedList();
-        allCivilians = new List<GameObject>();
-        allVillains = new List<GameObject>();
-        allNPCs = new List<GameObject>();
-        FindKeyNPCs();
-
         // Define the phases
         foreach (GamePhase phase in System.Enum.GetValues(typeof(GamePhase)))
-        {
             phaseList.AddPhase(phase);
-        }
-        
-
         phaseList.SetCurrentToHead();
+
+        if(gammaKnifeObject == null) gammaKnifeObject = getRadSource();
+        if (gammaKnifeObject != null) {
+            gammaKnifeObject.SetActive(false);
+        }
+        runSpeed = 5f;
+
+        
         OnEgressSelected += ExecuteEgressPhase;
+        FindKeyNPCs();
+        HidePlayers();
         StartPhase();
     }
 
     private void Update()
     {
+        if (phaseList == null || phaseList.Current == null)
+        {
+            Debug.LogError("phaseList or phaseList.Current is null!");
+            return;
+        }
+
         if (phaseList.Current.Phase == GamePhase.Phase7)
         {
             SetEgressPhase();
         }
-        if(Input.GetKeyDown(KeyCode.Alpha8)){
-            Debug.LogWarning("resetting the current phase doesnt really work rn...");
-            // ResetCurrent();
+
+        if (Input.GetKeyDown(KeyCode.Alpha8))
+        {
+            Debug.LogWarning("Resetting the current phase doesn't really work right now...");
         }
     }
 
@@ -92,14 +100,12 @@ public class PhaseManager : MonoBehaviour
 
     private int SetEgressPhase()
     {
-        // Debug.Log("Awaiting Egress Selection...");
         playerRole = FindObjectOfType<Player>();
         if(playerRole == null){
             Debug.LogError("playerRole null");
         }
         if (playerRole.getPlayerRole() == Player.Roles.Instructor)
         {
-            // Debug.Log("Instructor! Hi!!!");
             if (Input.GetKeyDown(KeyCode.Z)) return TriggerEgressSelected(1);
             if (Input.GetKeyDown(KeyCode.X)) return TriggerEgressSelected(2);
             if (Input.GetKeyDown(KeyCode.C)) return TriggerEgressSelected(3);
@@ -117,11 +123,9 @@ public class PhaseManager : MonoBehaviour
 
     private int TriggerEgressSelected(int phase)
     {
-        // Debug.Log($"TriggerEgressSelected called with phase {phase}");
 
         if (OnEgressSelected != null)
         {
-            // Debug.Log("Triggering OnEgressSelected event");
             OnEgressSelected.Invoke(phase);
         }
         else
@@ -134,31 +138,142 @@ public class PhaseManager : MonoBehaviour
 
     private void FindKeyNPCs()
     {
-        // find villains
-        villainsInside = GameObject.FindGameObjectsWithTag("Villains");
-        villainsOutside = GameObject.FindGameObjectsWithTag("OutsideVillains");
-        allVillains = new List<GameObject>(villainsInside);
-        allVillains.AddRange(villainsOutside);
+        // Initialize lists
+        allVillains = new List<GameObject>();
+        playerUnits = new List<GameObject>();
+        allCivilians = new List<GameObject>();
+        allNPCs = new List<GameObject>();
+
+        // Find villains - use serialized reference first
+        if (VillainLeagueObject != null)
+        {
+            foreach (Transform child in VillainLeagueObject.transform)
+            {
+                if (child.CompareTag("Villains") || child.CompareTag("OutsideVillains"))
+                {
+                    allVillains.Add(child.gameObject);
+                }
+            }
+        }
+        else
+        {
+            // Fall back to tag search
+            villainsInside = GameObject.FindGameObjectsWithTag("Villains");
+            villainsOutside = GameObject.FindGameObjectsWithTag("OutsideVillains");
+            allVillains.AddRange(villainsInside);
+            allVillains.AddRange(villainsOutside);
+        }
+
+        // Find player units - use serialized reference first
+        if (PlayerUnitsObject != null)
+        {
+            foreach (Transform child in PlayerUnitsObject.transform)
+            {
+                if (child.CompareTag("FireDepartment") || child.CompareTag("LawEnforcement"))
+                {
+                    playerUnits.Add(child.gameObject);
+                }
+            }
+            
+            List<GameObject> fdList = new List<GameObject>();
+            foreach (GameObject unit in playerUnits)
+            {
+                if (unit.CompareTag("FireDepartment"))
+                {
+                    fdList.Add(unit);
+                }
+            }
+            FD = fdList.ToArray();
+            
+            List<GameObject> lleList = new List<GameObject>();
+            foreach (GameObject unit in playerUnits)
+            {
+                if (unit.CompareTag("LawEnforcement"))
+                {
+                    lleList.Add(unit);
+                }
+            }
+            LLE = lleList.ToArray();
+
+            LLEVehicles = GameObject.FindGameObjectsWithTag("LawEnforcementVehicle");
+FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
+        }
+        else
+        {
+            // Fall back to tag search
+            FD = GameObject.FindGameObjectsWithTag("FireDepartment");
+            LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
+            playerUnits.AddRange(FD);
+            playerUnits.AddRange(LLE);
+        }
+
+        // Find civilians - use serialized reference first
+        if (CiviliansObject != null)
+        {
+            foreach (Transform child in CiviliansObject.transform)
+            {
+                if (child.CompareTag("PhysicianHostage") || 
+                    child.CompareTag("Hostages") || 
+                    child.CompareTag("Civilians") || 
+                    child.CompareTag("Medicals"))
+                {
+                    allCivilians.Add(child.gameObject);
+                    
+                    // Special handling for physician hostage
+                    if (child.CompareTag("PhysicianHostage"))
+                    {
+                        physicianHostage = child.gameObject;
+                    }
+                }
+            }
+            
+            List<GameObject> civiliansList = new List<GameObject>();
+            List<GameObject> hostagesList = new List<GameObject>();
+            List<GameObject> medicalsList = new List<GameObject>();
+            
+            foreach (GameObject civilian in allCivilians)
+            {
+                if (civilian.CompareTag("Civilians"))
+                {
+                    civiliansList.Add(civilian);
+                }
+                else if (civilian.CompareTag("Hostages"))
+                {
+                    hostagesList.Add(civilian);
+                }
+                else if (civilian.CompareTag("Medicals"))
+                {
+                    medicalsList.Add(civilian);
+                }
+            }
+            
+            newCivilians = civiliansList.ToArray();
+            newHostages = hostagesList.ToArray();
+            newMedicals = medicalsList.ToArray();
+        }
+        else
+        {
+            // Fall back to tag search
+            GameObject[] physicianHostages = GameObject.FindGameObjectsWithTag("PhysicianHostage");
+            physicianHostage = physicianHostages.Length > 0 ? physicianHostages[0] : null;
+            
+            newCivilians = GameObject.FindGameObjectsWithTag("Civilians");
+            newHostages = GameObject.FindGameObjectsWithTag("Hostages");
+            newMedicals = GameObject.FindGameObjectsWithTag("Medicals");
+
+            if (physicianHostage != null) allCivilians.Add(physicianHostage);
+            if (newHostages != null) allCivilians.AddRange(newHostages);
+            if (newCivilians != null) allCivilians.AddRange(newCivilians);
+            if (newMedicals != null) allCivilians.AddRange(newMedicals);
+        }
+
         allNPCs.AddRange(allVillains);
-
-        // find player characters
-        FD = GameObject.FindGameObjectsWithTag("FireDepartment");
-        LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
-        playerUnits = new List<GameObject>(FD);
-        playerUnits.AddRange(LLE);
-
-        // find civilians
-        physicianHostage = GameObject.FindGameObjectsWithTag("PhysicianHostage")[0];
-        newCivilians = GameObject.FindGameObjectsWithTag("Civilians");
-        newHostages = GameObject.FindGameObjectsWithTag("Hostages");
-        newMedicals = GameObject.FindGameObjectsWithTag("Medicals");
-
-        if (physicianHostage != null) allCivilians.Add(physicianHostage);
-        if (newHostages != null) allCivilians.AddRange(newHostages);
-        if (newCivilians != null) allCivilians.AddRange(newCivilians);
-        if (newMedicals != null) allCivilians.AddRange(newMedicals);
-
         allNPCs.AddRange(allCivilians);
+
+        if (allVillains.Count == 0) Debug.LogWarning("No villains found!");
+        if (playerUnits.Count == 0) Debug.LogWarning("No player units found!");
+        if (allCivilians.Count == 0) Debug.LogWarning("No civilians found!");
+        if (physicianHostage == null) Debug.LogWarning("Physician hostage not found!");
     }
     
     private void StartPhase()
@@ -179,32 +294,23 @@ public class PhaseManager : MonoBehaviour
         // Find and disable any remaining civilians
         foreach (GameObject civilian in newCivilians)
         {
-            // Debug.Log($"Phase 3: Despawning civilian {civilian.name}");
             civilian.SetActive(false);
         }
         
         // Find and disable any remaining medicals
         foreach (GameObject medical in newMedicals)
         {
-            // Debug.Log($"Phase 3: Despawning medical {medical.name}");
             medical.SetActive(false);
         }
     }
-
     public void NextPhase()
     {
         reverting = false;
-        // Stop any ongoing coroutines from the current phase
-        if (currentPhaseCoroutine != null)
-        {
-            StopCoroutine(currentPhaseCoroutine);
-            currentPhaseCoroutine = null;
-        }
 
         if (phaseList.MoveNext())
         {
-            ResetForward(phaseList.Current.Phase);
             Debug.Log("Moving to next phase.");
+            ResetForward();
             StartPhase();
         }
         else
@@ -212,18 +318,13 @@ public class PhaseManager : MonoBehaviour
             Debug.Log("Already at the last phase!");
         }
     }
-
     public void PreviousPhase()
     {
         reverting = true;
-        // Stop any ongoing coroutines
-        if (currentPhaseCoroutine != null)
-        {
-            StopCoroutine(currentPhaseCoroutine);
-            currentPhaseCoroutine = null;
-        }
+
         if (phaseList.MovePrevious())
         {
+            if(OnEgressSelected == null) OnEgressSelected += ExecuteEgressPhase;
             ResetBackwards();
             Debug.Log("Moving to previous phase.");
             StartPhase();
@@ -231,40 +332,79 @@ public class PhaseManager : MonoBehaviour
         else
         {
             Debug.Log("Already at the first phase!");
+            ClearStack();
         }
     }
-
+    private void ClearStack(){
+        // foreach(GameObject npc in allNPCs){
+        //     WaypointMover mover = npc.GetComponent<WaypointMover>();
+        //     mover.waypointStorage.Clear();
+        //     mover.waypoints.ResetToPhase1Settings();
+        // }
+    }
     private GameObject getRadSource(){
         return allVillains[0].transform.GetChild(4).gameObject;
     }
-
-    // Phase 1 with new waypoint paths
-    private void ExecutePhase1()
-    {
-        // Debug.LogError("executing phase numero uno");
+    private void HidePlayers(){
         if(playerUnits == null || playerUnits.Count == 0){
+            Debug.LogError("Player units null, attempting to locate");
             GameObject temp = GameObject.Find("Player Units");
-            temp.transform.position = new Vector3(temp.transform.position.x, temp.transform.position.y-9000f, temp.transform.position.z);
         }
-        else foreach(GameObject unit in playerUnits){
-            Debug.Log("moving down " + unit);
+        foreach(GameObject unit in playerUnits){
             unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y-9000f, unit.transform.position.z);
         }
-        
-        currentPhase = 1;
-        // Debug.Log("Executing Phase 1: NPCs begin waypoint movement");
-        gammaKnifeObject = getRadSource();
-        if (gammaKnifeObject != null) {
-            gammaKnifeObject.SetActive(false);
-            // gammaKnifeObject.transform.GetChild(0).localScale = new Vector3(1.125f, 1.125f, 1.125f);
+        HideAllVehicles();
+    }
+    private void HideLLE(){
+        if(LLE == null || LLE.Length == 0){
+            LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
+        }
+        foreach(GameObject unit in LLE){
+            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y-9000f, unit.transform.position.z);
+        }
+        if(LLEVehicles == null || LLEVehicles.Length == 0){
+            LLEVehicles = GameObject.FindGameObjectsWithTag("LawEnforcementVehicle");
+        }
+        foreach(GameObject vehicle in LLEVehicles){
+            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y-9000f, vehicle.transform.position.z);
+        }
+    }
+    private void HideFD(){
+        if(FD == null || FD.Length == 0){
+            FD = GameObject.FindGameObjectsWithTag("FireDepartment");
+        }
+        foreach(GameObject unit in FD){
+            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y-9000f, unit.transform.position.z);
+        }
+        if(FDVehicles == null || FDVehicles.Length == 0){
+        FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
+        }
+        foreach(GameObject vehicle in FDVehicles){
+            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y-9000f, vehicle.transform.position.z);
+        }
+    }
+
+    private void HideAllVehicles(){
+        // Hide LLE vehicles
+        if(LLEVehicles == null || LLEVehicles.Length == 0){
+            LLEVehicles = GameObject.FindGameObjectsWithTag("LawEnforcementVehicle");
+        }
+        foreach(GameObject vehicle in LLEVehicles){
+            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y-9000f, vehicle.transform.position.z);
         }
         
-        // Hide gun
-        allVillains[0].transform.GetChild(1).gameObject.SetActive(false);
-        
+        // Hide FD vehicles
+        if(FDVehicles == null || FDVehicles.Length == 0){
+            FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
+        }
+        foreach(GameObject vehicle in FDVehicles){
+            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y-9000f, vehicle.transform.position.z);
+        }
+    }
+    private void HandleStartCivs()
+    {
         foreach (GameObject civilian in allCivilians)
         {
-            // Debug.Log("Enabling NPC: " + civilian);
             civilian.SetActive(true);
             // Set animation state to walking
             Animator animator = civilian.GetComponent<Animator>();
@@ -274,79 +414,41 @@ public class PhaseManager : MonoBehaviour
 
             if (mover != null)
             {
-                // Debug.Log(mover.waypoints.waypointsActiveInPhase + " waypoints active for " + civilian);
-                // Reset to first waypoint in the path
                 if (mover.waypoints != null && mover.waypoints.transform.childCount > 0)
                 {
-                    // Debug.Log("Resetting to initial waypoint");
                     mover.currentWaypoint = mover.waypoints.GetNextWaypoint(null);
                     mover.enabled = true;
                     mover.despawnAtLastWaypoint = false;
+                    civilian.transform.position = mover.currentWaypoint.transform.position;
+                    mover.waypoints.ResetToPhase1Settings();
+                    mover.pathidx = 0;
+                    resetAnimator(civilian);
                 }
-                if(mover.waypoints.waypointsActiveInPhase == 1){
-                    // Debug.Log("Sitting down");
+                if(mover.waypoints.waypointsActiveInPhase1 == 1){
                     animator.SetBool("IsWalking", false);
                     animator.SetBool("IsRunning", false);
                     animator.SetBool("ToSitting", true);
                 } else {
-                    // Debug.Log("going for a walk");
                     if (animator != null)
                     {
-                        // Debug.Log("Animator NOT null for " + civilian);
                         animator.SetBool("IsWalking", true);
-                        animator.SetBool("IsRunning", false); // this is fine right
+                        animator.SetBool("IsRunning", false);
                     } else Debug.LogError("Animator null for " + civilian);
                 }
             }
         }
+    }
+    private void Phase2CivPaths(){
+        foreach(GameObject npc in allCivilians){
+            WaypointMover mover = npc.GetComponent<WaypointMover>();
+            if(mover == null) continue;
 
-        // Sets allVillains disc to green to make then try to blend in
-        foreach(GameObject villain in allVillains) {
-            WaypointMover mover = villain.GetComponent<WaypointMover>();
-            // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-            GameObject disc = villain.transform.GetChild(2).gameObject;
-            disc.SetActive(true);
-            
-            // Change the disc color to green
-            Renderer discRenderer = disc.GetComponent<Renderer>();
-            if (discRenderer != null) {
-                discRenderer.material.color = Color.green;
-            }
+            mover.waypoints.isMovingForward = true;
+            mover.waypoints.canLoop = false;
+            mover.waypoints.enableAll();
         }
     }
-
-    private void ExecutePhase2(){
-        currentPhase = 2;
-        Debug.Log("executing the phase of tuah");
-        Waypoints[] waypoint = FindObjectsOfType<Waypoints>();
-        if(waypoint == null){
-            Debug.LogError("waypoint object not found!");
-        }
-        foreach(Waypoints temp in waypoint){
-            temp.isMovingForward = true;
-            temp.canLoop = false;
-
-            temp.enableAll();
-        }
-
-        foreach (GameObject hostage in newHostages)
-        {
-            // Change disk color to yellow at last waypoint
-            GameObject disc = hostage.transform.GetChild(2).gameObject;
-            Renderer discRenderer = disc.GetComponent<Renderer>();
-
-            if (discRenderer != null && !gameObject.CompareTag("PhysicianHostage")) {
-                discRenderer.material.color = Color.yellow;
-                // Debug.Log($"Changed {gameObject.name} disc to yellow at last waypoint");
-            } 
-        }
-
-        GameObject disc1 = physicianHostage.transform.GetChild(2).gameObject;
-        Renderer discRenderer1 = disc1.GetComponent<Renderer>();
-        discRenderer1.material.color = new Color(1f, 0.5f, 0f);
-
-
-
+    private void DespawnOnEscape(){
         // Configure all civilian WaypointMovers to despawn when they reach the last waypoint
         foreach (GameObject civilian in allCivilians) {
             WaypointMover mover = civilian.GetComponent<WaypointMover>();
@@ -360,789 +462,142 @@ public class PhaseManager : MonoBehaviour
             }
             
         }
-        // Shows gun
-        allVillains[0].transform.GetChild(1).gameObject.SetActive(true);
+    }
+    private void InitializeDiscColors(){
+        GameObject disc = physicianHostage.transform.GetChild(2).gameObject;
+        Renderer discRenderer = disc.GetComponent<Renderer>();
+        foreach (GameObject npc in allNPCs)
+        {
+            // Change disk color to green
+            disc = npc.transform.GetChild(2).gameObject;
 
-        // Sets allVillains disc to red to show they are bad
+            discRenderer = disc.GetComponent<Renderer>();
+            discRenderer.material.color = Color.green;
+        }
+    }
+    private void UpdateHostageDiscs(){
+        // physicianHostage special - orange!
+        GameObject disc = physicianHostage.transform.GetChild(2).gameObject;
+        Renderer discRenderer = disc.GetComponent<Renderer>();
+        discRenderer.material.color = new Color(1f, 0.5f, 0f);
+
+        foreach (GameObject hostage in newHostages)
+        {
+            // Change disk color to yellow at last waypoint
+            disc = hostage.transform.GetChild(2).gameObject;
+
+            if (discRenderer == null && gameObject.CompareTag("PhysicianHostage")) continue;
+
+            discRenderer = disc.GetComponent<Renderer>();
+            discRenderer.material.color = Color.yellow;
+        }
+    }
+    private void UpdateVillainDiscs(Color color){
         foreach(GameObject villain in allVillains) {
             GameObject disc = villain.transform.GetChild(2).gameObject;
             
             // Change the disc color to green
             Renderer discRenderer = disc.GetComponent<Renderer>();
             if (discRenderer != null) {
-                discRenderer.material.color = Color.red;
+                discRenderer.material.color = color;
             }
         }
-        
-        
+    }
+    private void ToggleGun(){
+        // toggles gun
+        GameObject weapon = allVillains[0].transform.GetChild(1).gameObject;
+        weapon.SetActive(!weapon.activeSelf);
+    }
+    private void Alarming(){
         // Receptionist hits duress alarm
         Debug.Log("Duress alarm activated. Dispatcher notified.");
         physicianHostage.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
-
     }
-
-    private void ExecutePhase3(){
-        
-        // Reset physicianHostage animator from bugging out
-        Animator animator = physicianHostage.GetComponent<Animator>();
-        if(animator != null) {
-            animator.Rebind();  // This completely resets the animator state machine
-            animator.Update(0f); // This forces an immediate update
-            
-            // THEN set all animation parameters explicitly to known states
-            animator.SetBool("IsWalking", false);
-            animator.SetBool("IsRunning", false);
-            animator.SetBool("ToSitting", false);
-            
-            foreach(GameObject hostage in newHostages){
-                animator = hostage.GetComponent<Animator>();
-                animator.Rebind();  // This completely resets the animator state machine
-                animator.Update(0f); // This forces an immediate update
-                
-                // THEN set all animation parameters explicitly to known states
-                animator.SetBool("IsWalking", false);
-                animator.SetBool("IsRunning", false);
-                animator.SetBool("ToSitting", false);
-                animator.SetBool("IsThreatPresent", true);
-            }
-        }
-        
-        // THEN set position and rotation (order matters)
-        physicianHostage.transform.rotation = Quaternion.identity;
-        Debug.Log($"The allVillains have taken {physicianHostage.name} hostage!");
-        if(animator != null) animator.SetBool("IsThreatPresent", false);
-    }
-
-    private void ExecutePhase4(){
-        WaypointMover mover = allVillains[0].GetComponent<WaypointMover>();
-        mover.waypoints = GameObject.Find("Waypoints15")?.GetComponent<Waypoints>();
-       if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0)); //this is how we get first waypoint externally
-        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-        Animator animator = mover.GetComponent<Animator>();
-        // Change animation to walking
-        if (animator != null)
-        {
-            animator.SetBool("IsRunning", true);
-            mover.moveSpeed = 5;
-        }
-
-        mover = allVillains[1].GetComponent<WaypointMover>();
-        mover.waypoints = GameObject.Find("Waypoints14")?.GetComponent<Waypoints>();
-       if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-        Animator animator1 = mover.GetComponent<Animator>();
-        // Change animation to walking
-        if (animator1 != null)
-        {
-            animator1.SetBool("IsRunning", true);
-            mover.moveSpeed = 5;
-        }
-
-        mover = allVillains[3].GetComponent<WaypointMover>();
-        mover.waypoints = GameObject.Find("Waypoints16")?.GetComponent<Waypoints>();
-       if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-        Animator animator2 = mover.GetComponent<Animator>();
-        // Change animation to walking
-        if (animator2 != null)
-        {
-            animator2.SetBool("IsRunning", true);
-            mover.moveSpeed = 5;
-        }
-
-        mover = allVillains[4].GetComponent<WaypointMover>();
-        mover.waypoints = GameObject.Find("Waypoints17")?.GetComponent<Waypoints>();
-       if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-        Animator animator3 = mover.GetComponent<Animator>();
-        // Change animation to walking
-        if (animator3 != null)
-        {
-            animator3.SetBool("IsRunning", true);
-            mover.moveSpeed = 5;
-        }
-
-        // Doctor that gets taken hostage moves them to gamma knife
-        mover = physicianHostage.GetComponent<WaypointMover>();
-
-        Animator animator4 = physicianHostage.GetComponent<Animator>();
-        // Change animation to walking
-        if (animator4 != null)
-        {
-            animator4.SetBool("IsRunning", true);
-            mover.moveSpeed = 5;
-        }
-
-
-        mover.waypoints = GameObject.Find("Waypoints18")?.GetComponent<Waypoints>();
-       if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-        // Debug.Log($"Two Villains are taking {physicianHostage.name} to the gamma knife room");
-        // Debug.Log($"{villainsInside[2].name} stays behind in the lobby");
-        
-    }
-
-    private void ExecutePhase5(){
-         if (gammaKnifeObject != null) {
-            Debug.Log("gammaknifeobject SPAWNING!!!!");
-            gammaKnifeObject.SetActive(true);
-            gammaKnifeObject.transform.GetChild(0).gameObject.SetActive(true);
-            // gammaKnifeObject.transform.localScale = new Vector3(25f, 25f, 25f);
-        }
-
-        if(LLE == null || LLE.Length == 0) LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
-        foreach(GameObject unit in LLE){
-            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y+9000f, unit.transform.position.z);
-        }
-
-
-        WaypointMover mover = allVillains[2].GetComponent<WaypointMover>();
-        mover.waypoints = GameObject.Find("Waypoints13")?.GetComponent<Waypoints>();
-       if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-        Animator animator1 = mover.GetComponent<Animator>();
-        // Change animation
-        if (animator1 != null)
-        {
-            animator1.SetBool("IsRunning", true);
-            mover.moveSpeed = 5;
-        }
-
-        mover = allVillains[3].GetComponent<WaypointMover>();
-        mover.waypoints = GameObject.Find("Waypoints24")?.GetComponent<Waypoints>();
-       if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-        Animator animator2 = mover.GetComponent<Animator>();
-        // Change animation 
-        if (animator2 != null)
-        {
-            animator2.SetBool("IsRunning", true);
-            mover.moveSpeed = 5;
-        }
-
-        mover = allVillains[4].GetComponent<WaypointMover>();
-        mover.waypoints = GameObject.Find("Waypoints25")?.GetComponent<Waypoints>();
-       if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-        Animator animator3 = mover.GetComponent<Animator>();
-        // Change animation 
-        if (animator3 != null)
-        {
-            animator3.SetBool("IsRunning", true);
-            mover.moveSpeed = 5;
-        }
-
-        Animator animator4 = physicianHostage.GetComponent<Animator>();
-        // Change animation to walking
-        if (animator4 != null)
-        {
-            animator4.SetBool("ToRummaging", false);
-        }
-
-       
-
-    }
-
-    private void ExecutePhase6(){
-        if (FD == null || FD.Length == 0) FD = GameObject.FindGameObjectsWithTag("FireDepartment");
-        foreach(GameObject unit in FD){
-            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y+9000f, unit.transform.position.z);
-        }
-
-        WaypointMover mover = allVillains[0].GetComponent<WaypointMover>();
-        mover.waypoints = GameObject.Find("Waypoints26")?.GetComponent<Waypoints>();
-       if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-        Animator animator = mover.GetComponent<Animator>();
-        // Change animation to walking
-        if (animator != null)
-        {
-            animator.SetBool("IsRunning", true);
-            mover.moveSpeed = 5;
-        }
-
-        mover = allVillains[1].GetComponent<WaypointMover>();
-        mover.waypoints = GameObject.Find("Waypoints27")?.GetComponent<Waypoints>();
-       if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-        Animator animator1 = mover.GetComponent<Animator>();
-        // Change animation to walking
-        if (animator1 != null)
-        {
-            animator1.SetBool("IsRunning", true);
-            mover.moveSpeed = 5;
-        }
-
-        mover = allVillains[2].GetComponent<WaypointMover>();
-        mover.waypoints = GameObject.Find("Waypoints28")?.GetComponent<Waypoints>();
-       if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-        animator1 = mover.GetComponent<Animator>();
-        // Change animation to walking
-        if (animator1 != null)
-        {
-            animator1.SetBool("IsRunning", true);
-            mover.moveSpeed = 5;
-        }
-
-        mover = allVillains[3].GetComponent<WaypointMover>();
-        mover.waypoints = GameObject.Find("Waypoints29")?.GetComponent<Waypoints>();
-       if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-        Animator animator2 = mover.GetComponent<Animator>();
-        // Change animation to walking
-        if (animator2 != null)
-        {
-            animator2.SetBool("IsRunning", true);
-            mover.moveSpeed = 5;
-        }
-
-        mover = allVillains[4].GetComponent<WaypointMover>();
-        mover.waypoints = GameObject.Find("Waypoints30")?.GetComponent<Waypoints>();
-       if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-        Animator animator3 = mover.GetComponent<Animator>();
-        // Change animation to walking
-        if (animator3 != null)
-        {
-            animator3.SetBool("IsRunning", true);
-            mover.moveSpeed = 5;
-        }
-
-        // physician hostage goes with them
-        mover = physicianHostage.GetComponent<WaypointMover>();
-
-        Animator animator4 = physicianHostage.GetComponent<Animator>();
-        // Change animation to walking
-        if (animator4 != null)
-        {
-            animator4.SetBool("IsRunning", true);
-            mover.moveSpeed = 5;
-        }
-        mover.waypoints = GameObject.Find("Waypoints31")?.GetComponent<Waypoints>();
-       if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-        // Remaining hostages get rounded up
-        mover = newHostages[0].GetComponent<WaypointMover>();
-
-        animator4 = newHostages[0].GetComponent<Animator>();
-        // Change animation to walking
-        if (animator4 != null)
-        {
-            animator4.SetBool("IsRunning", true);
-            animator4.SetBool("IsThreatPresent", false);
-            mover.moveSpeed = 5;
-        }
-        mover.waypoints = GameObject.Find("Waypoints32")?.GetComponent<Waypoints>();
-       if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-        // Remaining hostages get rounded up
-        mover = newHostages[1].GetComponent<WaypointMover>();
-
-        animator4 = newHostages[1].GetComponent<Animator>();
-        // Change animation to walking
-        if (animator4 != null)
-        {
-            animator4.SetBool("IsRunning", true);
-            animator4.SetBool("IsThreatPresent", false);
-            mover.moveSpeed = 5;
-        }
-        mover.waypoints = GameObject.Find("Waypoints33")?.GetComponent<Waypoints>();
-       if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-    }
-
     private void ExecuteEgressPhase(int selectedEgress)
     {
-        OnEgressSelected -= ExecuteEgressPhase; // Unsubscribe to prevent multiple calls
+        if(OnEgressSelected == null) return;
+        OnEgressSelected -= ExecuteEgressPhase; 
+        SaveWaypointState();
 
         Debug.Log($"Egress phase {selectedEgress} selected!");
         egress = selectedEgress;
 
-        switch(egress) // b = random
+        foreach (GameObject npc in allNPCs)
         {
-            case 1: // z
-                // Phase Egress 1: Adversaries move to the front emergency exit
-                Debug.Log("Phase Egress: " + egress);
-                
-                WaypointMover mover = allVillains[0].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints34")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
+            if (!npc.activeSelf || (npc.CompareTag("Civilians") || npc.CompareTag("Medicals"))) continue;
+
+            WaypointMover mover = npc.GetComponent<WaypointMover>();
+            if(mover.paths == null) mover.paths = mover.waypoints.transform.parent.gameObject;
+            if (mover == null || mover.paths == null || mover.waypoints == null)
+            {
+                Debug.LogWarning($"NPC {npc.name} has missing WaypointMover or path references.");
+                resetAnimator(npc);
+                continue;
+            }
+            if(mover.waypoints.ActiveChildLength < 2) continue;
+
+            Transform path = mover.paths.transform.GetChild(mover.paths.transform.childCount-1);
+            Waypoints waypoints = path.transform.GetChild(egress-1).GetComponent<Waypoints>();
+            if(waypoints == null){
+                Debug.LogWarning("Waypoints null, so " + npc + " wont update their paths");
+                continue;
+            }else {
+                mover.waypoints = waypoints;
+                mover.currentWaypoint = waypoints.GetNextWaypoint(waypoints.transform.GetChild(0));
+                mover.pathidx = mover.paths.transform.childCount-1;
+                if(GetCurrentPhase() != GamePhase.Phase1) 
+                    mover.waypoints.enableAll();
 
                 Animator animator = mover.GetComponent<Animator>();
-                // Change animation to walking
                 if (animator != null)
                 {
                     animator.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
+                    mover.moveSpeed = runSpeed;
                 }
-
-                mover = allVillains[1].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints35")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                Animator animator1 = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator1 != null)
-                {
-                    animator1.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                mover = allVillains[2].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints36")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                animator1 = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator1 != null)
-                {
-                    animator1.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                mover = allVillains[3].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints37")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                Animator animator2 = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator2 != null)
-                {
-                    animator2.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                mover = allVillains[4].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints38")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                Animator animator3 = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator3 != null)
-                {
-                    animator3.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                // physician hostage goes with them
-                mover = physicianHostage.GetComponent<WaypointMover>();
-
-                Animator animator4 = physicianHostage.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator4 != null)
-                {
-                    animator4.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-                mover.waypoints = GameObject.Find("Waypoints39")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                // Remaining hostages get rounded up
-                mover = newHostages[0].GetComponent<WaypointMover>();
-
-                animator4 = newHostages[0].GetComponent<Animator>();
-                // Change animation to walking
-                if (animator4 != null)
-                {
-                    animator4.SetBool("IsRunning", true);
-                    animator4.SetBool("IsThreatPresent", false);
-                    mover.moveSpeed = 5;
-                }
-                mover.waypoints = GameObject.Find("Waypoints40")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                // Remaining hostages get rounded up
-                mover = newHostages[1].GetComponent<WaypointMover>();
-
-                animator4 = newHostages[1].GetComponent<Animator>();
-                // Change animation to walking
-                if (animator4 != null)
-                {
-                    animator4.SetBool("IsRunning", true);
-                    animator4.SetBool("IsThreatPresent", false);
-                    mover.moveSpeed = 5;
-                }
-                mover.waypoints = GameObject.Find("Waypoints41")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-
-                break;
-            case 2: // x
-                // Phase Egress 2: Adversaries move to the rear emergency exit
-                Debug.Log("Phase Egress: " + egress);
-                
-                mover = allVillains[0].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints42")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                animator = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator != null)
-                {
-                    animator.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                mover = allVillains[1].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints43")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                animator1 = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator1 != null)
-                {
-                    animator1.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                mover = allVillains[2].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints44")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                animator1 = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator1 != null)
-                {
-                    animator1.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                mover = allVillains[3].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints45")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                animator2 = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator2 != null)
-                {
-                    animator2.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                mover = allVillains[4].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints46")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                animator3 = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator3 != null)
-                {
-                    animator3.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                // physician hostage goes with them
-                mover = physicianHostage.GetComponent<WaypointMover>();
-
-                animator4 = physicianHostage.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator4 != null)
-                {
-                    animator4.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-                mover.waypoints = GameObject.Find("Waypoints47")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                // Remaining hostages get rounded up
-                mover = newHostages[0].GetComponent<WaypointMover>();
-
-                animator4 = newHostages[0].GetComponent<Animator>();
-                // Change animation to walking
-                if (animator4 != null)
-                {
-                    animator4.SetBool("IsRunning", true);
-                    animator4.SetBool("IsThreatPresent", false);
-                    mover.moveSpeed = 5;
-                }
-                mover.waypoints = GameObject.Find("Waypoints48")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                // Remaining hostages get rounded up
-                mover = newHostages[1].GetComponent<WaypointMover>();
-
-                animator4 = newHostages[1].GetComponent<Animator>();
-                // Change animation to walking
-                if (animator4 != null)
-                {
-                    animator4.SetBool("IsRunning", true);
-                    animator4.SetBool("IsThreatPresent", false);
-                    mover.moveSpeed = 5;
-                }
-                mover.waypoints = GameObject.Find("Waypoints49")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-
-                break;
-            case 3: // c
-                // Phase Egress 3: Adversaries move to the lobby exit
-                Debug.Log("Phase Egress: " + egress);
-
-                mover = allVillains[0].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints50")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                animator = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator != null)
-                {
-                    animator.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                mover = allVillains[1].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints51")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                animator1 = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator1 != null)
-                {
-                    animator1.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                mover = allVillains[2].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints52")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                animator1 = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator1 != null)
-                {
-                    animator1.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                mover = allVillains[3].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints53")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                animator2 = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator2 != null)
-                {
-                    animator2.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                mover = allVillains[4].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints54")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                animator3 = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator3 != null)
-                {
-                    animator3.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                // physician hostage goes with them
-                mover = physicianHostage.GetComponent<WaypointMover>();
-
-                animator4 = physicianHostage.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator4 != null)
-                {
-                    animator4.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-                mover.waypoints = GameObject.Find("Waypoints55")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                // Remaining hostages get rounded up
-                mover = newHostages[0].GetComponent<WaypointMover>();
-
-                animator4 = newHostages[0].GetComponent<Animator>();
-                // Change animation to walking
-                if (animator4 != null)
-                {
-                    animator4.SetBool("IsRunning", true);
-                    animator4.SetBool("IsThreatPresent", false);
-                    mover.moveSpeed = 5;
-                }
-                mover.waypoints = GameObject.Find("Waypoints56")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                // Remaining hostages get rounded up
-                mover = newHostages[1].GetComponent<WaypointMover>();
-
-                animator4 = newHostages[1].GetComponent<Animator>();
-                // Change animation to walking
-                if (animator4 != null)
-                {
-                    animator4.SetBool("IsRunning", true);
-                    animator4.SetBool("IsThreatPresent", false);
-                    mover.moveSpeed = 5;
-                }
-                mover.waypoints = GameObject.Find("Waypoints57")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                break;
-            case 4: // v
-                // Phase Egress 4: Adversaries move to the rear exit
-                Debug.Log("Phase Egress: " + egress);
-                
-                mover = allVillains[0].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints58")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                animator = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator != null)
-                {
-                    animator.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                mover = allVillains[1].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints59")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                animator1 = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator1 != null)
-                {
-                    animator1.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                mover = allVillains[2].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints60")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                animator1 = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator1 != null)
-                {
-                    animator1.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                mover = allVillains[3].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints61")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                animator2 = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator2 != null)
-                {
-                    animator2.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                mover = allVillains[4].GetComponent<WaypointMover>();
-                mover.waypoints = GameObject.Find("Waypoints62")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                animator3 = mover.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator3 != null)
-                {
-                    animator3.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-
-                // physician hostage goes with them
-                mover = physicianHostage.GetComponent<WaypointMover>();
-
-                animator4 = physicianHostage.GetComponent<Animator>();
-                // Change animation to walking
-                if (animator4 != null)
-                {
-                    animator4.SetBool("IsRunning", true);
-                    mover.moveSpeed = 5;
-                }
-                mover.waypoints = GameObject.Find("Waypoints63")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                // Remaining hostages get rounded up
-                mover = newHostages[0].GetComponent<WaypointMover>();
-
-                animator4 = newHostages[0].GetComponent<Animator>();
-                // Change animation to walking
-                if (animator4 != null)
-                {
-                    animator4.SetBool("IsRunning", true);
-                    animator4.SetBool("IsThreatPresent", false);
-                    mover.moveSpeed = 5;
-                }
-                mover.waypoints = GameObject.Find("Waypoints64")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                // Remaining hostages get rounded up
-                mover = newHostages[1].GetComponent<WaypointMover>();
-
-                animator4 = newHostages[1].GetComponent<Animator>();
-                // Change animation to walking
-                if (animator4 != null)
-                {
-                    animator4.SetBool("IsRunning", true);
-                    animator4.SetBool("IsThreatPresent", false);
-                    mover.moveSpeed = 5;
-                }
-                mover.waypoints = GameObject.Find("Waypoints65")?.GetComponent<Waypoints>();
-               if(!reverting) mover.currentWaypoint = mover.waypoints.GetNextWaypoint(mover.waypoints.transform.GetChild(0));
-                // if(reverting) mover.waypointStorage.Push(mover.waypoints);
-
-                break;
-            default:
-                Debug.LogWarning("Invalid egress phase!");
-                break;
+            } 
         }
     }
+    private void ResetCurrent(){
+        foreach(GameObject npc in allNPCs){
+            if (npc.activeSelf)
+            {
+                npc.transform.rotation = Quaternion.identity;
+                WaypointMover mover = npc.GetComponent<WaypointMover>();
+                if (mover != null && mover.waypoints != null && phaseList.state.Count > 0)
+                {
+                    // var state = mover.waypointStorage.Peek();
+                    var state = phaseList.state[npc];
+                    mover.waypoints = state.waypoints;
+                    mover.waypoints.ActiveChildLength = state.activeChildLength;
+                    
+                    mover.waypoints.isMovingForward = state.isMovingForward;
+                    mover.waypoints.canLoop = state.canLoop;
+                    if(state.sameOld){
+                        Transform LastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
+                        mover.currentWaypoint = LastWaypoint;
+                        npc.transform.position = LastWaypoint.position;
+                    }
+                    else {
+                        Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
+                        mover.currentWaypoint = firstWaypoint;
+                        npc.transform.position = firstWaypoint.position;
+                    }
 
-
-    private void ResetForward(GamePhase phase)
+                    // Restore animation states
+                    Animator animator = npc.GetComponent<Animator>();
+                    if (animator != null)
+                    {
+                        animator.SetBool("IsWalking", state.isWalking);
+                        animator.SetBool("IsRunning", state.isRunning);
+                        animator.SetBool("ToSitting", state.isSitting);
+                    }
+                }
+            }
+        }
+    }
+    private void ResetForward()
     {
+        GamePhase phase = GetCurrentPhase();
         if (phase != GamePhase.Phase1 && phase != GamePhase.Phase2)
         {
             foreach (GameObject npc in allNPCs)
@@ -1152,8 +607,8 @@ public class PhaseManager : MonoBehaviour
                     WaypointMover mover = npc.GetComponent<WaypointMover>();
                     if (mover != null && mover.waypoints != null)
                     {
+                        
                         Transform lastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
-                        // if(reverting) mover.waypointStorage.Push(mover.waypoints);
                         
                         mover.currentWaypoint = lastWaypoint;
                         npc.transform.position = mover.currentWaypoint.position;
@@ -1167,7 +622,7 @@ public class PhaseManager : MonoBehaviour
                             animator.SetBool("ToSitting", false);
                             animator.SetBool("IsThreatPresent", false);
 
-                            // Reset crotching for hostages
+                            // Reset crouching for hostages
                             if ((phase == GamePhase.Phase3 || phase == GamePhase.Phase4 || phase == GamePhase.Phase5) && npc.CompareTag("Hostages"))
                             {
                                 animator.SetBool("IsThreatPresent", true);
@@ -1178,7 +633,56 @@ public class PhaseManager : MonoBehaviour
             }
         }
     }
+    private void ResetBackwards()
+    {
+        foreach (GameObject npc in allNPCs)
+        {
+            if (npc.activeSelf)
+            {
+                npc.transform.rotation = Quaternion.identity;
+                WaypointMover mover = npc.GetComponent<WaypointMover>();
+                if (mover != null && mover.waypoints != null && phaseList.state.Count > 0)
+                {
+                    if (!phaseList.state.ContainsKey(npc)){
+                        Debug.LogWarning($"No stored states for {npc.name}!");
+                        continue;
+                    }
+                    // var state = mover.waypointStorage.Pop();
+                    var state = phaseList.state[npc];
+                    mover.waypoints = state.waypoints;
+                    mover.waypoints.ActiveChildLength = state.activeChildLength;
+                    mover.waypoints.isMovingForward = state.isMovingForward;
+                    mover.waypoints.canLoop = state.canLoop;
+                    if(state.sameOld && GetCurrentPhase() != GamePhase.Phase6){
+                        Transform LastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
+                        if (LastWaypoint != null)
+                        {
+                            mover.currentWaypoint = LastWaypoint;
+                            npc.transform.position = LastWaypoint.position;
+                        }
+                        else
+                        {
+                            Debug.LogError($"Invalid LastWaypoint for {npc.name}!");
+                        }
+                    }
+                    else {
+                        Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
+                        mover.currentWaypoint = firstWaypoint;
+                        npc.transform.position = firstWaypoint.position;
+                    }
 
+                    // Restore animation states
+                    Animator animator = npc.GetComponent<Animator>();
+                    if (animator != null)
+                    {
+                        animator.SetBool("IsWalking", state.isWalking);
+                        animator.SetBool("IsRunning", state.isRunning);
+                        animator.SetBool("ToSitting", state.isSitting);
+                    }
+                }
+            }
+        }
+    }
     private void SaveWaypointState()
     {
         foreach (GameObject npc in allNPCs)
@@ -1188,17 +692,17 @@ public class PhaseManager : MonoBehaviour
                 WaypointMover mover = npc.GetComponent<WaypointMover>();
                 if (mover != null && mover.waypoints != null)
                 {
-                    if(mover.waypointStorage == null){
-                        // Debug.LogError("Waypointstorage null??");
-                        mover.waypointStorage = new Stack<WaypointState>();
+                    if(phaseList.state == null){
+                        phaseList.state = new Dictionary<GameObject, WaypointState>();
                     }
                     Animator animator = npc.GetComponent<Animator>();
                     bool isWalking = animator != null && animator.GetBool("IsWalking");
                     bool isRunning = animator != null && animator.GetBool("IsRunning");
                     bool isSitting = animator != null && animator.GetBool("ToSitting");
-                    bool old = false;
-                    if(mover.waypointStorage.Count > 0) old = mover.waypoints == mover.waypointStorage.Peek().waypoints;
-                    if(GetCurrentPhase() == GamePhase.Phase5) old = true; //bandaid fix, to be changed
+                    bool sameOld = false;
+                    if(phaseList.state.ContainsKey(npc)) sameOld = mover.waypoints == phaseList.state[npc].waypoints;
+                    if(GetCurrentPhase() == GamePhase.Phase4) sameOld = false; //bandaid fix, to be changed
+                    if(GetCurrentPhase() == GamePhase.Phase5) sameOld = true; //bandaid fix, to be changed
                     var state = new WaypointState(
                         mover.waypoints,
                         mover.waypoints.ActiveChildLength,
@@ -1207,66 +711,53 @@ public class PhaseManager : MonoBehaviour
                         isWalking,
                         isRunning,
                         isSitting,
-                        old
+                        sameOld
                     );
                     
-                    mover.waypointStorage.Push(state);
+                    if(!phaseList.state.ContainsKey(npc)) phaseList.state.Add(npc, state);
                 }
             }
         }
-    }
-
-    private void ResetCurrent(){
-        foreach(GameObject npc in allNPCs){
-            if (npc.activeSelf)
-            {
-                npc.transform.rotation = Quaternion.identity;
-                WaypointMover mover = npc.GetComponent<WaypointMover>();
-                if (mover != null && mover.waypoints != null && mover.waypointStorage.Count > 0)
-                {
-                    var state = mover.waypointStorage.Peek();
-                    // Debug.Log("state waypoints: " + state.waypoints);
-                    // Debug.Log("national waypoints: " + mover.waypoints);
-                    mover.waypoints = state.waypoints;
-                    // Debug.Log("child length state: " + state.activeChildLength);
-                    // Debug.Log("child length current: " + mover.waypoints.ActiveChildLength);
-                    mover.waypoints.ActiveChildLength = state.activeChildLength;
+        // foreach (GameObject npc in allNPCs)
+        // {
+        //     if (npc.activeSelf)
+        //     {
+        //         WaypointMover mover = npc.GetComponent<WaypointMover>();
+        //         if (mover != null && mover.waypoints != null)
+        //         {
+        //             if(mover.waypointStorage == null){
+        //                 mover.waypointStorage = new Stack<WaypointState>();
+        //             }
+        //             Animator animator = npc.GetComponent<Animator>();
+        //             bool isWalking = animator != null && animator.GetBool("IsWalking");
+        //             bool isRunning = animator != null && animator.GetBool("IsRunning");
+        //             bool isSitting = animator != null && animator.GetBool("ToSitting");
+        //             bool sameOld = false;
+        //             if(mover.waypointStorage.Count > 0) sameOld = mover.waypoints == mover.waypointStorage.Peek().waypoints;
+        //             if(GetCurrentPhase() == GamePhase.Phase4) sameOld = false; //bandaid fix, to be changed
+        //             if(GetCurrentPhase() == GamePhase.Phase5) sameOld = true; //bandaid fix, to be changed
+        //             var state = new WaypointState(
+        //                 mover.waypoints,
+        //                 mover.waypoints.ActiveChildLength,
+        //                 mover.waypoints.isMovingForward,
+        //                 mover.waypoints.canLoop,
+        //                 isWalking,
+        //                 isRunning,
+        //                 isSitting,
+        //                 sameOld
+        //             );
                     
-                    mover.waypoints.isMovingForward = state.isMovingForward;
-                    mover.waypoints.canLoop = state.canLoop;
-                    if(mover.waypointStorage.Peek().sameOld){
-                        Transform LastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
-                        mover.currentWaypoint = LastWaypoint;
-                        npc.transform.position = LastWaypoint.position;
-                    }
-                    else {
-                        Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
-                        mover.currentWaypoint = firstWaypoint;
-                        npc.transform.position = firstWaypoint.position;
-                    }
-
-                    // Restore animation states
-                    Animator animator = npc.GetComponent<Animator>();
-                    if (animator != null)
-                    {
-                        animator.SetBool("IsWalking", state.isWalking);
-                        animator.SetBool("IsRunning", state.isRunning);
-                        animator.SetBool("ToSitting", state.isSitting);
-                    }
-                }
-            }
-        }
+        //             mover.waypointStorage.Push(state);
+        //         }
+        //     }
+        // }
     }
-
     private void SaveAnimationState()
     {
-        // Debug.Log("ayup ONE!!!!!--------");
         foreach (GameObject npc in allNPCs)
         {
-            // Debug.Log("ayup 2");
             if (npc.activeSelf)
             {
-                Debug.LogWarning(GetCurrentPhase());
                 WaypointMover mover = npc.GetComponent<WaypointMover>();
                 if (mover != null && mover.waypoints != null)
                 {
@@ -1276,122 +767,108 @@ public class PhaseManager : MonoBehaviour
                     bool isSitting = animator != null && animator.GetBool("ToSitting");
 
 
-                    var state = mover.waypointStorage.Pop();
+                    var state = phaseList.state[npc];
                     state.updateAnimator(isWalking, isRunning, isSitting);
-                    mover.waypointStorage.Push(state);
-
-                    // Debug.LogWarning("Walking? " + state.isWalking);
-                    // Debug.LogWarning("Running? " + state.isRunning);
-                    // Debug.LogWarning("Sitting? " + state.isSitting);
-
-                    // if(npc == physicianHostage) Debug.Log(npc + " saving waypoint: " + state.waypoints + "for phase " + GetCurrentPhase());
+                    phaseList.state[npc] = state;
                 }
             }
         }
+        // foreach (GameObject npc in allNPCs)
+        // {
+        //     if (npc.activeSelf)
+        //     {
+        //         WaypointMover mover = npc.GetComponent<WaypointMover>();
+        //         if (mover != null && mover.waypoints != null)
+        //         {
+        //             Animator animator = npc.GetComponent<Animator>();
+        //             bool isWalking = animator != null && animator.GetBool("IsWalking");
+        //             bool isRunning = animator != null && animator.GetBool("IsRunning");
+        //             bool isSitting = animator != null && animator.GetBool("ToSitting");
+
+
+        //             var state = mover.waypointStorage.Pop();
+        //             state.updateAnimator(isWalking, isRunning, isSitting);
+        //             mover.waypointStorage.Push(state);
+        //         }
+        //     }
+        // }
     }
-
-    private void ResetBackwards()
-    {
-        foreach (GameObject npc in allNPCs)
-        {
-            if (npc.activeSelf)
-            {
-                npc.transform.rotation = Quaternion.identity;
-                WaypointMover mover = npc.GetComponent<WaypointMover>();
-                if (mover != null && mover.waypoints != null && mover.waypointStorage.Count > 0)
-                {
-                    var state = mover.waypointStorage.Pop();
-                    // Debug.Log("state waypoints: " + state.waypoints);
-                    // Debug.Log("national waypoints: " + mover.waypoints);
-                    mover.waypoints = state.waypoints;
-                    // Debug.Log("child length state: " + state.activeChildLength);
-                    // Debug.Log("child length current: " + mover.waypoints.ActiveChildLength);
-                    mover.waypoints.ActiveChildLength = state.activeChildLength;
-                    
-                    mover.waypoints.isMovingForward = state.isMovingForward;
-                    mover.waypoints.canLoop = state.canLoop;
-                    Debug.LogWarning("same old waypoint: " + mover.waypointStorage.Peek().sameOld + " for " + npc);
-                    if(mover.waypointStorage.Peek().sameOld){
-                        Transform LastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
-                        mover.currentWaypoint = LastWaypoint;
-                        npc.transform.position = LastWaypoint.position;
-                    }
-                    else {
-                        Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
-                        mover.currentWaypoint = firstWaypoint;
-                        npc.transform.position = firstWaypoint.position;
-                    }
-
-                    // Restore animation states
-                    Animator animator = npc.GetComponent<Animator>();
-                    if (animator != null)
-                    {
-                        animator.SetBool("IsWalking", state.isWalking);
-                        animator.SetBool("IsRunning", state.isRunning);
-                        animator.SetBool("ToSitting", state.isSitting);
-                    }
-                }
-            }
+    private void ToggleGammaKnife(){
+        if (gammaKnifeObject != null) {
+            gammaKnifeObject.SetActive(!gammaKnifeObject.activeSelf);
+            gammaKnifeObject.transform.GetChild(0).gameObject.SetActive(gammaKnifeObject.activeSelf);
         }
     }
-
-    private void MoveNPCsForPhase(GamePhase phase)
-    {
-
+    private void SpawnLLE(){
+        if(LLE == null || LLE.Length == 0) LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
+        foreach(GameObject unit in LLE){
+            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y+9000f, unit.transform.position.z);
+        }
+        if(LLEVehicles == null || LLEVehicles.Length == 0) LLEVehicles = GameObject.FindGameObjectsWithTag("LawEnforcementVehicle");
+        foreach(GameObject vehicle in LLEVehicles){
+            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y+9000f, vehicle.transform.position.z);
+        }
+    }
+    private void SpawnFD(){
+        if (FD == null || FD.Length == 0) FD = GameObject.FindGameObjectsWithTag("FireDepartment");
+        foreach(GameObject unit in FD){
+            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y+9000f, unit.transform.position.z);
+        }
+         if(FDVehicles == null || FDVehicles.Length == 0) FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
+        foreach(GameObject vehicle in FDVehicles){
+            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y+9000f, vehicle.transform.position.z);
+        }
+    }
+    private void MoveNPCsForPhase(GamePhase phase){
         Debug.Log($"Moving NPCs for phase: {phase}");
         
-        if (!reverting)
-        {
+        if (!reverting){
             SaveWaypointState();
         }
+        UpdatePaths();
 
         switch (phase)
         {
             case GamePhase.Phase1:
-                currentPhase = 1;
-                ExecutePhase1();
+                HandleStartCivs();
                 SaveAnimationState();
+                InitializeDiscColors();
+                if(allVillains[0].transform.GetChild(1).gameObject.activeSelf) ToggleGun();
                 break;
                 
             case GamePhase.Phase2:
-                currentPhase = 2; 
-                ExecutePhase2();
+                Alarming();
+                Phase2CivPaths();
+                DespawnOnEscape();
+                UpdateHostageDiscs();
+                UpdateVillainDiscs(Color.red);
+                if(!allVillains[0].transform.GetChild(1).gameObject.activeSelf) ToggleGun();
                 break;
                 
             case GamePhase.Phase3:
-                currentPhase = 3;
-                if (currentPhaseCoroutine != null) {
-                    StopCoroutine(currentPhaseCoroutine);
-                    currentPhaseCoroutine = null;
-                }
-                ExecutePhase3();
+                resetAnimator(physicianHostage);
+                Debug.Log("The adversaries have taken " + physicianHostage + " hostage!");
                 break;
                 
             case GamePhase.Phase4:
-                currentPhase = 4;
-                if (currentPhaseCoroutine != null) {
-                    StopCoroutine(currentPhaseCoroutine);
-                    currentPhaseCoroutine = null;
+                if(reverting) {
+                    HideLLE();
+                    ToggleGammaKnife();
                 }
-                ExecutePhase4();
-                
                 break;
             case GamePhase.Phase5:
-                currentPhase = 5;
-                if (currentPhaseCoroutine != null) {
-                    StopCoroutine(currentPhaseCoroutine);
-                    currentPhaseCoroutine = null;
+                if(!reverting) {
+                    SpawnLLE();
+                    ToggleGammaKnife();
                 }
-                ExecutePhase5();
+                else HideFD();
 
                 break;
             case GamePhase.Phase6:
-                currentPhase = 6;
-                ExecutePhase6();
+                if(!reverting) SpawnFD();
                 
                 break;
             case GamePhase.Phase7:
-                currentPhase = 7;
                 SetEgressPhase();
 
                 break;
@@ -1400,17 +877,82 @@ public class PhaseManager : MonoBehaviour
                 break;
 
         }
-
-        // if (!reverting)
-        // {
-        //     SaveAnimationState();
-        // }
         
     }
-    
 
     public GamePhase GetCurrentPhase(){
         return phaseList.Current.Phase;
+    }
+
+    private void UpdatePaths()
+    {
+        foreach (GameObject npc in allNPCs)
+        {
+            if (!npc.activeSelf || (npc.CompareTag("Civilians") || npc.CompareTag("Medicals"))) {
+                // Debug.Log(npc + " not chosen-------------");
+                continue;
+            }
+
+            WaypointMover mover = npc.GetComponent<WaypointMover>();
+            if(mover.paths == null) mover.paths = mover.waypoints.transform.parent.gameObject;
+            if (mover == null || mover.paths == null || mover.waypoints == null)
+            {
+                Debug.LogWarning($"NPC {npc.name} has missing WaypointMover or path references.");
+                resetAnimator(npc);
+                //
+                continue;
+            }
+            if(mover.waypoints.ActiveChildLength < 2 && GetCurrentPhase() == GamePhase.Phase1) {
+                // Debug.Log(npc + " active child length 1 or less, sitting?");
+                continue;
+            }
+
+            GamePhase currentPhase = GetCurrentPhase();
+
+            Transform pathsTransform = mover.paths.transform;
+            for (int i = mover.pathidx; i < pathsTransform.childCount; i++)
+            {
+                Transform pathTransform = pathsTransform.GetChild(i);
+                Waypoints waypoints = pathTransform.GetComponent<Waypoints>();
+                if(waypoints == null || waypoints.transform.childCount == 0){
+                    continue;
+                }else if (waypoints.getActivity() == currentPhase){
+                    // Debug.Log(npc + " !---! " + waypoints + " active in current phase: " + waypoints.getActivity());
+                    mover.waypoints = waypoints;
+                    mover.currentWaypoint = waypoints.GetNextWaypoint(waypoints.transform.GetChild(0));
+                    mover.pathidx = i;
+                    if(currentPhase != GamePhase.Phase1) 
+                        mover.waypoints.enableAll();
+
+                    Animator animator = mover.GetComponent<Animator>();
+                    if (animator != null)
+                    {
+                        animator.SetBool("IsRunning", true);
+                        mover.moveSpeed = runSpeed;
+                    }
+                    break;
+                }
+                // else Debug.Log(npc + " !---! " + waypoints + " not active in current phase: " + waypoints.getActivity());
+            }
+        }
+    }
+
+    private void resetAnimator(GameObject npc){
+        // Reset physicianHostage animator from bugging out
+        Animator animator = npc.GetComponent<Animator>();
+        if(animator != null) {
+            animator.Rebind();  // This completely resets the animator state machine
+            animator.Update(0f); // This forces an immediate update
+            
+            // THEN set all animation parameters explicitly to known states
+            animator.SetBool("IsWalking", false);
+            animator.SetBool("IsRunning", false);
+            animator.SetBool("ToSitting", false);
+            animator.SetBool("IsThreatPresent", false);
+        }
+        
+        // THEN set position and rotation (order matters)
+        npc.transform.rotation = Quaternion.identity;
     }
     
 }
