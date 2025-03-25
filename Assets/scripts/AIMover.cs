@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Mirror;
 
 public class AIMover : MonoBehaviour
 {
@@ -26,8 +25,8 @@ public class AIMover : MonoBehaviour
 
 
     // ---- Pathingfinding variables ----
-    [SerializeField] private float pathWeight = 0.4f;
-    [SerializeField] private float pathUpdateInterval = 0.2f;
+    // [SerializeField] private float pathWeight = 0.4f;
+    [SerializeField] private float pathUpdateInterval = 0.5f;
     private Pathfinder pathfinder;
     private List<Vector3> path;
     private int currentWaypoint = 0;
@@ -135,7 +134,6 @@ public class AIMover : MonoBehaviour
         // Ensuring idling if path is out.
         if (path == null || currentWaypoint >= path.Count)
         {
-            if (!isAtDestination) StartCoroutine(UpdatePath(this));  // Ensure path recalculation
             currentVelocity = Vector3.zero;
             previousSteering = Vector3.zero;
             UpdateAnimation();
@@ -295,17 +293,7 @@ public class AIMover : MonoBehaviour
         currentVelocity = Vector3.ClampMagnitude(currentVelocity, maxSpeed);
 
         // Update the agents position based on the new velocity calculated.
-        Vector3 targetMove = transform.position + currentVelocity * Time.deltaTime;
-
-        if (!NetworkServer.active)  // Smooth movement only on clients
-        {
-            transform.position = Vector3.Lerp(transform.position, targetMove, Time.deltaTime * 10f);
-        }
-        else
-        {
-            transform.position = targetMove;
-        }
-
+        transform.position += currentVelocity * Time.deltaTime;
 
         // Animate on move.
         UpdateAnimation();
@@ -368,7 +356,6 @@ public class AIMover : MonoBehaviour
 
     public void SetTargetPosition(Vector3 newPosition)
     {
-        Debug.Log($"{gameObject.name} is moving to {newPosition}");
         target.position = newPosition;
         currentWaypoint = 0;
         isAtDestination = false;

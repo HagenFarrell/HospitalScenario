@@ -204,7 +204,7 @@ private IEnumerator updateFormationPositions(GameObject[] npcs, Vector3 formatio
                 // Centering the row horizontally.
                 // In order to grab the center of the rowCount NPC we have to do (rowCount - 1)/2.0f <-- middle position.
                 var centerOffset = (rowCount - 1) / 2.0f;
-                var horizontalOffset = (col - centerOffset) * colSpacing * 2.5f;
+                var horizontalOffset = (col - centerOffset) * colSpacing;
 
                 return rowPosition + right * horizontalOffset;
             }
