@@ -390,7 +390,7 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
             GameObject temp = GameObject.Find("Player Units");
         }
         foreach(GameObject unit in playerUnits){
-            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y-9000f, unit.transform.position.z);
+            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y, unit.transform.position.z);
         }
         HideAllVehicles();
     }
@@ -399,13 +399,13 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
             LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
         }
         foreach(GameObject unit in LLE){
-            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y-9000f, unit.transform.position.z);
+            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y, unit.transform.position.z);
         }
         if(LLEVehicles == null || LLEVehicles.Length == 0){
             LLEVehicles = GameObject.FindGameObjectsWithTag("LawEnforcementVehicle");
         }
         foreach(GameObject vehicle in LLEVehicles){
-            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y-9000f, vehicle.transform.position.z);
+            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y, vehicle.transform.position.z);
         }
     }
     private void HideFD(){
@@ -413,13 +413,13 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
             FD = GameObject.FindGameObjectsWithTag("FireDepartment");
         }
         foreach(GameObject unit in FD){
-            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y-9000f, unit.transform.position.z);
+            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y, unit.transform.position.z);
         }
         if(FDVehicles == null || FDVehicles.Length == 0){
         FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
         }
         foreach(GameObject vehicle in FDVehicles){
-            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y-9000f, vehicle.transform.position.z);
+            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y, vehicle.transform.position.z);
         }
     }
 
@@ -429,7 +429,7 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
             LLEVehicles = GameObject.FindGameObjectsWithTag("LawEnforcementVehicle");
         }
         foreach(GameObject vehicle in LLEVehicles){
-            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y-9000f, vehicle.transform.position.z);
+            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y, vehicle.transform.position.z);
         }
         
         // Hide FD vehicles
@@ -437,7 +437,7 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
             FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
         }
         foreach(GameObject vehicle in FDVehicles){
-            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y-9000f, vehicle.transform.position.z);
+            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y, vehicle.transform.position.z);
         }
     }
     private void HandleStartCivs()
