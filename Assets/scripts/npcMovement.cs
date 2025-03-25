@@ -68,7 +68,7 @@ public class npcMovement : MonoBehaviour
         {
             var mover = npc.GetComponent<AIMover>();
             var animator = npc.GetComponent<Animator>();
-
+			
             if (mover != null)
             {
                 npcAgents[npc] = mover;
