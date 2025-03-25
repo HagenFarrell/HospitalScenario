@@ -2,8 +2,9 @@ using UnityEngine;
 using System.Collections.Generic;
 using PhaseLink;
 using System.Collections;
+using Mirror;
 
-public class PhaseManager : MonoBehaviour
+public class PhaseManager : NetworkBehaviour
 {
     private PhaseLinkedList phaseList;
     private Player playerRole;
@@ -37,6 +38,19 @@ public class PhaseManager : MonoBehaviour
     public static event EgressSelectedHandler OnEgressSelected;
     private int egress;
 
+    [SyncVar(hook = nameof(OnPhaseChanged))]
+    public int currentPhaseNumber = 1;
+    public static PhaseManager Instance { get ; private set; }
+
+    private void Awake()
+    {
+        if(Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
     private void Start()
     {
         phaseList = new PhaseLinkedList();
@@ -303,9 +317,11 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
             medical.SetActive(false);
         }
     }
+
+    [Server]
     public void NextPhase()
     {
-        reverting = false;
+        /*reverting = false;
 
         if (phaseList.MoveNext())
         {
@@ -316,11 +332,17 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
         else
         {
             Debug.Log("Already at the last phase!");
+        }*/
+        if(phaseList.MoveNext())
+        {
+            currentPhaseNumber = (int)phaseList.Current.Phase;
         }
     }
+
+    [Server]
     public void PreviousPhase()
     {
-        reverting = true;
+        /*reverting = true;
 
         if (phaseList.MovePrevious())
         {
@@ -333,6 +355,11 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
         {
             Debug.Log("Already at the first phase!");
             ClearStack();
+        }*/
+
+        if(phaseList.MovePrevious())
+        {
+            currentPhaseNumber = (int)phaseList.Current.Phase;
         }
     }
     private void ClearStack(){
@@ -955,4 +982,21 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
         npc.transform.rotation = Quaternion.identity;
     }
     
+    private void OnPhaseChanged( int oldPhase, int newPhase)
+    {
+        if (isServer)
+        {
+            ForcePhase(newPhase);
+        }
+    }
+
+    [Server]
+    private void ForcePhase(int phaseNumber)
+    {
+        phaseList.SetCurrentToHead();
+        while (phaseList.Current.Phase != (GamePhase)phaseNumber && phaseList.MoveNext()) {}
+
+        StartPhase();  // The usual logic
+    }
+
 }

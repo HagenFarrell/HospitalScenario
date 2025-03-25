@@ -235,7 +235,7 @@ public class Player : NetworkBehaviour
     {
         if (!isLocalPlayer)
         {
-            transform.position = new Vector3(transform.position.x, 6f, transform.position.z); // Adjust height
+            transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z); // Adjust height
         }
         else
         {
@@ -411,29 +411,46 @@ public class Player : NetworkBehaviour
     private void HandlePhaseManagement()
     {
         if (phaseManager == null) return;
+        if (!isLocalPlayer) return; // Only local player processes input
 
-        if (Input.GetKeyDown(KeyCode.Alpha0) && playerRole == Roles.Instructor) // Next phase
+        if (Input.GetKeyDown(KeyCode.Alpha0) && playerRole == Roles.Instructor)
         {
-            phaseManager.NextPhase();
-            if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) SoundAlarm();
+            CmdRequestNextPhase();
         }
 
-        if (Input.GetKeyDown(KeyCode.Alpha9) && playerRole == Roles.Instructor) // Previous phase
+        if (Input.GetKeyDown(KeyCode.Alpha9) && playerRole == Roles.Instructor)
         {
-            phaseManager.PreviousPhase();
-            if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) SoundAlarm();
+            CmdRequestPreviousPhase();
         }
-
-        if (Input.GetKeyDown(KeyCode.T) && playerRole == Roles.Instructor) // toggle big dome
+        /*// Only Instructor can change phases
+        if (playerRole == Roles.Instructor)
         {
-            GameObject bubble = phaseManager.gammaKnifeObject.transform.GetChild(0).gameObject;
-            bubble.SetActive(!bubble.activeSelf);
-        }
+            if (Input.GetKeyDown(KeyCode.Alpha0)) // Next phase
+            {
+                CmdNextPhase();
+                if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) 
+                    SoundAlarm();
+            }
 
+            if (Input.GetKeyDown(KeyCode.Alpha9)) // Previous phase
+            {
+                CmdPreviousPhase();
+                if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) 
+                    SoundAlarm();
+            }
+        
+            if (Input.GetKeyDown(KeyCode.T)) // Toggle big dome
+            {
+                CmdToggleDome();
+            }
+            */
+        //}
+        /*
         if (Input.GetKeyDown(KeyCode.U)) // Undo last action
         {
             UndoLastAction();
         }
+        */
     }
 
     private void SoundAlarm()
@@ -737,5 +754,70 @@ public class Player : NetworkBehaviour
         Debug.Log("RadEyeTool successfully attached to local player.");
     }
 
+    [Command]
+    private void CmdNextPhase()
+    {
+        RpcNextPhase();
+    }
+
+    [Command]
+    private void CmdPreviousPhase()
+    {
+        RpcPreviousPhase();
+    }
+
+    [Command]
+    private void CmdToggleDome()
+    {
+        RpcToggleDome();
+    }
+
+    [ClientRpc]
+    private void RpcNextPhase()
+    {
+        if (phaseManager != null)
+        {
+            phaseManager.NextPhase();
+            Debug.Log($"Client received NextPhase (now: {phaseManager.GetCurrentPhase()})");
+        }
+    }
+
+    [ClientRpc]
+    private void RpcPreviousPhase()
+    {
+        if (phaseManager != null)
+        {
+            phaseManager.PreviousPhase();
+            Debug.Log($"Client received PreviousPhase (now: {phaseManager.GetCurrentPhase()})");
+        }
+    }
+
+    [ClientRpc]
+    private void RpcToggleDome()
+    {
+        if (phaseManager != null && phaseManager.gammaKnifeObject != null)
+        {
+            GameObject bubble = phaseManager.gammaKnifeObject.transform.GetChild(0).gameObject;
+            bubble.SetActive(!bubble.activeSelf);
+        }
+    }
+
+    [Command]
+    private void CmdRequestNextPhase()
+    {
+        if (phaseManager != null)
+        {
+            phaseManager.NextPhase();
+        }
+    }
+
+    [Command]
+    private void CmdRequestPreviousPhase()
+    {
+        if (phaseManager != null)
+        {
+            phaseManager.PreviousPhase();
+        }
+    }
 
 }
