@@ -63,6 +63,22 @@ namespace PhaseLink
             return false;
         }
 
+        public void SetCurrentTo(GamePhase phase)
+        {
+            PhaseNode current = Head;
+            while (current != null)
+            {
+                if (current.Phase == phase)
+                {
+                    Current = current;
+                    return;
+                }
+                current = current.Next;
+            }
+
+            Debug.LogError($"[PhaseLinkedList] Could not find phase: {phase}");
+        }
+
         public bool MovePrevious()
         {
             if (Current?.Previous != null)
