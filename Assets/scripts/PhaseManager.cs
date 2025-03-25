@@ -95,7 +95,7 @@ public class PhaseManager : NetworkBehaviour
     private void Update()
     {
         
-        Debug.Log($"PhaseManager Awake - Active: {gameObject.activeSelf}, NetId: {GetComponent<NetworkIdentity>().netId}");
+        // Debug.Log($"PhaseManager Awake - Active: {gameObject.activeSelf}, NetId: {GetComponent<NetworkIdentity>().netId}");
         Instance = this;
         if (phaseList == null || phaseList.Current == null)
         {
@@ -108,9 +108,10 @@ public class PhaseManager : NetworkBehaviour
             SetEgressPhase();
         }
 
-        if (Input.GetKeyDown(KeyCode.Alpha8))
+        if (Input.GetKeyDown(KeyCode.Q))
         {
-            Debug.LogWarning("Resetting the current phase doesn't really work right now...");
+            // Debug.LogWarning("Resetting the current phase doesn't really work right now...");
+            ResetCurrent();
         }
     }
 
@@ -233,7 +234,7 @@ public class PhaseManager : NetworkBehaviour
             LLE = lleList.ToArray();
 
             LLEVehicles = GameObject.FindGameObjectsWithTag("LawEnforcementVehicle");
-FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
+            FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
         }
         else
         {
@@ -369,15 +370,7 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
         else
         {
             Debug.Log("Already at the first phase!");
-            ClearStack();
         }
-    }
-    private void ClearStack(){
-        // foreach(GameObject npc in allNPCs){
-        //     WaypointMover mover = npc.GetComponent<WaypointMover>();
-        //     mover.waypointStorage.Clear();
-        //     mover.waypoints.ResetToPhase1Settings();
-        // }
     }
     private GameObject getRadSource(){
         return allVillains[0].transform.GetChild(4).gameObject;
@@ -594,27 +587,28 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
             } 
         }
     }
-    private void ResetCurrent(){
-        foreach(GameObject npc in allNPCs){
+    private void ResetCurrent()
+    {
+        if (phaseList.Current == null) return;
+
+        foreach(GameObject npc in allNPCs)
+        {
             if (npc.activeSelf)
             {
                 npc.transform.rotation = Quaternion.identity;
                 WaypointMover mover = npc.GetComponent<WaypointMover>();
-                if (mover != null && mover.waypoints != null && phaseList.state.Count > 0)
+                if (mover != null && mover.waypoints != null && phaseList.Current.State.ContainsKey(npc))
                 {
-                    // var state = mover.waypointStorage.Peek();
-                    var state = phaseList.state[npc];
-                    mover.waypoints = state.waypoints;
-                    mover.waypoints.ActiveChildLength = state.activeChildLength;
+                    var state = phaseList.Current.State[npc];
                     
-                    mover.waypoints.isMovingForward = state.isMovingForward;
-                    mover.waypoints.canLoop = state.canLoop;
-                    if(state.sameOld){
+                    if((GetCurrentPhase() != GamePhase.Phase2 && GetCurrentPhase() != GamePhase.Phase4) && state.sameOld)
+                    {
                         Transform LastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
                         mover.currentWaypoint = LastWaypoint;
                         npc.transform.position = LastWaypoint.position;
                     }
-                    else {
+                    else 
+                    {
                         Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
                         mover.currentWaypoint = firstWaypoint;
                         npc.transform.position = firstWaypoint.position;
@@ -632,6 +626,59 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
             }
         }
     }
+
+    private void ResetBackwards()
+    {
+        if (phaseList.Current == null) return;
+
+        foreach (GameObject npc in allNPCs)
+        {
+            if (npc.activeSelf)
+            {
+                npc.transform.rotation = Quaternion.identity;
+                WaypointMover mover = npc.GetComponent<WaypointMover>();
+                if (mover != null && mover.waypoints != null && phaseList.Current.State.ContainsKey(npc))
+                {
+                    var state = phaseList.Current.State[npc];
+                    mover.waypoints = state.waypoints;
+                    mover.waypoints.ActiveChildLength = state.activeChildLength;
+                    mover.waypoints.isMovingForward = state.isMovingForward;
+                    mover.waypoints.canLoop = state.canLoop;
+                    // Debug.Log("sameold: " + state.sameOld + "  for phase " + GetCurrentPhase() + " for npc: " + npc);
+                    
+                    if(state.sameOld)
+                    {
+                        Transform LastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
+                        if (LastWaypoint != null)
+                        {
+                            mover.currentWaypoint = LastWaypoint;
+                            npc.transform.position = LastWaypoint.position;
+                        }
+                        else
+                        {
+                            Debug.LogError($"Invalid LastWaypoint for {npc.name}!");
+                        }
+                    }
+                    else 
+                    {
+                        Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
+                        mover.currentWaypoint = firstWaypoint;
+                        npc.transform.position = firstWaypoint.position;
+                    }
+
+                    // Restore animation states
+                    Animator animator = npc.GetComponent<Animator>();
+                    if (animator != null)
+                    {
+                        animator.SetBool("IsWalking", state.isWalking);
+                        animator.SetBool("IsRunning", state.isRunning);
+                        animator.SetBool("ToSitting", state.isSitting);
+                    }
+                }
+            }
+        }
+    }
+
     private void ResetForward()
     {
         GamePhase phase = GetCurrentPhase();
@@ -670,58 +717,10 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
             }
         }
     }
-    private void ResetBackwards()
-    {
-        foreach (GameObject npc in allNPCs)
-        {
-            if (npc.activeSelf)
-            {
-                npc.transform.rotation = Quaternion.identity;
-                WaypointMover mover = npc.GetComponent<WaypointMover>();
-                if (mover != null && mover.waypoints != null && phaseList.state.Count > 0)
-                {
-                    if (!phaseList.state.ContainsKey(npc)){
-                        Debug.LogWarning($"No stored states for {npc.name}!");
-                        continue;
-                    }
-                    // var state = mover.waypointStorage.Pop();
-                    var state = phaseList.state[npc];
-                    mover.waypoints = state.waypoints;
-                    mover.waypoints.ActiveChildLength = state.activeChildLength;
-                    mover.waypoints.isMovingForward = state.isMovingForward;
-                    mover.waypoints.canLoop = state.canLoop;
-                    if(state.sameOld && GetCurrentPhase() != GamePhase.Phase6){
-                        Transform LastWaypoint = mover.waypoints.transform.GetChild(mover.waypoints.transform.childCount - 1);
-                        if (LastWaypoint != null)
-                        {
-                            mover.currentWaypoint = LastWaypoint;
-                            npc.transform.position = LastWaypoint.position;
-                        }
-                        else
-                        {
-                            Debug.LogError($"Invalid LastWaypoint for {npc.name}!");
-                        }
-                    }
-                    else {
-                        Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
-                        mover.currentWaypoint = firstWaypoint;
-                        npc.transform.position = firstWaypoint.position;
-                    }
-
-                    // Restore animation states
-                    Animator animator = npc.GetComponent<Animator>();
-                    if (animator != null)
-                    {
-                        animator.SetBool("IsWalking", state.isWalking);
-                        animator.SetBool("IsRunning", state.isRunning);
-                        animator.SetBool("ToSitting", state.isSitting);
-                    }
-                }
-            }
-        }
-    }
     private void SaveWaypointState()
     {
+        if (phaseList.Current == null) return;
+
         foreach (GameObject npc in allNPCs)
         {
             if (npc.activeSelf)
@@ -729,17 +728,22 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
                 WaypointMover mover = npc.GetComponent<WaypointMover>();
                 if (mover != null && mover.waypoints != null)
                 {
-                    if(phaseList.state == null){
-                        phaseList.state = new Dictionary<GameObject, WaypointState>();
-                    }
                     Animator animator = npc.GetComponent<Animator>();
-                    bool isWalking = animator != null && animator.GetBool("IsWalking");
-                    bool isRunning = animator != null && animator.GetBool("IsRunning");
-                    bool isSitting = animator != null && animator.GetBool("ToSitting");
+                    bool isWalking = animator?.GetBool("IsWalking") ?? false;
+                    bool isRunning = animator?.GetBool("IsRunning") ?? false;
+                    bool isSitting = animator?.GetBool("ToSitting") ?? false;
+
+                    // Check if waypoints are the same as previous phase
                     bool sameOld = false;
-                    if(phaseList.state.ContainsKey(npc)) sameOld = mover.waypoints == phaseList.state[npc].waypoints;
-                    if(GetCurrentPhase() == GamePhase.Phase4) sameOld = false; //bandaid fix, to be changed
-                    if(GetCurrentPhase() == GamePhase.Phase5) sameOld = true; //bandaid fix, to be changed
+                    if (phaseList.Current.Previous != null && 
+                        phaseList.Current.Previous.State.TryGetValue(npc, out var prevState))
+                    {
+                        // Compare both the waypoints object and path for more reliable comparison
+                        sameOld = mover.waypoints == prevState.waypoints
+                            || mover.waypoints.GetInstanceID() == prevState.waypoints.GetInstanceID();
+                    }
+                    if(GetCurrentPhase() == GamePhase.Phase5) sameOld = true; // bandaid
+
                     var state = new WaypointState(
                         mover.waypoints,
                         mover.waypoints.ActiveChildLength,
@@ -750,85 +754,38 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
                         isSitting,
                         sameOld
                     );
-                    
-                    if(!phaseList.state.ContainsKey(npc)) phaseList.state.Add(npc, state);
+
+                    // Update or add the state
+                    if (phaseList.Current.State.ContainsKey(npc))
+                        phaseList.Current.State[npc] = state;
+                    else
+                        phaseList.Current.State.Add(npc, state);
                 }
             }
         }
-        // foreach (GameObject npc in allNPCs)
-        // {
-        //     if (npc.activeSelf)
-        //     {
-        //         WaypointMover mover = npc.GetComponent<WaypointMover>();
-        //         if (mover != null && mover.waypoints != null)
-        //         {
-        //             if(mover.waypointStorage == null){
-        //                 mover.waypointStorage = new Stack<WaypointState>();
-        //             }
-        //             Animator animator = npc.GetComponent<Animator>();
-        //             bool isWalking = animator != null && animator.GetBool("IsWalking");
-        //             bool isRunning = animator != null && animator.GetBool("IsRunning");
-        //             bool isSitting = animator != null && animator.GetBool("ToSitting");
-        //             bool sameOld = false;
-        //             if(mover.waypointStorage.Count > 0) sameOld = mover.waypoints == mover.waypointStorage.Peek().waypoints;
-        //             if(GetCurrentPhase() == GamePhase.Phase4) sameOld = false; //bandaid fix, to be changed
-        //             if(GetCurrentPhase() == GamePhase.Phase5) sameOld = true; //bandaid fix, to be changed
-        //             var state = new WaypointState(
-        //                 mover.waypoints,
-        //                 mover.waypoints.ActiveChildLength,
-        //                 mover.waypoints.isMovingForward,
-        //                 mover.waypoints.canLoop,
-        //                 isWalking,
-        //                 isRunning,
-        //                 isSitting,
-        //                 sameOld
-        //             );
-                    
-        //             mover.waypointStorage.Push(state);
-        //         }
-        //     }
-        // }
     }
     private void SaveAnimationState()
     {
+        if (phaseList.Current == null) return;
+
         foreach (GameObject npc in allNPCs)
         {
             if (npc.activeSelf)
             {
                 WaypointMover mover = npc.GetComponent<WaypointMover>();
-                if (mover != null && mover.waypoints != null)
+                if (mover != null && mover.waypoints != null && phaseList.Current.State.ContainsKey(npc))
                 {
                     Animator animator = npc.GetComponent<Animator>();
                     bool isWalking = animator != null && animator.GetBool("IsWalking");
                     bool isRunning = animator != null && animator.GetBool("IsRunning");
                     bool isSitting = animator != null && animator.GetBool("ToSitting");
 
-
-                    var state = phaseList.state[npc];
+                    var state = phaseList.Current.State[npc];
                     state.updateAnimator(isWalking, isRunning, isSitting);
-                    phaseList.state[npc] = state;
+                    phaseList.Current.State[npc] = state;
                 }
             }
         }
-        // foreach (GameObject npc in allNPCs)
-        // {
-        //     if (npc.activeSelf)
-        //     {
-        //         WaypointMover mover = npc.GetComponent<WaypointMover>();
-        //         if (mover != null && mover.waypoints != null)
-        //         {
-        //             Animator animator = npc.GetComponent<Animator>();
-        //             bool isWalking = animator != null && animator.GetBool("IsWalking");
-        //             bool isRunning = animator != null && animator.GetBool("IsRunning");
-        //             bool isSitting = animator != null && animator.GetBool("ToSitting");
-
-
-        //             var state = mover.waypointStorage.Pop();
-        //             state.updateAnimator(isWalking, isRunning, isSitting);
-        //             mover.waypointStorage.Push(state);
-        //         }
-        //     }
-        // }
     }
     private void ToggleGammaKnife(){
         if (gammaKnifeObject != null) {
@@ -947,7 +904,7 @@ FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
             GamePhase currentPhase = GetCurrentPhase();
 
             Transform pathsTransform = mover.paths.transform;
-            for (int i = mover.pathidx; i < pathsTransform.childCount; i++)
+            for (int i = 0; i < pathsTransform.childCount; i++)
             {
                 Transform pathTransform = pathsTransform.GetChild(i);
                 Waypoints waypoints = pathTransform.GetComponent<Waypoints>();

@@ -82,7 +82,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2384841360615737696}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!1 &5394392922838474995
 GameObject:
   m_ObjectHideFlags: 0
@@ -219,6 +219,7 @@ MonoBehaviour:
   mouseSensitivity: 100
   smoothingSpeed: 0.1
   radeyeToolPrefab: {fileID: 1456792384392801643, guid: e2d8dc3dce106494dae4d2f1a8ae05fd, type: 3}
+  radeyeCircleTool: {fileID: 0}
   playerRole: 0
   npcs: {fileID: 0}
   phaseManager: {fileID: 0}
