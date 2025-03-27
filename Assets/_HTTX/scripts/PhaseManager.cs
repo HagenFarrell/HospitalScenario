@@ -869,6 +869,7 @@ public class PhaseManager : NetworkBehaviour
         switch (phase)
         {
             case GamePhase.Phase1:
+                HandleStartCivs();
                 if(allVillains[0].transform.GetChild(1).gameObject.activeSelf) ToggleGun();
                 break;
                 

@@ -7005,6 +7005,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
+  playerRole: {fileID: 0}
   gammaKnifeObject: {fileID: 211504683}
   PlayerUnitsObject: {fileID: 1654711325}
   VillainLeagueObject: {fileID: 1136594592}
@@ -24079,7 +24080,7 @@ PrefabInstance:
     - target: {fileID: -7635826562936255635, guid: a550977aab834fc4cbd60f3083700bd1, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 06d2d82c741d6b34692010a75df9b1fc, type: 2}
+      objectReference: {fileID: 2100000, guid: fb4ab74263784417d8011e1a5147f0ff, type: 2}
     - target: {fileID: 919132149155446097, guid: a550977aab834fc4cbd60f3083700bd1, type: 3}
       propertyPath: m_Name
       value: icon_X_ariel
@@ -37887,7 +37888,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2089857454
 Transform:
   m_ObjectHideFlags: 0
