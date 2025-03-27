@@ -19,6 +19,7 @@ public class Player : NetworkBehaviour
     private List<GameObject> DispatchCams;
     private AudioSource alarmNoise;
     [SyncVar] private Vector3 syncedPosition;
+    private GameObject roof;
 
     private Vector3 lastSentPosition;
     private float lastMoveTime;
@@ -103,6 +104,8 @@ public class Player : NetworkBehaviour
     [Client]
     void Start()
     {
+
+        roof = GameObject.Find("Roof");
         alarmNoise = GetComponent<AudioSource>();
         /*AudioListener audioListener = transform.GetChild(1).GetComponent<AudioListener>();
 
@@ -240,7 +243,8 @@ public class Player : NetworkBehaviour
         else
         {
             // Handle mouse look
-            HandleMouseLook();
+            if(playerRole != Roles.None)
+                HandleMouseLook();
 
             // Handle movement
             HandleMovement();
@@ -284,7 +288,11 @@ public class Player : NetworkBehaviour
 
 
         // Apply movement locally
-        transform.position += movement;
+        //If no collision is detected OR if the role is instructor 
+        if (!Physics.SphereCast(transform.position, 2f, moveDirection, out RaycastHit hit, movement.magnitude) || (hit.collider != null && hit.collider.gameObject.CompareTag("ParkingLot")) || playerRole == Roles.Instructor)
+        {
+                transform.position += movement; 
+        }
 
         if (isLocalPlayer && movement.magnitude > 0.01f)
         {
@@ -438,6 +446,14 @@ public class Player : NetworkBehaviour
             }
         }
 
+        if(Input.GetKeyDown(KeyCode.Y) && playerRole == Roles.Instructor) //toggle roof
+        {
+            if (roof.activeInHierarchy == false)
+                roof.SetActive(true);
+            else
+                roof.SetActive(false);
+        }
+
         if (Input.GetKeyDown(KeyCode.U)) // Undo last action
         {
             UndoLastAction();
@@ -552,7 +568,7 @@ public class Player : NetworkBehaviour
         List<GameObject> LLEcams = GameObject.FindGameObjectsWithTag("LLE/FD Cams").ToList();
         GameObject Maincam = GameObject.FindGameObjectWithTag("MainCamera");
         Maincam.SetActive(false);
-        transform.GetChild(1).gameObject.SetActive(false);
+        transform.GetChild(0).gameObject.SetActive(false);
         foreach (GameObject cam in LLEcams)
         {
             cam.SetActive(false);
