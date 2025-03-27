@@ -7,7 +7,7 @@ using Mirror;
 public class PhaseManager : NetworkBehaviour
 {
     private PhaseLinkedList phaseList;
-    private Player playerRole;
+    [SerializeField] private Player playerRole;
     
     // radiaoctive object
     public GameObject gammaKnifeObject;
@@ -37,6 +37,8 @@ public class PhaseManager : NetworkBehaviour
     public delegate void EgressSelectedHandler(int egressPhase);
     public static event EgressSelectedHandler OnEgressSelected;
     private int egress;
+    [SyncVar(hook = nameof(OnEgressChanged))]
+    private int syncedEgress;
 
 
     //new netcdoe
@@ -68,15 +70,23 @@ public class PhaseManager : NetworkBehaviour
         foreach (GamePhase phase in System.Enum.GetValues(typeof(GamePhase)))
             phaseList.AddPhase(phase);
         phaseList.SetCurrentToHead();
+
+        // if (playerRole == null)
+        //     playerRole = NetworkClient.localPlayer?.GetComponent<Player>();
+        // if (playerRole == null)
+        //     Debug.LogError("Player not found - is this a networked spawn issue?");
         
         runSpeed = 5f;
         OnEgressSelected += ExecuteEgressPhase;
         FindKeyNPCs();
         HidePlayers();
+        HandleStartCivs();
 
         //netcode
         if (isServer)
         {
+            SaveAnimationState();
+            InitializeDiscColors();
             SetPhase(GamePhase.Phase1); //instructor sets 1st phase, triggers sync
         }
 
@@ -92,6 +102,11 @@ public class PhaseManager : NetworkBehaviour
         HidePlayers();
         StartPhase();
         */
+    }
+    public void RegisterPlayer(Player player)
+    {
+        playerRole = player;
+        Debug.Log($"Player registered: {playerRole.getPlayerRole()}");
     }
 
     private void Update()
@@ -115,6 +130,16 @@ public class PhaseManager : NetworkBehaviour
             // Debug.LogWarning("Resetting the current phase doesn't really work right now...");
             ResetCurrent();
         }
+    }
+    private void OnEgressChanged(int oldEgress, int newEgress)
+    {
+        ExecuteEgressPhase(newEgress);
+    }
+    [Command(requiresAuthority = false)]
+    public void CmdSetEgress(int egressPhase)
+    {
+        if(!isServer) return;
+        syncedEgress = egressPhase;
     }
 
     private IEnumerator WaitForGetUpAnimation(Animator animator, WaypointMover mover)
@@ -140,25 +165,40 @@ public class PhaseManager : NetworkBehaviour
 
     private int SetEgressPhase()
     {
-        playerRole = FindObjectOfType<Player>();
         if(playerRole == null){
-            Debug.LogError("playerRole null");
+            Debug.LogError("PlayerRole null in PhaseManager. cannot set egress! ");
+            return 0;
         }
         if (playerRole.getPlayerRole() == Player.Roles.Instructor)
         {
-            if (Input.GetKeyDown(KeyCode.Z)) return TriggerEgressSelected(1);
-            if (Input.GetKeyDown(KeyCode.X)) return TriggerEgressSelected(2);
-            if (Input.GetKeyDown(KeyCode.C)) return TriggerEgressSelected(3);
-            if (Input.GetKeyDown(KeyCode.V)) return TriggerEgressSelected(4);
-            if (Input.GetKeyDown(KeyCode.B)) return TriggerEgressSelected(Random.Range(1, 5));
-
-            return 0;
+            if (Input.GetKeyDown(KeyCode.Z)) 
+            {
+                CmdSetEgress(1);
+                return 1;
+            }
+            if (Input.GetKeyDown(KeyCode.X)) 
+            {
+                CmdSetEgress(2);
+                return 2;
+            }
+            if (Input.GetKeyDown(KeyCode.C)) 
+            {
+                CmdSetEgress(3);
+                return 3;
+            }
+            if (Input.GetKeyDown(KeyCode.V)) 
+            {
+                CmdSetEgress(4);
+                return 4;
+            }
+            if (Input.GetKeyDown(KeyCode.B)) 
+            {
+                int temp = Random.Range(1,5);
+                CmdSetEgress(temp);
+                return temp;
+            }
         }
-        else
-        {
-            Debug.Log("Only the instructor can select the egress phase.");
-            return 0;
-        }
+        return 0;
     }
 
     private int TriggerEgressSelected(int phase)
@@ -440,6 +480,7 @@ public class PhaseManager : NetworkBehaviour
             civilian.SetActive(true);
             // Set animation state to walking
             Animator animator = civilian.GetComponent<Animator>();
+            resetAnimator(civilian);
             
             // Enable the WaypointMover component
             WaypointMover mover = civilian.GetComponent<WaypointMover>();
@@ -454,7 +495,6 @@ public class PhaseManager : NetworkBehaviour
                     civilian.transform.position = mover.currentWaypoint.transform.position;
                     mover.waypoints.ResetToPhase1Settings();
                     mover.pathidx = 0;
-                    resetAnimator(civilian);
                 }
                 if(mover.waypoints.waypointsActiveInPhase1 == 1){
                     animator.SetBool("IsWalking", false);
@@ -547,8 +587,11 @@ public class PhaseManager : NetworkBehaviour
     }
     private void ExecuteEgressPhase(int selectedEgress)
     {
-        if(OnEgressSelected == null) return;
-        OnEgressSelected -= ExecuteEgressPhase; 
+        if(OnEgressSelected == null) {
+            Debug.LogWarning("OnEgressSelected is NULL! no subscribers. ");
+            return;
+        }
+        // OnEgressSelected -= ExecuteEgressPhase; 
         SaveWaypointState();
 
         Debug.Log($"Egress phase {selectedEgress} selected!");
@@ -826,9 +869,6 @@ public class PhaseManager : NetworkBehaviour
         switch (phase)
         {
             case GamePhase.Phase1:
-                HandleStartCivs();
-                SaveAnimationState();
-                InitializeDiscColors();
                 if(allVillains[0].transform.GetChild(1).gameObject.activeSelf) ToggleGun();
                 break;
                 
@@ -856,6 +896,7 @@ public class PhaseManager : NetworkBehaviour
                 if(!reverting) {
                     SpawnLLE();
                     ToggleGammaKnife();
+                    CmdToggleBubble();
                 }
                 else HideFD();
 

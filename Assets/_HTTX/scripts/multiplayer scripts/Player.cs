@@ -156,6 +156,14 @@ public class Player : NetworkBehaviour
         AssignButtonOnClick();
 
     }
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        if (isLocalPlayer)
+        {
+            PhaseManager.Instance.RegisterPlayer(this);
+        }
+    }
 
     private void AssignButtonOnClick()
     {
@@ -448,10 +456,7 @@ public class Player : NetworkBehaviour
 
         if(Input.GetKeyDown(KeyCode.Y) && playerRole == Roles.Instructor) //toggle roof
         {
-            if (roof.activeInHierarchy == false)
-                roof.SetActive(true);
-            else
-                roof.SetActive(false);
+            roof.SetActive(!roof.activeInHierarchy);
         }
 
         if (Input.GetKeyDown(KeyCode.U)) // Undo last action
