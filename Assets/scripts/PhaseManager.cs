@@ -71,10 +71,10 @@ public class PhaseManager : NetworkBehaviour
             phaseList.AddPhase(phase);
         phaseList.SetCurrentToHead();
 
-        if (playerRole == null)
-            playerRole = NetworkClient.localPlayer?.GetComponent<Player>();
-        if (playerRole == null)
-            Debug.LogError("Player not found - is this a networked spawn issue?");
+        // if (playerRole == null)
+        //     playerRole = NetworkClient.localPlayer?.GetComponent<Player>();
+        // if (playerRole == null)
+        //     Debug.LogError("Player not found - is this a networked spawn issue?");
         
         runSpeed = 5f;
         OnEgressSelected += ExecuteEgressPhase;
