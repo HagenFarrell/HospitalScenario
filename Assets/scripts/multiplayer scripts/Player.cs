@@ -448,10 +448,7 @@ public class Player : NetworkBehaviour
 
         if(Input.GetKeyDown(KeyCode.Y) && playerRole == Roles.Instructor) //toggle roof
         {
-            if (roof.activeInHierarchy == false)
-                roof.SetActive(true);
-            else
-                roof.SetActive(false);
+            roof.SetActive(!roof.activeInHierarchy);
         }
 
         if (Input.GetKeyDown(KeyCode.U)) // Undo last action

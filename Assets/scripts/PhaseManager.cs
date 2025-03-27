@@ -550,7 +550,10 @@ public class PhaseManager : NetworkBehaviour
     }
     private void ExecuteEgressPhase(int selectedEgress)
     {
-        if(OnEgressSelected == null) return;
+        if(OnEgressSelected == null) {
+            Debug.LogWarning("OnEgressSelected is NULL! no subscribers. ");
+            return;
+        }
         OnEgressSelected -= ExecuteEgressPhase; 
         SaveWaypointState();
 
@@ -856,6 +859,7 @@ public class PhaseManager : NetworkBehaviour
                 if(!reverting) {
                     SpawnLLE();
                     ToggleGammaKnife();
+                    CmdToggleBubble();
                 }
                 else HideFD();
 
