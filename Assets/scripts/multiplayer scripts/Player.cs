@@ -156,6 +156,14 @@ public class Player : NetworkBehaviour
         AssignButtonOnClick();
 
     }
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        if (isLocalPlayer)
+        {
+            PhaseManager.Instance.RegisterPlayer(this);
+        }
+    }
 
     private void AssignButtonOnClick()
     {
