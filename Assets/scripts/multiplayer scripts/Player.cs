@@ -19,6 +19,7 @@ public class Player : NetworkBehaviour
     private List<GameObject> DispatchCams;
     private AudioSource alarmNoise;
     [SyncVar] private Vector3 syncedPosition;
+    private GameObject roof;
 
     private Vector3 lastSentPosition;
     private float lastMoveTime;
@@ -103,6 +104,8 @@ public class Player : NetworkBehaviour
     [Client]
     void Start()
     {
+
+        roof = GameObject.Find("Roof");
         alarmNoise = GetComponent<AudioSource>();
         /*AudioListener audioListener = transform.GetChild(1).GetComponent<AudioListener>();
 
@@ -441,6 +444,14 @@ public class Player : NetworkBehaviour
                 GameObject bubble = phaseManager.gammaKnifeObject.transform.GetChild(0).gameObject;
                 bubble.SetActive(!bubble.activeSelf);
             }
+        }
+
+        if(Input.GetKeyDown(KeyCode.Y) && playerRole == Roles.Instructor) //toggle roof
+        {
+            if (roof.activeInHierarchy == false)
+                roof.SetActive(true);
+            else
+                roof.SetActive(false);
         }
 
         if (Input.GetKeyDown(KeyCode.U)) // Undo last action
