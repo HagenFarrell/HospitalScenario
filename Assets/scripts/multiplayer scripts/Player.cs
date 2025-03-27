@@ -240,7 +240,8 @@ public class Player : NetworkBehaviour
         else
         {
             // Handle mouse look
-            HandleMouseLook();
+            if(playerRole != Roles.None)
+                HandleMouseLook();
 
             // Handle movement
             HandleMovement();
@@ -284,7 +285,10 @@ public class Player : NetworkBehaviour
 
 
         // Apply movement locally
-        transform.position += movement;
+        if (!Physics.SphereCast(transform.position, 2f, moveDirection, out RaycastHit hit, movement.magnitude) || playerRole == Roles.Instructor)
+        {
+            transform.position += movement; // Only move if no collision detected
+        }
 
         if (isLocalPlayer && movement.magnitude > 0.01f)
         {
@@ -552,7 +556,7 @@ public class Player : NetworkBehaviour
         List<GameObject> LLEcams = GameObject.FindGameObjectsWithTag("LLE/FD Cams").ToList();
         GameObject Maincam = GameObject.FindGameObjectWithTag("MainCamera");
         Maincam.SetActive(false);
-        transform.GetChild(1).gameObject.SetActive(false);
+        transform.GetChild(0).gameObject.SetActive(false);
         foreach (GameObject cam in LLEcams)
         {
             cam.SetActive(false);
