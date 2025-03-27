@@ -73,11 +73,11 @@ public class PhaseManager : NetworkBehaviour
         OnEgressSelected += ExecuteEgressPhase;
         FindKeyNPCs();
         HidePlayers();
+        HandleStartCivs();
 
         //netcode
         if (isServer)
         {
-            HandleStartCivs();
             SaveAnimationState();
             InitializeDiscColors();
             SetPhase(GamePhase.Phase1); //instructor sets 1st phase, triggers sync
@@ -443,6 +443,7 @@ public class PhaseManager : NetworkBehaviour
             civilian.SetActive(true);
             // Set animation state to walking
             Animator animator = civilian.GetComponent<Animator>();
+            resetAnimator(civilian);
             
             // Enable the WaypointMover component
             WaypointMover mover = civilian.GetComponent<WaypointMover>();
@@ -457,7 +458,6 @@ public class PhaseManager : NetworkBehaviour
                     civilian.transform.position = mover.currentWaypoint.transform.position;
                     mover.waypoints.ResetToPhase1Settings();
                     mover.pathidx = 0;
-                    resetAnimator(civilian);
                 }
                 if(mover.waypoints.waypointsActiveInPhase1 == 1){
                     animator.SetBool("IsWalking", false);
