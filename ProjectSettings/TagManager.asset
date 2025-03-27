@@ -23,6 +23,7 @@ TagManager:
   - LawEnforcementVehicle
   - FireDepartmentVehicle
   - Roof
+  - ParkingLot
   layers:
   - Default
   - TransparentFX
