@@ -285,9 +285,10 @@ public class Player : NetworkBehaviour
 
 
         // Apply movement locally
-        if (!Physics.SphereCast(transform.position, 2f, moveDirection, out RaycastHit hit, movement.magnitude) || playerRole == Roles.Instructor)
+        //If no collision is detected OR if the role is instructor 
+        if (!Physics.SphereCast(transform.position, 2f, moveDirection, out RaycastHit hit, movement.magnitude) || (hit.collider != null && hit.collider.gameObject.CompareTag("ParkingLot")) || playerRole == Roles.Instructor)
         {
-            transform.position += movement; // Only move if no collision detected
+                transform.position += movement; 
         }
 
         if (isLocalPlayer && movement.magnitude > 0.01f)
