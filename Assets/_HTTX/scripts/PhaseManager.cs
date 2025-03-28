@@ -86,7 +86,6 @@ public class PhaseManager : NetworkBehaviour
         if (isServer)
         {
             SaveAnimationState();
-            InitializeDiscColors();
             SetPhase(GamePhase.Phase1); //instructor sets 1st phase, triggers sync
         }
 
@@ -483,6 +482,7 @@ public class PhaseManager : NetworkBehaviour
     private void HandleStartCivs()
     {
         ToggleVillainWeapons(false);
+        InitializeDiscColors();
         foreach (GameObject civilian in allCivilians)
         {
             civilian.SetActive(true);
@@ -589,7 +589,7 @@ public class PhaseManager : NetworkBehaviour
             GameObject weapon = villain.transform.GetChild(1).gameObject;
             weapon.SetActive(toggle);
             // WaypointMover mover = villain.GetComponent
-            Animator animator = villain.GetComponent<WaypointMover>().GetComponent<Animator>();
+            Animator animator = villain.GetComponent<Animator>();
             animator.SetBool("IsHoldingWeapon", toggle);
         }
     }
