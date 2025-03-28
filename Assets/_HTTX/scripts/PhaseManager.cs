@@ -1029,6 +1029,7 @@ public class PhaseManager : NetworkBehaviour
 
         if (phaseList.MovePrevious())
         {
+            ResetBackwards();
             SetPhase(phaseList.Current.Phase); //same
         }
     }
