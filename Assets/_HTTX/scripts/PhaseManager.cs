@@ -145,16 +145,16 @@ public class PhaseManager : NetworkBehaviour
     private IEnumerator WaitForGetUpAnimation(Animator animator, WaypointMover mover)
     {
         // Wait until the "GettingUp" animation is fully played
-        while (animator.GetCurrentAnimatorStateInfo(0).IsName("Idle_Sitting") &&
-            animator.GetCurrentAnimatorStateInfo(0).IsName("ToStand") &&
+        while (animator.GetCurrentAnimatorStateInfo(0).IsName("Idle_Sitting") ||
+            animator.GetCurrentAnimatorStateInfo(0).IsName("ToStand") ||
             animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f)
         {
             yield return null;
         }
 
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.3f);
 
-        physicianHostage.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+        physicianHostage.transform.rotation = Quaternion.Euler(physicianHostage.transform.rotation.eulerAngles.x, 45f, physicianHostage.transform.rotation.eulerAngles.z);
 
         // Now set the running animation and allow movement
         animator.SetBool("IsRunning", true);
@@ -583,7 +583,6 @@ public class PhaseManager : NetworkBehaviour
     private void Alarming(){
         // Receptionist hits duress alarm
         Debug.Log("Duress alarm activated. Dispatcher notified.");
-        physicianHostage.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
     }
     private void ExecuteEgressPhase(int selectedEgress)
     {
@@ -990,7 +989,9 @@ public class PhaseManager : NetworkBehaviour
         }
         
         // THEN set position and rotation (order matters)
-        npc.transform.rotation = Quaternion.identity;
+
+        // Fix siting people in phase 1
+        npc.transform.rotation = Quaternion.Euler(npc.transform.rotation.eulerAngles.x, 45f, npc.transform.rotation.eulerAngles.z);
     }
     
 
