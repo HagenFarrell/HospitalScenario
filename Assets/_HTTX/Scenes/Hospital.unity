@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028292, g: 0.22571306, b: 0.30692118, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -7985,9 +7985,9 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase1: 0
+  waypointsActiveInPhase1: 1
   activeInPhase: 0
-  ActiveChildLength: 0
+  ActiveChildLength: 1
 --- !u!1 &420822243
 GameObject:
   m_ObjectHideFlags: 0
@@ -12359,9 +12359,9 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase1: 0
+  waypointsActiveInPhase1: 1
   activeInPhase: 0
-  ActiveChildLength: 0
+  ActiveChildLength: 1
 --- !u!1 &667824755
 GameObject:
   m_ObjectHideFlags: 0
@@ -15931,9 +15931,9 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase1: 0
+  waypointsActiveInPhase1: 1
   activeInPhase: 0
-  ActiveChildLength: 0
+  ActiveChildLength: 1
 --- !u!1001 &827089232
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -22215,7 +22215,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1151329070
 Transform:
   m_ObjectHideFlags: 0
@@ -25658,7 +25658,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1357971769
 Transform:
   m_ObjectHideFlags: 0
@@ -36474,9 +36474,9 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase1: 0
+  waypointsActiveInPhase1: 1
   activeInPhase: 0
-  ActiveChildLength: 0
+  ActiveChildLength: 1
 --- !u!1 &2005893249
 GameObject:
   m_ObjectHideFlags: 0
@@ -37790,9 +37790,9 @@ MonoBehaviour:
   size: 1
   canLoop: 0
   isMovingForward: 1
-  waypointsActiveInPhase1: 0
+  waypointsActiveInPhase1: 1
   activeInPhase: 0
-  ActiveChildLength: 0
+  ActiveChildLength: 1
 --- !u!1001 &2082241835
 PrefabInstance:
   m_ObjectHideFlags: 0

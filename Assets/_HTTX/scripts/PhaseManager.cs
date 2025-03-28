@@ -1007,7 +1007,30 @@ public class PhaseManager : NetworkBehaviour
         Debug.Log($"Phase changed from {oldPhase} to {newPhase}");
 
         phaseList.SetCurrentTo(newPhase);//locally updating
+
+        if (reverting)
+        {
+            ResetBackwards();
+        }
+
+        if (!reverting)
+        {
+            ResetForward();
+        }
+
         StartPhase();//every client now runs startPhase together including host
+
+        if (!isServer) // Only clients reset this flag here
+        {
+            reverting = false;
+        }
+    }
+
+    [ClientRpc]
+    private void RpcSetReverting(bool isReverting)
+    {
+        Debug.Log($"Client received reverting state: {isReverting}");
+        this.reverting = isReverting;
     }
 
     [Command(requiresAuthority = false)]
@@ -1017,6 +1040,7 @@ public class PhaseManager : NetworkBehaviour
 
         if (phaseList.MoveNext())
         {
+            RpcSetReverting(false);
             ResetForward();
             SetPhase(phaseList.Current.Phase); //triggers OnPhaseChanged on all clients
         }
@@ -1029,6 +1053,7 @@ public class PhaseManager : NetworkBehaviour
 
         if (phaseList.MovePrevious())
         {
+            RpcSetReverting(true); // Update on client side that we are reverting
             ResetBackwards();
             SetPhase(phaseList.Current.Phase); //same
         }
