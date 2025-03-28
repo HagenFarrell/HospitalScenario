@@ -152,9 +152,9 @@ public class PhaseManager : NetworkBehaviour
             yield return null;
         }
 
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.3f);
 
-        physicianHostage.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+        physicianHostage.transform.rotation = Quaternion.Euler(physicianHostage.transform.rotation.eulerAngles.x, 45f, physicianHostage.transform.rotation.eulerAngles.z);
 
         // Now set the running animation and allow movement
         animator.SetBool("IsRunning", true);
@@ -583,7 +583,6 @@ public class PhaseManager : NetworkBehaviour
     private void Alarming(){
         // Receptionist hits duress alarm
         Debug.Log("Duress alarm activated. Dispatcher notified.");
-        physicianHostage.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
     }
     private void ExecuteEgressPhase(int selectedEgress)
     {
@@ -869,6 +868,7 @@ public class PhaseManager : NetworkBehaviour
         switch (phase)
         {
             case GamePhase.Phase1:
+                HandleStartCivs();
                 if(allVillains[0].transform.GetChild(1).gameObject.activeSelf) ToggleGun();
                 break;
                 
@@ -889,14 +889,21 @@ public class PhaseManager : NetworkBehaviour
             case GamePhase.Phase4:
                 if(reverting) {
                     HideLLE();
-                    ToggleGammaKnife();
+                    if(gammaKnifeObject.activeSelf) ToggleGammaKnife();
                 }
                 break;
             case GamePhase.Phase5:
                 if(!reverting) {
                     SpawnLLE();
                     ToggleGammaKnife();
-                    CmdToggleBubble();
+                    GameObject bubble = gammaKnifeObject.transform.GetChild(0).gameObject;
+                    int i=0;
+                    while(bubble.activeSelf && i<10){
+                        CmdToggleBubble();
+                        i++;
+                        Debug.Log("bubble toggled again: " + i);
+                    }
+                    if(i==10) Debug.LogWarning("why bubble not toggle off ");
                 }
                 else HideFD();
 
@@ -989,7 +996,9 @@ public class PhaseManager : NetworkBehaviour
         }
         
         // THEN set position and rotation (order matters)
-        npc.transform.rotation = Quaternion.identity;
+
+        // Fix siting people in phase 1
+        npc.transform.rotation = Quaternion.Euler(npc.transform.rotation.eulerAngles.x, 45f, npc.transform.rotation.eulerAngles.z);
     }
     
 
@@ -998,7 +1007,30 @@ public class PhaseManager : NetworkBehaviour
         Debug.Log($"Phase changed from {oldPhase} to {newPhase}");
 
         phaseList.SetCurrentTo(newPhase);//locally updating
+
+        if (reverting)
+        {
+            ResetBackwards();
+        }
+
+        if (!reverting)
+        {
+            ResetForward();
+        }
+
         StartPhase();//every client now runs startPhase together including host
+
+        if (!isServer) // Only clients reset this flag here
+        {
+            reverting = false;
+        }
+    }
+
+    [ClientRpc]
+    private void RpcSetReverting(bool isReverting)
+    {
+        // Debug.Log($"Client received reverting state: {isReverting}");
+        this.reverting = isReverting;
     }
 
     [Command(requiresAuthority = false)]
@@ -1008,6 +1040,7 @@ public class PhaseManager : NetworkBehaviour
 
         if (phaseList.MoveNext())
         {
+            RpcSetReverting(false);
             ResetForward();
             SetPhase(phaseList.Current.Phase); //triggers OnPhaseChanged on all clients
         }
@@ -1020,6 +1053,8 @@ public class PhaseManager : NetworkBehaviour
 
         if (phaseList.MovePrevious())
         {
+            RpcSetReverting(true); // Update on client side that we are reverting
+            ResetBackwards();
             SetPhase(phaseList.Current.Phase); //same
         }
     }
