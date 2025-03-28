@@ -86,7 +86,6 @@ public class PhaseManager : NetworkBehaviour
         if (isServer)
         {
             SaveAnimationState();
-            InitializeDiscColors();
             SetPhase(GamePhase.Phase1); //instructor sets 1st phase, triggers sync
         }
 
@@ -163,6 +162,7 @@ public class PhaseManager : NetworkBehaviour
         mover.enabled = true;
     }
 
+    #region Egress Phases
     private int SetEgressPhase()
     {
         if(playerRole == null){
@@ -215,6 +215,8 @@ public class PhaseManager : NetworkBehaviour
         
         return phase;
     }
+
+    #endregion
 
     private void FindKeyNPCs()
     {
@@ -415,8 +417,11 @@ public class PhaseManager : NetworkBehaviour
         }
     }
     private GameObject getRadSource(){
-        return allVillains[0].transform.GetChild(4).gameObject;
+        int len = allVillains[0].transform.childCount - 1;
+        return allVillains[0].transform.GetChild(len).gameObject;
     }
+
+    #region UnitVisablity
     private void HidePlayers(){
         if(playerUnits == null || playerUnits.Count == 0){
             Debug.LogError("Player units null, attempting to locate");
@@ -473,8 +478,11 @@ public class PhaseManager : NetworkBehaviour
             vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y-9000f, vehicle.transform.position.z);
         }
     }
+    #endregion
     private void HandleStartCivs()
     {
+        ToggleVillainWeapons(false);
+        InitializeDiscColors();
         foreach (GameObject civilian in allCivilians)
         {
             civilian.SetActive(true);
@@ -575,10 +583,15 @@ public class PhaseManager : NetworkBehaviour
             }
         }
     }
-    private void ToggleGun(){
+    private void ToggleVillainWeapons(bool toggle){
         // toggles gun
-        GameObject weapon = allVillains[0].transform.GetChild(1).gameObject;
-        weapon.SetActive(!weapon.activeSelf);
+        foreach(GameObject villain in allVillains){
+            GameObject weapon = villain.transform.GetChild(1).gameObject;
+            weapon.SetActive(toggle);
+            // WaypointMover mover = villain.GetComponent
+            Animator animator = villain.GetComponent<Animator>();
+            animator.SetBool("IsHoldingWeapon", toggle);
+        }
     }
     private void Alarming(){
         // Receptionist hits duress alarm
@@ -631,6 +644,9 @@ public class PhaseManager : NetworkBehaviour
             } 
         }
     }
+
+    #region Reset Phases
+
     private void ResetCurrent()
     {
         if (phaseList.Current == null) return;
@@ -761,6 +777,10 @@ public class PhaseManager : NetworkBehaviour
             }
         }
     }
+
+    #endregion
+
+    #region SavingData
     private void SaveWaypointState()
     {
         if (phaseList.Current == null) return;
@@ -831,6 +851,10 @@ public class PhaseManager : NetworkBehaviour
             }
         }
     }
+
+    #endregion
+
+
     private void ToggleGammaKnife(){
         if (gammaKnifeObject != null) {
             gammaKnifeObject.SetActive(!gammaKnifeObject.activeSelf);
@@ -869,7 +893,7 @@ public class PhaseManager : NetworkBehaviour
         {
             case GamePhase.Phase1:
                 HandleStartCivs();
-                if(allVillains[0].transform.GetChild(1).gameObject.activeSelf) ToggleGun();
+                ToggleVillainWeapons(false);
                 break;
                 
             case GamePhase.Phase2:
@@ -878,7 +902,7 @@ public class PhaseManager : NetworkBehaviour
                 DespawnOnEscape();
                 UpdateHostageDiscs();
                 UpdateVillainDiscs(Color.red);
-                if(!allVillains[0].transform.GetChild(1).gameObject.activeSelf) ToggleGun();
+                ToggleVillainWeapons(true);
                 break;
                 
             case GamePhase.Phase3:
@@ -1001,6 +1025,7 @@ public class PhaseManager : NetworkBehaviour
         npc.transform.rotation = Quaternion.Euler(npc.transform.rotation.eulerAngles.x, 45f, npc.transform.rotation.eulerAngles.z);
     }
     
+    #region Most Mirror Phase Stuff
 
     private void OnPhaseChanged(GamePhase oldPhase, GamePhase newPhase)
     {
@@ -1109,3 +1134,4 @@ public class PhaseManager : NetworkBehaviour
     }
 
 }
+#endregion
