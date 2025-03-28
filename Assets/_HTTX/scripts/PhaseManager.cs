@@ -896,7 +896,14 @@ public class PhaseManager : NetworkBehaviour
                 if(!reverting) {
                     SpawnLLE();
                     ToggleGammaKnife();
-                    CmdToggleBubble();
+                    GameObject bubble = gammaKnifeObject.transform.GetChild(0).gameObject;
+                    int i=0;
+                    while(bubble.activeSelf && i<10){
+                        CmdToggleBubble();
+                        i++;
+                        Debug.Log("bubble toggled again: " + i);
+                    }
+                    if(i==10) Debug.LogWarning("why bubble not toggle off ");
                 }
                 else HideFD();
 
