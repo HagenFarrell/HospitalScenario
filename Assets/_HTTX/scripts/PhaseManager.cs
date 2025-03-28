@@ -418,7 +418,8 @@ public class PhaseManager : NetworkBehaviour
         }
     }
     private GameObject getRadSource(){
-        return allVillains[0].transform.GetChild(4).gameObject;
+        int len = allVillains[0].transform.childCount - 1;
+        return allVillains[0].transform.GetChild(len).gameObject;
     }
 
     #region UnitVisablity
@@ -481,6 +482,7 @@ public class PhaseManager : NetworkBehaviour
     #endregion
     private void HandleStartCivs()
     {
+        ToggleVillainWeapons(false);
         foreach (GameObject civilian in allCivilians)
         {
             civilian.SetActive(true);
@@ -581,10 +583,15 @@ public class PhaseManager : NetworkBehaviour
             }
         }
     }
-    private void ToggleGun(){
+    private void ToggleVillainWeapons(bool toggle){
         // toggles gun
-        GameObject weapon = allVillains[0].transform.GetChild(1).gameObject;
-        weapon.SetActive(!weapon.activeSelf);
+        foreach(GameObject villain in allVillains){
+            GameObject weapon = villain.transform.GetChild(1).gameObject;
+            weapon.SetActive(toggle);
+            // WaypointMover mover = villain.GetComponent
+            Animator animator = villain.GetComponent<WaypointMover>().GetComponent<Animator>();
+            animator.SetBool("IsHoldingWeapon", toggle);
+        }
     }
     private void Alarming(){
         // Receptionist hits duress alarm
@@ -886,7 +893,7 @@ public class PhaseManager : NetworkBehaviour
         {
             case GamePhase.Phase1:
                 HandleStartCivs();
-                if(allVillains[0].transform.GetChild(1).gameObject.activeSelf) ToggleGun();
+                ToggleVillainWeapons(false);
                 break;
                 
             case GamePhase.Phase2:
@@ -895,7 +902,7 @@ public class PhaseManager : NetworkBehaviour
                 DespawnOnEscape();
                 UpdateHostageDiscs();
                 UpdateVillainDiscs(Color.red);
-                if(!allVillains[0].transform.GetChild(1).gameObject.activeSelf) ToggleGun();
+                ToggleVillainWeapons(true);
                 break;
                 
             case GamePhase.Phase3:

@@ -30220,6 +30220,10 @@ PrefabInstance:
       propertyPath: waypoints
       value: 
       objectReference: {fileID: 2005128635}
+    - target: {fileID: 9157128603727375837, guid: 5d2de0c8ef8994ce0b22ac0d4a022ad6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5d2de0c8ef8994ce0b22ac0d4a022ad6, type: 3}
 --- !u!4 &1649001514 stripped
@@ -38863,6 +38867,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 2139855130}
+    - target: {fileID: 6048850424557902161, guid: 7355abcd7669948e88e0199fd3269d8c, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6129229723783767386, guid: 7355abcd7669948e88e0199fd3269d8c, type: 3}
       propertyPath: m_RootOrder
       value: 0
