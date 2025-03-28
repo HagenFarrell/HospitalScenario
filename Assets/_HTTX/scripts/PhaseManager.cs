@@ -163,6 +163,7 @@ public class PhaseManager : NetworkBehaviour
         mover.enabled = true;
     }
 
+    #region Egress Phases
     private int SetEgressPhase()
     {
         if(playerRole == null){
@@ -215,6 +216,8 @@ public class PhaseManager : NetworkBehaviour
         
         return phase;
     }
+
+    #endregion
 
     private void FindKeyNPCs()
     {
@@ -417,6 +420,8 @@ public class PhaseManager : NetworkBehaviour
     private GameObject getRadSource(){
         return allVillains[0].transform.GetChild(4).gameObject;
     }
+
+    #region UnitVisablity
     private void HidePlayers(){
         if(playerUnits == null || playerUnits.Count == 0){
             Debug.LogError("Player units null, attempting to locate");
@@ -473,6 +478,7 @@ public class PhaseManager : NetworkBehaviour
             vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y-9000f, vehicle.transform.position.z);
         }
     }
+    #endregion
     private void HandleStartCivs()
     {
         foreach (GameObject civilian in allCivilians)
@@ -631,6 +637,9 @@ public class PhaseManager : NetworkBehaviour
             } 
         }
     }
+
+    #region Reset Phases
+
     private void ResetCurrent()
     {
         if (phaseList.Current == null) return;
@@ -761,6 +770,10 @@ public class PhaseManager : NetworkBehaviour
             }
         }
     }
+
+    #endregion
+
+    #region SavingData
     private void SaveWaypointState()
     {
         if (phaseList.Current == null) return;
@@ -831,6 +844,10 @@ public class PhaseManager : NetworkBehaviour
             }
         }
     }
+
+    #endregion
+
+
     private void ToggleGammaKnife(){
         if (gammaKnifeObject != null) {
             gammaKnifeObject.SetActive(!gammaKnifeObject.activeSelf);
@@ -1001,6 +1018,7 @@ public class PhaseManager : NetworkBehaviour
         npc.transform.rotation = Quaternion.Euler(npc.transform.rotation.eulerAngles.x, 45f, npc.transform.rotation.eulerAngles.z);
     }
     
+    #region Most Mirror Phase Stuff
 
     private void OnPhaseChanged(GamePhase oldPhase, GamePhase newPhase)
     {
@@ -1109,3 +1127,4 @@ public class PhaseManager : NetworkBehaviour
     }
 
 }
+#endregion
