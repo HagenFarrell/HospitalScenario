@@ -145,8 +145,8 @@ public class PhaseManager : NetworkBehaviour
     private IEnumerator WaitForGetUpAnimation(Animator animator, WaypointMover mover)
     {
         // Wait until the "GettingUp" animation is fully played
-        while (animator.GetCurrentAnimatorStateInfo(0).IsName("Idle_Sitting") ||
-            animator.GetCurrentAnimatorStateInfo(0).IsName("ToStand") ||
+        while (animator.GetCurrentAnimatorStateInfo(0).IsName("Idle_Sitting") &&
+            animator.GetCurrentAnimatorStateInfo(0).IsName("ToStand") &&
             animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f)
         {
             yield return null;
