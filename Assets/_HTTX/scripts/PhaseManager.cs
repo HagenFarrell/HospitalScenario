@@ -889,7 +889,7 @@ public class PhaseManager : NetworkBehaviour
             case GamePhase.Phase4:
                 if(reverting) {
                     HideLLE();
-                    ToggleGammaKnife();
+                    if(gammaKnifeObject.activeSelf) ToggleGammaKnife();
                 }
                 break;
             case GamePhase.Phase5:
@@ -1029,7 +1029,7 @@ public class PhaseManager : NetworkBehaviour
     [ClientRpc]
     private void RpcSetReverting(bool isReverting)
     {
-        Debug.Log($"Client received reverting state: {isReverting}");
+        // Debug.Log($"Client received reverting state: {isReverting}");
         this.reverting = isReverting;
     }
 
