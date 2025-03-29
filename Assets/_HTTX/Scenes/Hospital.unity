@@ -5621,6 +5621,32 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6763d331aa758bd4ab3ff31b3db821bb, type: 3}
   m_PrefabInstance: {fileID: 301845676}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &301951744 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7881889519896781626, guid: 3a43d1c8c6320004b8919223ef0d1d7e, type: 3}
+  m_PrefabInstance: {fileID: 1848738862}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &301951745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 301951744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f74aedd71d9a4f55b3ce499326d45fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
+  clientAuthority: 0
+  localPositionSensitivity: 0.01
+  localRotationSensitivity: 0.01
+  localScaleSensitivity: 0.01
+  compressRotation: 0
+  interpolateScale: 1
+  syncScale: 1
 --- !u!1 &302529225
 GameObject:
   m_ObjectHideFlags: 0
@@ -13926,6 +13952,32 @@ MonoBehaviour:
   rotateSpeed: 10
   currentWaypoint: {fileID: 0}
   despawnAtLastWaypoint: 0
+--- !u!1 &747749518 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7881889519896781626, guid: 3a43d1c8c6320004b8919223ef0d1d7e, type: 3}
+  m_PrefabInstance: {fileID: 7035591373095291593}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &747749519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 747749518}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f74aedd71d9a4f55b3ce499326d45fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
+  clientAuthority: 0
+  localPositionSensitivity: 0.01
+  localRotationSensitivity: 0.01
+  localScaleSensitivity: 0.01
+  compressRotation: 0
+  interpolateScale: 1
+  syncScale: 1
 --- !u!1001 &750328814
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -20703,7 +20755,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7361635443821132160, guid: 3a43d1c8c6320004b8919223ef0d1d7e, type: 3}
       propertyPath: m_RootOrder
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 7361635443821132160, guid: 3a43d1c8c6320004b8919223ef0d1d7e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -30323,8 +30375,8 @@ Transform:
   - {fileID: 1341726893}
   - {fileID: 1793209733}
   - {fileID: 1097451215}
-  - {fileID: 995418209}
   - {fileID: 543450653063115593}
+  - {fileID: 995418209}
   - {fileID: 1929048114}
   - {fileID: 1051599613}
   m_Father: {fileID: 0}
@@ -38701,7 +38753,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7361635443821132160, guid: 3a43d1c8c6320004b8919223ef0d1d7e, type: 3}
       propertyPath: m_RootOrder
-      value: 5
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 7361635443821132160, guid: 3a43d1c8c6320004b8919223ef0d1d7e, type: 3}
       propertyPath: m_LocalPosition.x

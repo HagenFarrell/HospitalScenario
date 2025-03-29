@@ -33,6 +33,7 @@ public class PhaseManager : NetworkBehaviour
     // other
     private float runSpeed;
     private bool reverting;
+    private float InitialY;
     // egress
     public delegate void EgressSelectedHandler(int egressPhase);
     public static event EgressSelectedHandler OnEgressSelected;
@@ -428,6 +429,7 @@ public class PhaseManager : NetworkBehaviour
             GameObject temp = GameObject.Find("Player Units");
         }
         foreach(GameObject unit in playerUnits){
+            InitialY = unit.transform.position.y;
             unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y-9000f, unit.transform.position.z);
         }
         HideAllVehicles();
@@ -864,21 +866,21 @@ public class PhaseManager : NetworkBehaviour
     private void SpawnLLE(){
         if(LLE == null || LLE.Length == 0) LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
         foreach(GameObject unit in LLE){
-            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y+9000f, unit.transform.position.z);
+            unit.transform.position = new Vector3(unit.transform.position.x, InitialY, unit.transform.position.z);
         }
         if(LLEVehicles == null || LLEVehicles.Length == 0) LLEVehicles = GameObject.FindGameObjectsWithTag("LawEnforcementVehicle");
         foreach(GameObject vehicle in LLEVehicles){
-            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y+9000f, vehicle.transform.position.z);
+            vehicle.transform.position = new Vector3(vehicle.transform.position.x, InitialY, vehicle.transform.position.z);
         }
     }
     private void SpawnFD(){
         if (FD == null || FD.Length == 0) FD = GameObject.FindGameObjectsWithTag("FireDepartment");
         foreach(GameObject unit in FD){
-            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y+9000f, unit.transform.position.z);
+            unit.transform.position = new Vector3(unit.transform.position.x, InitialY, unit.transform.position.z);
         }
          if(FDVehicles == null || FDVehicles.Length == 0) FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
         foreach(GameObject vehicle in FDVehicles){
-            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y+9000f, vehicle.transform.position.z);
+            vehicle.transform.position = new Vector3(vehicle.transform.position.x, InitialY, vehicle.transform.position.z);
         }
     }
     private void MoveNPCsForPhase(GamePhase phase){
