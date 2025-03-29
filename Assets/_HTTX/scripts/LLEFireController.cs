@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror; // Networking
 
-public class LLEFireController : MonoBehaviour
+public class LLEFireController : NetworkBehaviour
 {
     public KeyCode fireKey = KeyCode.F;
     public float fireRange = 30f;
@@ -10,24 +11,36 @@ public class LLEFireController : MonoBehaviour
 
     void Update()
     {
-        // Only the Instructor role can trigger this
-        if (!IsLocalPlayerInstructor())
+        // Only let the *local* Instructor initiate fire
+        if (!isLocalPlayer || !IsLocalPlayerInstructor())
         {
             return;
         }
 
         if (Input.GetKeyDown(fireKey))
         {
-            Debug.Log("Instructor triggered fire command.");
-            FireAllLLEUnits();
+            CmdFireCommand();
         }
     }
+
+    // Called on server when the local Instructor presses the fire key
+    [Command]
+    void CmdFireCommand()
+    {
+        RpcDoFireOnAllClients();
+    }
+
+    // Broadcast to all clients to trigger fire animations
+    [ClientRpc]
+    void RpcDoFireOnAllClients()
+    {
+        FireAllLLEUnits();
+    }
+
 
     void FireAllLLEUnits()
     {
         AIMover[] allUnits = FindObjectsOfType<AIMover>();
-        int totalUnits = 0;
-        int firedUnits = 0;
 
         foreach (AIMover unit in allUnits)
         {
@@ -37,40 +50,33 @@ public class LLEFireController : MonoBehaviour
                 continue;
             }
 
-            totalUnits++;
-
             GameObject visibleHostile = GetVisibleHostile(unit.transform);
             if (visibleHostile != null)
             {
                 Animator unitAnimator = unit.GetComponent<Animator>();
+                Animator hostileAnimator = visibleHostile.GetComponent<Animator>();
+
                 if (unitAnimator != null)
                 {
                     unitAnimator.SetTrigger("FireWeapon");
-                    Debug.Log($"{unit.name} fired at {visibleHostile.name}");
 
-                    Animator hostileAnimator = visibleHostile.GetComponent<Animator>();
                     if (hostileAnimator != null)
                     {
                         hostileAnimator.SetTrigger("Killed Holding Gun");
                     }
-
-                    StartCoroutine(ResetFireTrigger(unitAnimator));
-                    firedUnits++;
                 }
             }
         }
-
-        Debug.Log($"Firing complete. Units checked: {totalUnits}, Fired: {firedUnits}");
     }
 
     // Checks for visible hostiles using raycasting (LOS check)
     GameObject GetVisibleHostile(Transform unit)
     {
-        GameObject[] allHostiles = GameObject.FindGameObjectsWithTag("Villains");
-        List<GameObject> totalHostiles = new List<GameObject>(allHostiles);
-        totalHostiles.AddRange(GameObject.FindGameObjectsWithTag("OutsideVillains"));
+        List<GameObject> hostiles = new List<GameObject>();
+        hostiles.AddRange(GameObject.FindGameObjectsWithTag("Villains"));
+        hostiles.AddRange(GameObject.FindGameObjectsWithTag("OutsideVillains"));
 
-        foreach (GameObject hostile in totalHostiles)
+        foreach (GameObject hostile in hostiles)
         {
             Vector3 direction = (hostile.transform.position - unit.position).normalized;
             float distance = Vector3.Distance(unit.position, hostile.transform.position);
@@ -97,20 +103,11 @@ public class LLEFireController : MonoBehaviour
         // Force Animator to return to neutral
         animator.Rebind();         // Completely resets the animator's state machine
         animator.Update(0f);       // Forces immediate update
-
-        Debug.Log("🔁 Animator trigger reset and rebound.");
-        Debug.Log($"🎞️ Current state: {animator.GetCurrentAnimatorStateInfo(0).IsName("Idle_Standing 0")}");
-
     }
 
     // Confirms whether the local player is the Instructor
     bool IsLocalPlayerInstructor()
     {
-        if (Player.LocalPlayerInstance == null)
-        {
-            return false;
-        }
-
-        return Player.LocalPlayerInstance.getPlayerRole() == Player.Roles.Instructor;
+        return Player.LocalPlayerInstance != null && Player.LocalPlayerInstance.getPlayerRole() == Player.Roles.Instructor;
     }
 }
