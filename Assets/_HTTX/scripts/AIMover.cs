@@ -303,7 +303,7 @@ public class AIMover : MonoBehaviour
         updateRotation();
     }
 
-    private bool isRunningExternally = false; // Flag to allow external running command
+    private bool isRunningExternally = true; // Flag to allow external running command
 
     public void SetRunning(bool running)
     {
@@ -332,21 +332,21 @@ public class AIMover : MonoBehaviour
         {
             float currentSpeed = currentVelocity.magnitude;
             
-            if (IsArmedUnit)
-            {
-                animator.SetBool("IsRunning", currentSpeed > 0.1f ? true : false && isRunningExternally);
-                // animator.SetInteger("CharacterState", currentSpeed > 0.1f ? 1 : 0);
-                animator.SetBool("IsHoldingWeapon", true);
-                animator.SetBool(walkingHash, false);
-                return;
-            }
+            // if (IsArmedUnit)
+            // {
+            //     animator.SetBool("IsRunning", currentSpeed > 0.1f ? true : false && isRunningExternally);
+            //     // animator.SetInteger("CharacterState", currentSpeed > 0.1f ? 1 : 0);
+            //     animator.SetBool("IsHoldingWeapon", true);
+            //     animator.SetBool(walkingHash, false);
+            //     return;
+            // }
 
-            if (isRunningExternally) // If externally set to run, ignore walking logic
-            {
-                animator.SetBool(walkingHash, false);
-                animator.SetBool("IsRunning", true);
-                return;
-            }
+            // if (isRunningExternally) // If externally set to run, ignore walking logic
+            // {
+            //     animator.SetBool(walkingHash, false);
+            //     animator.SetBool("IsRunning", true);
+            //     return;
+            // }
             
             // Standard walking logic
             bool shouldBeIdle =
@@ -355,8 +355,11 @@ public class AIMover : MonoBehaviour
                 path == null ||
                 currentWaypoint >= path.Count;
 
-            animator.SetBool(walkingHash, !shouldBeIdle);
-            animator.SetBool("IsRunning", false);
+            // animator.SetBool(walkingHash, !shouldBeIdle);
+            // animator.SetBool("IsRunning", false);
+
+            animator.SetBool("IsRunning", !shouldBeIdle && isRunningExternally && currentSpeed > 0.1f ? true : false);
+            animator.SetBool("IsHoldingWeapon", IsArmedUnit);
 
             if (shouldBeIdle)
             {

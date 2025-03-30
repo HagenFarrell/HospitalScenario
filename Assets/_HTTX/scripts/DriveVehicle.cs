@@ -6,7 +6,6 @@ using Mirror;
 public class DriveVehicle : NetworkBehaviour{
     public static DriveVehicle Instance {get; private set; }
     private bool isMirrorInitialization = false;
-    private AIMover mover;
     [Header ("Vehicle Attributes")]
     [SerializeField] private Player ControlPlayer;
     [SerializeField] private int MaxCapacity;
@@ -41,9 +40,7 @@ public class DriveVehicle : NetworkBehaviour{
         }
         if(Input.GetKeyDown(KeyCode.L)){ // exit vehicle
             List<GameObject> SelectedChars = ControlPlayer.GetSelectedChars();
-            foreach(GameObject unit in passengers){
-                ExitVehicle(unit);
-            }
+            ExitVehicle(passengers);
             isActiveVehicle = false;
             passengers.Clear();
         }
@@ -56,15 +53,21 @@ public class DriveVehicle : NetworkBehaviour{
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, entryRadius);
     }
-    private void ExitVehicle(GameObject PlayerUnit){
+    private void ExitVehicle(List<GameObject> PlayerUnits){
         // Debug.Log($"{PlayerUnit} exiting vehicle: {this.gameObject}");
-        Vector3 exitPosition = PlayerUnit.transform.position;
-        exitPosition.x = transform.position.x + 2.5f;
-        
-        PlayerUnit.transform.position = exitPosition;
-        mover.UpdateSpeed(oldSpeed);
-        toggleRenderer(true, PlayerUnit);
-        mover.StopAllMovement();
+        foreach(GameObject PlayerUnit in PlayerUnits){
+            AIMover mover = PlayerUnit.GetComponent<AIMover>();
+            if(mover == null){
+                Debug.LogWarning($"mover null for {PlayerUnit}, cannot exit vehicle");
+            }
+            Vector3 exitPosition = PlayerUnit.transform.position;
+            exitPosition.x = transform.position.x + 2.5f;
+            
+            PlayerUnit.transform.position = exitPosition;
+            mover.UpdateSpeed(oldSpeed);
+            toggleRenderer(true, PlayerUnit);
+            mover.StopAllMovement();
+        }
     }
     private void TryEnterVehicle(List<GameObject> SelectedChars)
     {
@@ -87,31 +90,64 @@ public class DriveVehicle : NetworkBehaviour{
             return;
         }
 
-        // Board all valid units (up to max capacity)
-        foreach (GameObject unit in SelectedChars)
-        {
-            if (passengers.Count >= MaxCapacity) break;
+        EnterVehicle(SelectedChars);
+        // foreach (GameObject unit in SelectedChars)
+        // {
+        //     if (passengers.Count >= MaxCapacity) break;
             
-            if (CanDriveThis(unit)) 
-            {
-                EnterVehicle(unit);
-            }
-        }
+        //     if (CanDriveThis(unit)) 
+        //     {
+        //         EnterVehicle(unit);
+        //     }
+        // }
     }
-    private void EnterVehicle(GameObject PlayerUnit){
+    private void EnterVehicle(List<GameObject> PlayerUnits){
         if(passengers.Count >= MaxCapacity){
             Debug.LogWarning($"{this.gameObject} is at max capacity: {MaxCapacity}");
             return;
         }
-        SetVars(PlayerUnit);
-        toggleRenderer(false, PlayerUnit);
-        mover.UpdateSpeed(oldSpeed + driveSpeed);
-        passengers.Add(PlayerUnit);
-        PlayerUnit.transform.position = transform.position;
-        isActiveVehicle = true;
-        mover.SetRunning(false);
+        foreach(GameObject PlayerUnit in PlayerUnits){
+            AIMover mover = PlayerUnit.GetComponent<AIMover>();
+            if (!CanDriveThis(PlayerUnit)) continue;
+            if(mover == null){
+                Debug.LogWarning($"mover null for {PlayerUnit}, cannot exit vehicle");
+                continue;
+            }
+            
+            
+            // Debug.Log($"Entering vehicle for {PlayerUnit}, new speed is {oldSpeed + driveSpeed}");
+            SetVars(PlayerUnit);
+            toggleRenderer(false, PlayerUnit);
+            mover.UpdateSpeed(oldSpeed + driveSpeed);
+            passengers.Add(PlayerUnit);
+            PlayerUnit.transform.position = transform.position;
+            float YRotation = transform.transform.eulerAngles.y;
+            PlayerUnit.transform.eulerAngles = new Vector3(PlayerUnit.transform.eulerAngles.x, YRotation, PlayerUnit.transform.eulerAngles.z);
+            isActiveVehicle = true;
+            mover.SetRunning(false);
+
+            Animator animator = PlayerUnit.GetComponent<Animator>();
+            if(animator == null){
+                Debug.LogWarning($"Animator null for {PlayerUnit}");
+                continue;
+            }
+            animator.Rebind();  // This completely resets the animator state machine
+            animator.Update(0f); // This forces an immediate update
+            
+            // THEN set all animation parameters explicitly to known states
+            animator.SetBool("IsWalking", false);
+            animator.SetBool("IsRunning", false);
+            animator.SetBool("ToSitting", false);
+            animator.SetBool("IsThreatPresent", false);
+            
+        }
     }
     private void UpdateVehiclePosition(GameObject PlayerUnit){
+        AIMover mover = PlayerUnit.GetComponent<AIMover>();
+        if(mover == null){
+            Debug.LogWarning($"mover null for {PlayerUnit}, cannot update animation");
+            return;
+        }
         transform.position = PlayerUnit.transform.position;
         float YRotation = PlayerUnit.transform.eulerAngles.y;
         transform.eulerAngles = new Vector3(transform.eulerAngles.x, YRotation, transform.eulerAngles.z);
@@ -122,13 +158,12 @@ public class DriveVehicle : NetworkBehaviour{
             (PlayerUnit.CompareTag("FireDepartment") && gameObject.CompareTag("FireDepartmentVehicle"));
     }
     private void SetVars(GameObject PlayerUnit){
-        mover = PlayerUnit.gameObject.GetComponent<AIMover>();
+        AIMover mover = PlayerUnit.GetComponent<AIMover>();
         if(mover == null){
-            Debug.LogError("mover null in DriveVehicle");
+            Debug.LogWarning($"mover null for {PlayerUnit}, cannot update animation");
             return;
         }
         oldSpeed = mover.GetSpeed();
-        driveSpeed = oldSpeed + 5;
     }
     private void toggleRenderer(bool toggle, GameObject PlayerUnit){
         foreach (Renderer childRenderer in PlayerUnit.GetComponentsInChildren<Renderer>()) {

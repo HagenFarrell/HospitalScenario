@@ -1991,7 +1991,7 @@ MonoBehaviour:
   ControlPlayer: {fileID: 0}
   MaxCapacity: 4
   entryRadius: 7
-  driveSpeed: 3
+  driveSpeed: 5
 --- !u!1001 &89015906
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11135,7 +11135,7 @@ MonoBehaviour:
   ControlPlayer: {fileID: 0}
   MaxCapacity: 7
   entryRadius: 3
-  driveSpeed: 5
+  driveSpeed: 6
 --- !u!1 &591394417
 GameObject:
   m_ObjectHideFlags: 0
@@ -28008,8 +28008,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: badf09916faa57646b7a03984465e485, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxSpeed: 5
-  maxForce: 100
+  maxSpeed: 10
+  maxForce: 10
   slowingRadius: 2
   seperationRadius: 1
   pathUpdateInterval: 8
@@ -35744,8 +35744,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: badf09916faa57646b7a03984465e485, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxSpeed: 5
-  maxForce: 100
+  maxSpeed: 10
+  maxForce: 10
   slowingRadius: 2
   seperationRadius: 1
   pathUpdateInterval: 8
@@ -36454,7 +36454,7 @@ MonoBehaviour:
   ControlPlayer: {fileID: 0}
   MaxCapacity: 5
   entryRadius: 3
-  driveSpeed: 5
+  driveSpeed: 7
 --- !u!1001 &1941506076
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -38020,8 +38020,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: badf09916faa57646b7a03984465e485, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxSpeed: 5
-  maxForce: 100
+  maxSpeed: 10
+  maxForce: 10
   slowingRadius: 2
   seperationRadius: 1
   pathUpdateInterval: 8
@@ -39051,8 +39051,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: badf09916faa57646b7a03984465e485, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxSpeed: 5
-  maxForce: 100
+  maxSpeed: 10
+  maxForce: 10
   slowingRadius: 2
   seperationRadius: 1
   pathUpdateInterval: 8
@@ -39922,7 +39922,7 @@ MonoBehaviour:
   ControlPlayer: {fileID: 0}
   MaxCapacity: 5
   entryRadius: 3
-  driveSpeed: 5
+  driveSpeed: 7
 --- !u!4 &543450652076212290 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3034232109503217222, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}
