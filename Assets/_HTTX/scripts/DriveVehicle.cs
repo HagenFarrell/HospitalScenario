@@ -126,7 +126,7 @@ public class DriveVehicle : NetworkBehaviour{
                 Debug.LogWarning($"mover null for {PlayerUnit}, cannot exit vehicle");
             }
             Vector3 exitPosition = PlayerUnit.transform.position;
-            exitPosition.x = transform.position.x + 2.5f;
+            exitPosition.x = transform.position.x + entryRadius;
             
             PlayerUnit.transform.position = exitPosition;
             mover.UpdateSpeed(oldSpeed);
@@ -164,6 +164,7 @@ public class DriveVehicle : NetworkBehaviour{
             return;
         }
         oldSpeed = mover.GetSpeed();
+        if(oldSpeed > 12) oldSpeed -= driveSpeed;
     }
     [Command(requiresAuthority = false)]
     private void CmdToggleRenderer(bool toggle, GameObject PlayerUnit){

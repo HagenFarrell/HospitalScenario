@@ -601,49 +601,55 @@ public class PhaseManager : NetworkBehaviour
     }
     private void ExecuteEgressPhase(int selectedEgress)
     {
-        if(OnEgressSelected == null) {
-            Debug.LogWarning("OnEgressSelected is NULL! no subscribers. ");
-            return;
-        }
-        // OnEgressSelected -= ExecuteEgressPhase; 
         SaveWaypointState();
-
-        // Debug.Log($"Egress phase {selectedEgress} selected!");
-        egress = selectedEgress;
 
         foreach (GameObject npc in allNPCs)
         {
-            if (!npc.activeSelf || (npc.CompareTag("Civilians") || npc.CompareTag("Medicals"))) continue;
-
-            WaypointMover mover = npc.GetComponent<WaypointMover>();
-            if(mover.paths == null) mover.paths = mover.waypoints.transform.parent.gameObject;
-            if (mover == null || mover.paths == null || mover.waypoints == null)
+            if (!npc.activeSelf || npc.CompareTag("Civilians") || npc.CompareTag("Medicals"))
             {
-                Debug.LogWarning($"NPC {npc.name} has missing WaypointMover or path references.");
-                resetAnimator(npc);
                 continue;
             }
-            if(mover.waypoints.ActiveChildLength < 2) continue;
 
-            Transform path = mover.paths.transform.GetChild(mover.paths.transform.childCount-1);
-            Waypoints waypoints = path.transform.GetChild(egress-1).GetComponent<Waypoints>();
-            if(waypoints == null){
-                Debug.LogWarning("Waypoints null, so " + npc + " wont update their paths");
+            WaypointMover mover = npc.GetComponent<WaypointMover>();
+            if (mover == null)
+            {
+                Debug.LogWarning($"{npc.name} has no WaypointMover.");
                 continue;
-            }else {
-                mover.waypoints = waypoints;
-                mover.currentWaypoint = waypoints.GetNextWaypoint(waypoints.transform.GetChild(0));
-                mover.pathidx = mover.paths.transform.childCount-1;
-                if(GetCurrentPhase() != GamePhase.Phase1) 
-                    mover.waypoints.enableAll();
+            }
 
-                Animator animator = mover.GetComponent<Animator>();
-                if (animator != null)
-                {
-                    animator.SetBool("IsRunning", true);
-                    mover.moveSpeed = runSpeed;
-                }
-            } 
+            if (mover.paths == null)
+            {
+                mover.paths = mover.waypoints.transform.parent.gameObject;
+                // Debug.Log($"Assigned paths for {npc.name}: {mover.paths.name}");
+            }
+
+            int lastPathIndex = mover.paths.transform.childCount - 1;
+            Transform path = mover.paths.transform.GetChild(lastPathIndex);
+            // Debug.Log($"Last path for {npc.name}: {path.name}");
+
+            if (selectedEgress - 1 >= path.childCount)
+            {
+                Debug.LogError($"Egress index {selectedEgress - 1} out of range for {path.name}");
+                continue;
+            }
+
+            Waypoints waypoints = path.GetChild(selectedEgress - 1).GetComponent<Waypoints>();
+            if (waypoints == null)
+            {
+                Debug.LogError($"No Waypoints component found on {path.GetChild(selectedEgress - 1).name}");
+                continue;
+            }
+
+            mover.waypoints = waypoints;
+            mover.currentWaypoint = waypoints.GetNextWaypoint(waypoints.transform.GetChild(0));
+            mover.pathidx = lastPathIndex;
+
+            Animator animator = mover.GetComponent<Animator>();
+            if (animator != null)
+            {
+                animator.SetBool("IsRunning", true);
+                mover.moveSpeed = runSpeed;
+            }
         }
     }
 
@@ -749,7 +755,7 @@ public class PhaseManager : NetworkBehaviour
             foreach (GameObject npc in allNPCs)
             {
                 if(npc.activeSelf){
-                    npc.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+                    // npc.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
                     WaypointMover mover = npc.GetComponent<WaypointMover>();
                     if (mover != null && mover.waypoints != null)
                     {
