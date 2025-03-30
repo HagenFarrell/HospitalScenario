@@ -162,6 +162,7 @@ public class Player : NetworkBehaviour
         if (isLocalPlayer)
         {
             PhaseManager.Instance.RegisterPlayer(this);
+            DriveVehicle.Instance.RegisterPlayer(this);
         }
     }
 

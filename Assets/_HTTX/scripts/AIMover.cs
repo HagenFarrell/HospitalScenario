@@ -334,7 +334,7 @@ public class AIMover : MonoBehaviour
             
             if (IsArmedUnit)
             {
-                animator.SetBool("IsRunning", currentSpeed > 0.1f ? true : false);
+                animator.SetBool("IsRunning", currentSpeed > 0.1f ? true : false && isRunningExternally);
                 // animator.SetInteger("CharacterState", currentSpeed > 0.1f ? 1 : 0);
                 animator.SetBool("IsHoldingWeapon", true);
                 animator.SetBool(walkingHash, false);

@@ -1,41 +1,51 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
-public class DriveVehicle : MonoBehaviour{
+public class DriveVehicle : NetworkBehaviour{
+    public static DriveVehicle Instance {get; private set; }
+    private bool isMirrorInitialization = false;
     private AIMover mover;
     [Header ("Vehicle Attributes")]
     [SerializeField] private Player ControlPlayer;
     [SerializeField] private int MaxCapacity;
     [SerializeField] private float entryRadius;
+    [SerializeField] private float driveSpeed;
 
     private bool isActiveVehicle;
     private float oldSpeed;
-    private float driveSpeed;
+    
     
     List<GameObject> passengers;
     private void Start(){
-        if(ControlPlayer == null) ControlPlayer = FindObjectOfType<Player>();
-        if(ControlPlayer == null) Debug.LogError("PlayerController null in DriveVehicle");
         passengers = new List<GameObject>();
     }
+    private void Awake()
+    {
+        // This runs before Mirror's processing
+        isMirrorInitialization = true;
+        gameObject.SetActive(true); // Force active
+        Instance = this;
+    }
     private void Update(){
+        Instance = this;
         if(ControlPlayer == null) ControlPlayer = FindObjectOfType<Player>();
         if(ControlPlayer == null) {
             Debug.LogError("PlayerController null in DriveVehicle");
             return;
         }
         if(Input.GetKeyDown(KeyCode.K)){ // enter vehicle
-            Debug.Log($"Attempting to enter {this.gameObject}");
             List<GameObject> SelectedChars = ControlPlayer.GetSelectedChars();
             TryEnterVehicle(SelectedChars);
         }
         if(Input.GetKeyDown(KeyCode.L)){ // exit vehicle
-            Debug.Log($"Exiting {this.gameObject}");
             List<GameObject> SelectedChars = ControlPlayer.GetSelectedChars();
             foreach(GameObject unit in passengers){
                 ExitVehicle(unit);
             }
+            isActiveVehicle = false;
+            passengers.Clear();
         }
         if(isActiveVehicle && passengers.Count > 0){
             UpdateVehiclePosition(passengers[0]);
@@ -47,14 +57,14 @@ public class DriveVehicle : MonoBehaviour{
         Gizmos.DrawWireSphere(transform.position, entryRadius);
     }
     private void ExitVehicle(GameObject PlayerUnit){
-        Debug.LogWarning($"{PlayerUnit} exiting vehicle: {this.gameObject}");
+        // Debug.Log($"{PlayerUnit} exiting vehicle: {this.gameObject}");
         Vector3 exitPosition = PlayerUnit.transform.position;
         exitPosition.x = transform.position.x + 2.5f;
+        
         PlayerUnit.transform.position = exitPosition;
         mover.UpdateSpeed(oldSpeed);
         toggleRenderer(true, PlayerUnit);
-        passengers.Remove(PlayerUnit);
-        isActiveVehicle = false;
+        mover.StopAllMovement();
     }
     private void TryEnterVehicle(List<GameObject> SelectedChars)
     {
@@ -62,7 +72,7 @@ public class DriveVehicle : MonoBehaviour{
         bool canEnter = false;
         foreach (GameObject unit in SelectedChars)
         {
-            Debug.Log($"{unit} is close enough?");
+            // debug.log($"{unit} is close enough?");
             float distance = Vector3.Distance(unit.transform.position, transform.position);
             if (distance <= entryRadius && CanDriveThis(unit))
             {
@@ -73,7 +83,7 @@ public class DriveVehicle : MonoBehaviour{
 
         if (!canEnter)
         {
-            Debug.LogWarning("No valid units in range!");
+            // Debug.LogWarning("No valid units in range!");
             return;
         }
 
@@ -95,15 +105,17 @@ public class DriveVehicle : MonoBehaviour{
         }
         SetVars(PlayerUnit);
         toggleRenderer(false, PlayerUnit);
-        mover.UpdateSpeed(driveSpeed);
+        mover.UpdateSpeed(oldSpeed + driveSpeed);
         passengers.Add(PlayerUnit);
+        PlayerUnit.transform.position = transform.position;
         isActiveVehicle = true;
+        mover.SetRunning(false);
     }
     private void UpdateVehiclePosition(GameObject PlayerUnit){
         transform.position = PlayerUnit.transform.position;
         float YRotation = PlayerUnit.transform.eulerAngles.y;
         transform.eulerAngles = new Vector3(transform.eulerAngles.x, YRotation, transform.eulerAngles.z);
-        PlayerUnit.GetComponent<Animator>().SetBool("IsRunning", false);
+        mover.SetRunning(false);
     }
     private bool CanDriveThis(GameObject PlayerUnit){
         return (PlayerUnit.CompareTag("LawEnforcement") && gameObject.CompareTag("LawEnforcementVehicle")) ||
@@ -122,6 +134,21 @@ public class DriveVehicle : MonoBehaviour{
         foreach (Renderer childRenderer in PlayerUnit.GetComponentsInChildren<Renderer>()) {
             childRenderer.enabled = toggle;
         }
+    }
+    public void RegisterPlayer(Player player)
+    {
+        ControlPlayer = player;
+        // Debug.Log($"Player registered: {playerRole.getPlayerRole()}");
+    }
+    private void OnDisable()
+    {
+        if (isMirrorInitialization || NetworkServer.active || NetworkClient.active)
+        {
+            // Debug.Log("PhaseHandling disabled by Mirror (expected during network setup)");
+            isMirrorInitialization = false;
+            return;
+        }
+        Debug.LogError("PhaseHandling disabled unexpectedly!");
     }
     
 }
