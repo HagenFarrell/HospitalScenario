@@ -458,11 +458,6 @@ public class Player : NetworkBehaviour
         {
             roof.SetActive(!roof.activeInHierarchy);
         }
-
-        if (Input.GetKeyDown(KeyCode.U)) // Undo last action
-        {
-            UndoLastAction();
-        }
     }
 
     private void SoundAlarm()
@@ -586,20 +581,6 @@ public class Player : NetworkBehaviour
             cam.GetComponent<Camera>().enabled = true;
             cam.SetActive(true);
         }
-    }
-    private void UndoLastAction()
-    {
-        // if (phaseManager == null) return;
-
-        // foreach (var charObj in selectedChars)
-        // {
-        //     Vector3 lastPosition = phaseManager.UndoAction(playerRole.ToString());
-        //     if (lastPosition != Vector3.zero)
-        //     {
-        //         // Debug.Log($"Undo action for {charObj.name}. Moving to {lastPosition}");
-        //         charObj.transform.position = lastPosition;
-        //     }
-        // }
     }
 
     [Command(requiresAuthority = true)]
@@ -780,5 +761,8 @@ public class Player : NetworkBehaviour
         // Debug.Log("RadEyeTool successfully attached to local player.");
     }
 
-
+    public List<GameObject> GetSelectedChars()
+    {
+        return selectedChars;
+    }
 }
