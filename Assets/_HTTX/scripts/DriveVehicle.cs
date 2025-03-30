@@ -40,7 +40,7 @@ public class DriveVehicle : NetworkBehaviour{
         }
         if(Input.GetKeyDown(KeyCode.L)){ // exit vehicle
             List<GameObject> SelectedChars = ControlPlayer.GetSelectedChars();
-            ExitVehicle(passengers);
+            CmdExitVehicle(passengers);
             isActiveVehicle = false;
             passengers.Clear();
         }
@@ -75,7 +75,15 @@ public class DriveVehicle : NetworkBehaviour{
             return;
         }
 
-        EnterVehicle(SelectedChars);
+        CmdEnterVehicle(SelectedChars);
+    }
+    [Command(requiresAuthority = false)]
+    private void CmdEnterVehicle(List<GameObject> PlayerUnits){
+        RpcEnterVehicle(PlayerUnits);
+    }
+    [ClientRpc]
+    private void RpcEnterVehicle(List<GameObject> PlayerUnits){
+        EnterVehicle(PlayerUnits);
     }
     private void EnterVehicle(List<GameObject> PlayerUnits){
         if(passengers.Count >= MaxCapacity){
@@ -90,7 +98,6 @@ public class DriveVehicle : NetworkBehaviour{
                 continue;
             }
             
-            // Debug.Log($"Entering vehicle for {PlayerUnit}, new speed is {oldSpeed + driveSpeed}");
             SetVars(PlayerUnit);
             CmdToggleRenderer(false, PlayerUnit);
             mover.UpdateSpeed(oldSpeed + driveSpeed);
@@ -102,6 +109,14 @@ public class DriveVehicle : NetworkBehaviour{
             mover.SetRunning(false);
             
         }
+    }
+    [Command(requiresAuthority = false)]
+    private void CmdExitVehicle(List<GameObject> PlayerUnits){
+        RpcExitVehicle(PlayerUnits);
+    }
+    [ClientRpc]
+    private void RpcExitVehicle(List<GameObject> PlayerUnits){
+        ExitVehicle(PlayerUnits);
     }
     private void ExitVehicle(List<GameObject> PlayerUnits){
         // Debug.Log($"{PlayerUnit} exiting vehicle: {this.gameObject}");
