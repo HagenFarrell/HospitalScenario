@@ -22,6 +22,7 @@ public class AIMover : MonoBehaviour
     // Animation parameter hashes for efficiency
     private readonly int walkingHash = Animator.StringToHash("IsWalking");
     private readonly int speedHash = Animator.StringToHash("Speed");
+    public bool IsDriving { get; set; }
 
 
     // ---- Pathingfinding variables ----
@@ -420,7 +421,7 @@ public class AIMover : MonoBehaviour
     public void UpdateSpeed(float newSpeed){
         maxSpeed = newSpeed;
     }
-    public float getSpeed(){
+    public float GetSpeed(){
         return maxSpeed;
     }
 }
