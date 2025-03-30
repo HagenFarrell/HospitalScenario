@@ -31,7 +31,7 @@ public class DriveVehicle : NetworkBehaviour{
         Instance = this;
         if(ControlPlayer == null) ControlPlayer = FindObjectOfType<Player>();
         if(ControlPlayer == null) {
-            Debug.LogError("PlayerController null in DriveVehicle");
+            // Debug.LogError("PlayerController null in DriveVehicle");
             return;
         }
         if(Input.GetKeyDown(KeyCode.K)){ // enter vehicle
@@ -40,8 +40,8 @@ public class DriveVehicle : NetworkBehaviour{
         }
         if(Input.GetKeyDown(KeyCode.L)){ // exit vehicle
             List<GameObject> SelectedChars = ControlPlayer.GetSelectedChars();
-            CmdExitVehicle(passengers);
             isActiveVehicle = false;
+            CmdExitVehicle(passengers);
             passengers.Clear();
         }
         if(isActiveVehicle && passengers.Count > 0){
