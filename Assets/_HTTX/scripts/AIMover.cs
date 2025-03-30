@@ -417,4 +417,10 @@ public class AIMover : MonoBehaviour
     {
         StopAllCoroutines(); // Stop all active coroutines in a specific NPC (for cleanup when despawning)
     }
+    public void UpdateSpeed(float newSpeed){
+        maxSpeed = newSpeed;
+    }
+    public float getSpeed(){
+        return maxSpeed;
+    }
 }
