@@ -72,7 +72,7 @@ public class LLEFireController : NetworkBehaviour
                     hostileAnimator.SetInteger("KillVariable", rand); 
                     // Debug.Log($"Killvar: {rand}");
                 }
-                StartCoroutine(ResetFireTrigger(unitAnimator));
+                StartCoroutine(ResetFireTrigger(unitAnimator, unit));
             }
             RpcDoFireOnAllClients(visibleHostile, unit);
         }
@@ -112,54 +112,10 @@ public class LLEFireController : NetworkBehaviour
                 hostileAnimator.SetInteger("KillVariable", rand); 
                 // Debug.Log($"Killvar: {rand}");
             }
-            StartCoroutine(ResetFireTrigger(unitAnimator));
+            StartCoroutine(ResetFireTrigger(unitAnimator, unit));
         }
         // FireAllLLEUnits();
     }
-
-
-    // void FireAllLLEUnits()
-    // {
-    //     // only cycle through selected units
-    //     List<GameObject> SelectedChars = player.GetSelectedChars();
-
-    //     foreach (GameObject unit in SelectedChars)
-    //     {
-    //         AIMover mover = unit.GetComponent<AIMover>();
-    //         // Skip if this NPC isn’t armed or isn’t Law Enforcement
-    //         if (!mover.IsArmedUnit || !unit.CompareTag("LawEnforcement"))
-    //         {
-    //             // Debug.Log($"Armed: {mover.IsArmedUnit}, LLE: {unit.CompareTag("LawEnforcement")}");
-    //             continue;
-    //         }
-
-    //         GameObject visibleHostile = GetVisibleHostile(unit.transform);
-    //         if (visibleHostile != null)
-    //         {
-    //             // Debug.Log("hostile found");
-    //             Animator unitAnimator = unit.GetComponent<Animator>();
-    //             Animator hostileAnimator = visibleHostile.GetComponent<Animator>();
-
-    //             if (unitAnimator != null)
-    //             {
-    //                 mover.StopAllMovement();
-    //                 unitAnimator.SetTrigger("FireWeapon");
-    //                 unitAnimator.SetBool("IsHoldingWeapon", true);
-    //                 // unitAnimator.SetBool("IsAiming", true);
-    //             }
-    //             if (hostileAnimator != null)
-    //             {
-    //                 hostileAnimator.SetTrigger("Kill");
-    //                 hostileAnimator.SetBool("IsDead", true);
-    //                 // decides randomly between headshot or normal
-    //                 int rand = Random.Range(0,2);
-    //                 hostileAnimator.SetInteger("KillVariable", rand); 
-    //                 // Debug.Log($"Killvar: {rand}");
-    //             }
-    //             StartCoroutine(ResetFireTrigger(unitAnimator));
-    //         }
-    //     }
-    // }
 
     // Checks for visible hostiles using raycasting (LOS check)
     GameObject GetVisibleHostile(Transform unit)
@@ -182,6 +138,12 @@ public class LLEFireController : NetworkBehaviour
             {
                 if (hit.collider.gameObject == hostile)
                 {
+                    Debug.DrawRay(unit.position + Vector3.up * 1.5f, direction * distance, Color.yellow, 1f);
+
+                    Quaternion baseRotation = Quaternion.LookRotation(direction);
+                    Quaternion offsetRotation = Quaternion.Euler(0, 45, 0); // fire animation turns them ~45 degrees. offset it
+
+                    unit.rotation = baseRotation * offsetRotation;
                     return hostile;
                 }
             }
@@ -190,7 +152,7 @@ public class LLEFireController : NetworkBehaviour
         return null;
     }
 
-    IEnumerator ResetFireTrigger(Animator animator)
+    IEnumerator ResetFireTrigger(Animator animator, GameObject unit)
     {
         // Wait until the FireWeapon animation begins
         yield return new WaitUntil(() => 
@@ -203,6 +165,11 @@ public class LLEFireController : NetworkBehaviour
         }
 
         animator.ResetTrigger("FireWeapon"); // Optional (triggers auto-reset)
+
+        // Quaternion currentRotation = unit.transform.rotation;
+        // Quaternion offsetRotation = Quaternion.Euler(0, -45, 0);
+
+        // unit.transform.rotation = currentRotation * offsetRotation;
         yield break;
     }
 
