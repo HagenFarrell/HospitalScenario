@@ -52,7 +52,7 @@ public class Player : NetworkBehaviour
     [SerializeField] private Roles playerRole;
     private void OnRoleChanged(Roles oldRole, Roles newRole)
     {
-        Debug.Log($"Role changed from {oldRole} to {newRole}");
+        // Debug.Log($"Role changed from {oldRole} to {newRole}");
     }
 
     [SerializeField] private npcMovement npcs;
@@ -126,7 +126,7 @@ public class Player : NetworkBehaviour
 
         if (!isLocalPlayer)
         {
-            Debug.Log($"Player spawned at {transform.position}");
+            // Debug.Log($"Player spawned at {transform.position}");
 
             // Disable camera for remote players
             if (playerCamera != null)
@@ -162,6 +162,7 @@ public class Player : NetworkBehaviour
         if (isLocalPlayer)
         {
             PhaseManager.Instance.RegisterPlayer(this);
+            DriveVehicle.Instance.RegisterPlayer(this);
         }
     }
 
@@ -192,29 +193,29 @@ public class Player : NetworkBehaviour
         if (lawEnfButton != null)
         {
             lawEnfButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(lawEnfButton));
-            Debug.Log("LawEnfButton onClick assigned.");
+            // Debug.Log("LawEnfButton onClick assigned.");
         }
 
         if (fireDeptButton != null)
         {
             fireDeptButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(fireDeptButton));
-            Debug.Log("FireDeptButton onClick assigned.");
+            // Debug.Log("FireDeptButton onClick assigned.");
         }
 
         if (instructorButton != null)
         {
             instructorButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(instructorButton));
-            Debug.Log("InstructorButton onClick assigned.");
+            // Debug.Log("InstructorButton onClick assigned.");
         }
         if (dispatchButton != null)
         {
             dispatchButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(dispatchButton));
-            Debug.Log("dispatchButton onClick assigned.");
+            // Debug.Log("dispatchButton onClick assigned.");
         }
         if (spectatorButton != null)
         {
             spectatorButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(spectatorButton));
-            Debug.Log("spectatorButton onClick assigned.");
+            // Debug.Log("spectatorButton onClick assigned.");
         }
     }
 
@@ -238,7 +239,7 @@ public class Player : NetworkBehaviour
         }
 
         // Log success
-        Debug.Log("Scene objects initialized successfully.");
+        // Debug.Log("Scene objects initialized successfully.");
     }
 
     [Client]
@@ -347,13 +348,13 @@ public class Player : NetworkBehaviour
     {
         if(radeyeToolInstance != null && radeyeToolInstance.IsActive())
         {
-            //Debug.Log("NPC movement is disabled while radeye tool is active");
+            //// Debug.Log("NPC movement is disabled while radeye tool is active");
             return;
         }
         
         if (Input.GetMouseButtonDown(0) && playerRole != Roles.None)
         {
-            Debug.Log("Left-click detected.");
+            // Debug.Log("Left-click detected.");
 
             Camera mainCamera = playerCamera;
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -363,15 +364,15 @@ public class Player : NetworkBehaviour
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 GameObject hitObj = hit.collider.gameObject;
-                Debug.Log($"Raycast hit: {hitObj.name} (Tag: {hitObj.tag})");
+                // Debug.Log($"Raycast hit: {hitObj.name} (Tag: {hitObj.tag})");
 
                 if (hitObj.tag == playerRole.ToString() || (playerRole == Roles.Instructor && hitObj.tag != "Untagged"))
                 {
-                    Debug.Log($"NPC {hitObj.name} selected!");
+                    // Debug.Log($"NPC {hitObj.name} selected!");
                     GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
                     moveToolRing.SetActive(true);
                     selectedChars.Add(hitObj);
-                    Debug.Log($"Added {hitObj.name} to selectedChars");
+                    // Debug.Log($"Added {hitObj.name} to selectedChars");
                 }
                 if (selectedChars.Count > 0)
                 {
@@ -458,11 +459,6 @@ public class Player : NetworkBehaviour
         {
             roof.SetActive(!roof.activeInHierarchy);
         }
-
-        if (Input.GetKeyDown(KeyCode.U)) // Undo last action
-        {
-            UndoLastAction();
-        }
     }
 
     private void SoundAlarm()
@@ -474,7 +470,7 @@ public class Player : NetworkBehaviour
     {
         if (role != "Instructor")
         {
-            Debug.Log("Not instructor");
+            // Debug.Log("Not instructor");
             return GameObject.FindGameObjectsWithTag(role);
         }
         else
@@ -587,20 +583,6 @@ public class Player : NetworkBehaviour
             cam.SetActive(true);
         }
     }
-    private void UndoLastAction()
-    {
-        // if (phaseManager == null) return;
-
-        // foreach (var charObj in selectedChars)
-        // {
-        //     Vector3 lastPosition = phaseManager.UndoAction(playerRole.ToString());
-        //     if (lastPosition != Vector3.zero)
-        //     {
-        //         Debug.Log($"Undo action for {charObj.name}. Moving to {lastPosition}");
-        //         charObj.transform.position = lastPosition;
-        //     }
-        // }
-    }
 
     [Command(requiresAuthority = true)]
     private void CmdSetRole(Roles role)
@@ -659,7 +641,7 @@ public class Player : NetworkBehaviour
                 AIMover mover = npcIdentity.GetComponent<AIMover>();
                 if (mover != null)
                 {
-                    //Debug.Log($"RpcExecuteMovement: NPC {npcIdentity.name} moving to {targetPositions[i]}");
+                    //// Debug.Log($"RpcExecuteMovement: NPC {npcIdentity.name} moving to {targetPositions[i]}");
                     mover.SetTargetPosition(targetPositions[i]);
                 }
                 
@@ -682,7 +664,7 @@ public class Player : NetworkBehaviour
             return;
         }
 
-        //Debug.Log($"Server: Moving {npcNetIds.Length} NPCs to {targetPosition}");
+        //// Debug.Log($"Server: Moving {npcNetIds.Length} NPCs to {targetPosition}");
 
         List<GameObject> npcObjects = new List<GameObject>();
 
@@ -700,7 +682,7 @@ public class Player : NetworkBehaviour
 
         if (npcObjects.Count > 0)
         {
-            Debug.Log($"Server: Moving {npcObjects.Count} NPCs");
+            // Debug.Log($"Server: Moving {npcObjects.Count} NPCs");
 
             // Instead of looking for npcMovement on the NPC, find it on the parent object
             npcMovement movementScript = FindObjectOfType<npcMovement>();
@@ -725,10 +707,10 @@ public class Player : NetworkBehaviour
                     
                     if (mover != null)
                     {
-                        Debug.Log($"Setting NPC {npcObjects[i].name} to move to: {npcPositions[i]}");
+                        // Debug.Log($"Setting NPC {npcObjects[i].name} to move to: {npcPositions[i]}");
                         Vector3 adjustedPosition = npcPositions[i] + new Vector3(Random.Range(-0.5f, 0.5f), 0, Random.Range(-0.5f, 0.5f));
                         mover.SetTargetPosition(adjustedPosition);
-                        Debug.Log($"NPC {npcObjects[i].name} final movement position: {adjustedPosition}");
+                        // Debug.Log($"NPC {npcObjects[i].name} final movement position: {adjustedPosition}");
 
                     }
                 }
@@ -777,8 +759,11 @@ public class Player : NetworkBehaviour
         radeyeToolInstance.transform.position = adjustedPosition;
         radeyeToolInstance.transform.localRotation = Quaternion.Euler(-30, 180, 0);
 
-        Debug.Log("RadEyeTool successfully attached to local player.");
+        // Debug.Log("RadEyeTool successfully attached to local player.");
     }
 
-
+    public List<GameObject> GetSelectedChars()
+    {
+        return selectedChars;
+    }
 }
