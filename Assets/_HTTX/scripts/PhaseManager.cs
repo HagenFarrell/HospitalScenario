@@ -1070,6 +1070,7 @@ public class PhaseManager : NetworkBehaviour
     public void CmdNextPhase()
     {
         if (!isServer) return;
+        reverting = false;
 
         if (phaseList.MoveNext())
         {
@@ -1083,7 +1084,8 @@ public class PhaseManager : NetworkBehaviour
     public void CmdPreviousPhase()
     {
         if (!isServer) return;
-
+        reverting = true;
+        
         if (phaseList.MovePrevious())
         {
             RpcSetReverting(true); // Update on client side that we are reverting
