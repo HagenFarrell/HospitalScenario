@@ -1025,6 +1025,8 @@ public class PhaseManager : NetworkBehaviour
             animator.SetBool("IsRunning", false);
             animator.SetBool("ToSitting", false);
             animator.SetBool("IsThreatPresent", false);
+            animator.SetBool("IsDead", false);
+            animator.ResetTrigger("Kill");
         }
         
         // THEN set position and rotation (order matters)

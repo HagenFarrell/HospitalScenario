@@ -8,25 +8,36 @@ public class LLEFireController : NetworkBehaviour
     public KeyCode fireKey = KeyCode.F;
     public float fireRange = 30f;
     public LayerMask losMask;
+    Player player;
+    void Start(){
+        player = FindObjectOfType<Player>();
+    }
 
     void Update()
     {
+        if(player == null){
+            player = FindObjectOfType<Player>();
+        }
+        if(player == null) return;
         // Only let the *local* Instructor initiate fire
-        if (!isLocalPlayer || !IsLocalPlayerInstructor())
+        if (!IsLocalPlayerInstructor())
         {
+            // Debug.LogWarning($" only instructor bozo, ur a {player.getPlayerRole()}");
             return;
         }
 
         if (Input.GetKeyDown(fireKey))
         {
+            // Debug.Log("firekey pressed");
             CmdFireCommand();
         }
     }
 
     // Called on server when the local Instructor presses the fire key
-    [Command]
+    [Command(requiresAuthority = false)]
     void CmdFireCommand()
     {
+        // Debug.Log("cmdfirecmd");
         RpcDoFireOnAllClients();
     }
 
@@ -34,37 +45,50 @@ public class LLEFireController : NetworkBehaviour
     [ClientRpc]
     void RpcDoFireOnAllClients()
     {
+        // Debug.Log("rpc called");
         FireAllLLEUnits();
     }
 
 
     void FireAllLLEUnits()
     {
-        AIMover[] allUnits = FindObjectsOfType<AIMover>();
+        // only cycle through selected units
+        List<GameObject> SelectedChars = player.GetSelectedChars();
 
-        foreach (AIMover unit in allUnits)
+        foreach (GameObject unit in SelectedChars)
         {
+            AIMover mover = unit.GetComponent<AIMover>();
             // Skip if this NPC isn’t armed or isn’t Law Enforcement
-            if (!unit.IsArmedUnit || unit.tag != "LawEnforcement")
+            if (!mover.IsArmedUnit || !unit.CompareTag("LawEnforcement"))
             {
+                // Debug.Log($"Armed: {mover.IsArmedUnit}, LLE: {unit.CompareTag("LawEnforcement")}");
                 continue;
             }
 
             GameObject visibleHostile = GetVisibleHostile(unit.transform);
             if (visibleHostile != null)
             {
+                // Debug.Log("hostile found");
                 Animator unitAnimator = unit.GetComponent<Animator>();
                 Animator hostileAnimator = visibleHostile.GetComponent<Animator>();
 
                 if (unitAnimator != null)
                 {
+                    mover.StopAllMovement();
                     unitAnimator.SetTrigger("FireWeapon");
-
-                    if (hostileAnimator != null)
-                    {
-                        hostileAnimator.SetTrigger("Killed Holding Gun");
-                    }
+                    unitAnimator.SetBool("IsHoldingWeapon", true);
+                    // unitAnimator.SetBool("IsAiming", true);
                 }
+                if (hostileAnimator != null)
+                {
+                    hostileAnimator.SetTrigger("Kill");
+                    hostileAnimator.SetBool("IsDead", true);
+                    // decides randomly between headshot or normal
+                    int rand = Random.Range(0,2);
+                    hostileAnimator.SetInteger("KillVariable", rand); 
+                    // Debug.Log($"Killvar: {rand}");
+                }
+                StartCoroutine(ResetFireTrigger(unitAnimator));
             }
         }
     }
@@ -80,6 +104,10 @@ public class LLEFireController : NetworkBehaviour
         {
             Vector3 direction = (hostile.transform.position - unit.position).normalized;
             float distance = Vector3.Distance(unit.position, hostile.transform.position);
+            Animator animator = hostile.GetComponent<Animator>();
+
+            if(animator == null) continue;
+            if(animator.GetBool("IsDead")) continue; // dont kill if already dead
 
             // Raycast slightly above ground level to avoid obstacles like floors
             if (Physics.Raycast(unit.position + Vector3.up * 1.5f, direction, out RaycastHit hit, distance, losMask))
@@ -96,18 +124,24 @@ public class LLEFireController : NetworkBehaviour
 
     IEnumerator ResetFireTrigger(Animator animator)
     {
-        yield return new WaitForSeconds(0.1f);
+        // Wait until the FireWeapon animation begins
+        yield return new WaitUntil(() => 
+            animator.GetCurrentAnimatorStateInfo(0).IsName("Fire Weapon"));
 
-        animator.ResetTrigger("FireWeapon");
+        // Now wait until it finishes (normalizedTime >= 1)
+        while (animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
+        {
+            yield return null;
+        }
 
-        // Force Animator to return to neutral
-        animator.Rebind();         // Completely resets the animator's state machine
-        animator.Update(0f);       // Forces immediate update
+        animator.ResetTrigger("FireWeapon"); // Optional (triggers auto-reset)
+        yield break;
     }
 
     // Confirms whether the local player is the Instructor
     bool IsLocalPlayerInstructor()
     {
-        return Player.LocalPlayerInstance != null && Player.LocalPlayerInstance.getPlayerRole() == Player.Roles.Instructor;
+        if(player == null) player = FindObjectOfType<Player>();
+        return player.getPlayerRole() == Player.Roles.Instructor;
     }
 }
