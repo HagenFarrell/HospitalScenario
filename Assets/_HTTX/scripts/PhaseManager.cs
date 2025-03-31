@@ -703,6 +703,7 @@ public class PhaseManager : NetworkBehaviour
         {
             if (npc.activeSelf)
             {
+                resetAnimator(npc);
                 npc.transform.rotation = Quaternion.identity;
                 WaypointMover mover = npc.GetComponent<WaypointMover>();
                 if (mover != null && mover.waypoints != null && phaseList.Current.State.ContainsKey(npc))
@@ -1026,7 +1027,6 @@ public class PhaseManager : NetworkBehaviour
             animator.SetBool("ToSitting", false);
             animator.SetBool("IsThreatPresent", false);
             animator.SetBool("IsDead", false);
-            animator.ResetTrigger("Kill");
         }
         
         // THEN set position and rotation (order matters)
