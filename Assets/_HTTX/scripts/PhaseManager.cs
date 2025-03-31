@@ -601,6 +601,7 @@ public class PhaseManager : NetworkBehaviour
     }
     private void ExecuteEgressPhase(int selectedEgress)
     {
+
         SaveWaypointState();
 
         foreach (GameObject npc in allNPCs)
@@ -946,7 +947,6 @@ public class PhaseManager : NetworkBehaviour
                 break;
             case GamePhase.Phase7:
                 SetEgressPhase();
-
                 break;
             default:
                 Debug.LogError("how did we get here");
@@ -1070,6 +1070,7 @@ public class PhaseManager : NetworkBehaviour
     public void CmdNextPhase()
     {
         if (!isServer) return;
+        reverting = false;
 
         if (phaseList.MoveNext())
         {
@@ -1083,13 +1084,37 @@ public class PhaseManager : NetworkBehaviour
     public void CmdPreviousPhase()
     {
         if (!isServer) return;
+        reverting = true;
 
+        // Check if we're in Phase 7 before moving to the previous phase
+        bool wasPhase7 = phaseList.Current.Phase == GamePhase.Phase7;
+        
         if (phaseList.MovePrevious())
         {
             RpcSetReverting(true); // Update on client side that we are reverting
             ResetBackwards();
             SetPhase(phaseList.Current.Phase); //same
+        
+            // Egress handled from phase 7 to 6 - Bandaid fix
+            if (wasPhase7)
+            {
+                foreach (GameObject npc in allNPCs)
+                {
+                    if (npc.activeSelf)
+                    {
+                        WaypointMover mover = npc.GetComponent<WaypointMover>();
+                        if (mover != null && mover.waypoints != null)
+                        {
+                            Transform firstWaypoint = mover.waypoints.transform.GetChild(0);
+                            mover.currentWaypoint = firstWaypoint;
+                            npc.transform.position = firstWaypoint.position;
+                        }
+                    }
+                }
+            }
         }
+
+        SetPhase(phaseList.Current.Phase);
     }
 
     [Server]
