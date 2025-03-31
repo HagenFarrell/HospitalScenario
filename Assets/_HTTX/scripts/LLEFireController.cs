@@ -28,7 +28,7 @@ public class LLEFireController : NetworkBehaviour
 
         if (Input.GetKeyDown(fireKey))
         {
-            // Debug.Log("firekey pressed");
+            Debug.Log("firekey pressed");
             CmdFireCommand();
         }
     }
