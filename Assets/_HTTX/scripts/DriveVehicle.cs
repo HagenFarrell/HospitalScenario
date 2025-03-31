@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using System.Linq;
 
 public class DriveVehicle : NetworkBehaviour{
     public static DriveVehicle Instance {get; private set; }
@@ -37,12 +38,16 @@ public class DriveVehicle : NetworkBehaviour{
         if(Input.GetKeyDown(KeyCode.K)){ // enter vehicle
             List<GameObject> SelectedChars = ControlPlayer.GetSelectedChars();
             TryEnterVehicle(SelectedChars);
+            return;
         }
         if(Input.GetKeyDown(KeyCode.L)){ // exit vehicle
-            List<GameObject> SelectedChars = ControlPlayer.GetSelectedChars();
             isActiveVehicle = false;
+            List<GameObject> SelectedChars = ControlPlayer.GetSelectedChars();
             CmdExitVehicle(passengers);
             passengers.Clear();
+            if(passengers.Count > 0)
+                passengers = new List<GameObject>();
+            return;
         }
         if(isActiveVehicle && passengers.Count > 0){
             CmdUpdateVehiclePosition(passengers[0]);
@@ -120,6 +125,7 @@ public class DriveVehicle : NetworkBehaviour{
     }
     private void ExitVehicle(List<GameObject> PlayerUnits){
         // Debug.Log($"{PlayerUnit} exiting vehicle: {this.gameObject}");
+        isActiveVehicle = false;
         foreach(GameObject PlayerUnit in PlayerUnits){
             AIMover mover = PlayerUnit.GetComponent<AIMover>();
             if(mover == null){
@@ -133,9 +139,11 @@ public class DriveVehicle : NetworkBehaviour{
             CmdToggleRenderer(true, PlayerUnit);
             mover.StopAllMovement();
         }
+        passengers.Clear();
     }
     [Command(requiresAuthority = false)]
     private void CmdUpdateVehiclePosition(GameObject PlayerUnit){
+        if(!isActiveVehicle || passengers.Count <= 0) return;
         RpcUpdateVehiclePosition(PlayerUnit);
     }
     [ClientRpc]
@@ -143,6 +151,7 @@ public class DriveVehicle : NetworkBehaviour{
         UpdateVehiclePosition(PlayerUnit);
     }
     private void UpdateVehiclePosition(GameObject PlayerUnit){
+        if(!isActiveVehicle || passengers.Count <= 0) return;
         AIMover mover = PlayerUnit.GetComponent<AIMover>();
         if(mover == null){
             Debug.LogWarning($"mover null for {PlayerUnit}, cannot update animation");
