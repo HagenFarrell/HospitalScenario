@@ -95,11 +95,6 @@ public class playerController : MonoBehaviour
             phaseManager.PreviousPhase();
         }
 
-        if (Input.GetKeyDown(KeyCode.U)) // Undo last action
-        {
-            UndoLastAction();
-        }
-
 
 
 
@@ -170,19 +165,6 @@ public class playerController : MonoBehaviour
 
     public Roles getPlayerRole(){
         return playerRole;
-    }
-
-    private void UndoLastAction()
-    {
-        // foreach (var charObj in selectedChars)
-        // {
-        //     Vector3 lastPosition = phaseManager.UndoAction(playerRole.ToString());
-        //     if (lastPosition != Vector3.zero)
-        //     {
-        //         Debug.Log($"Undo action for {charObj.name}. Moving to {lastPosition}");
-        //         charObj.transform.position = lastPosition;
-        //     }
-        // }
     }
 
 }

@@ -7,7 +7,7 @@ using Mirror;
 public class PhaseManager : NetworkBehaviour
 {
     private PhaseLinkedList phaseList;
-    private Player playerRole;
+    [SerializeField] private Player playerRole;
     
     // radiaoctive object
     public GameObject gammaKnifeObject;
@@ -33,10 +33,13 @@ public class PhaseManager : NetworkBehaviour
     // other
     private float runSpeed;
     private bool reverting;
+    private float InitialY;
     // egress
     public delegate void EgressSelectedHandler(int egressPhase);
     public static event EgressSelectedHandler OnEgressSelected;
     private int egress;
+    [SyncVar(hook = nameof(OnEgressChanged))]
+    private int syncedEgress;
 
 
     //new netcdoe
@@ -58,25 +61,32 @@ public class PhaseManager : NetworkBehaviour
     private void Start()
     {
         gameObject.SetActive(true);
-        Debug.Log("PhaseManager START");
+        // Debug.Log("PhaseManager START");
         //gameObject.SetActive(true);
         //debug for checking why phasehandling starts turned off
-        Debug.Log($"PhaseManager isServer: {isServer}, isClient: {isClient}, hasAuthority: {hasAuthority}");
+        // Debug.Log($"PhaseManager isServer: {isServer}, isClient: {isClient}, hasAuthority: {hasAuthority}");
 
         phaseList = new PhaseLinkedList();
         // Define the phases
         foreach (GamePhase phase in System.Enum.GetValues(typeof(GamePhase)))
             phaseList.AddPhase(phase);
         phaseList.SetCurrentToHead();
+
+        // if (playerRole == null)
+        //     playerRole = NetworkClient.localPlayer?.GetComponent<Player>();
+        // if (playerRole == null)
+        //     Debug.LogError("Player not found - is this a networked spawn issue?");
         
         runSpeed = 5f;
         OnEgressSelected += ExecuteEgressPhase;
         FindKeyNPCs();
         HidePlayers();
+        HandleStartCivs();
 
         //netcode
         if (isServer)
         {
+            SaveAnimationState();
             SetPhase(GamePhase.Phase1); //instructor sets 1st phase, triggers sync
         }
 
@@ -93,11 +103,16 @@ public class PhaseManager : NetworkBehaviour
         StartPhase();
         */
     }
+    public void RegisterPlayer(Player player)
+    {
+        playerRole = player;
+        // Debug.Log($"Player registered: {playerRole.getPlayerRole()}");
+    }
 
     private void Update()
     {
         
-        // Debug.Log($"PhaseManager Awake - Active: {gameObject.activeSelf}, NetId: {GetComponent<NetworkIdentity>().netId}");
+        // // Debug.Log($"PhaseManager Awake - Active: {gameObject.activeSelf}, NetId: {GetComponent<NetworkIdentity>().netId}");
         Instance = this;
         if (phaseList == null || phaseList.Current == null)
         {
@@ -116,6 +131,16 @@ public class PhaseManager : NetworkBehaviour
             ResetCurrent();
         }
     }
+    private void OnEgressChanged(int oldEgress, int newEgress)
+    {
+        ExecuteEgressPhase(newEgress);
+    }
+    [Command(requiresAuthority = false)]
+    public void CmdSetEgress(int egressPhase)
+    {
+        if(!isServer) return;
+        syncedEgress = egressPhase;
+    }
 
     private IEnumerator WaitForGetUpAnimation(Animator animator, WaypointMover mover)
     {
@@ -127,9 +152,9 @@ public class PhaseManager : NetworkBehaviour
             yield return null;
         }
 
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.3f);
 
-        physicianHostage.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+        physicianHostage.transform.rotation = Quaternion.Euler(physicianHostage.transform.rotation.eulerAngles.x, 45f, physicianHostage.transform.rotation.eulerAngles.z);
 
         // Now set the running animation and allow movement
         animator.SetBool("IsRunning", true);
@@ -138,27 +163,43 @@ public class PhaseManager : NetworkBehaviour
         mover.enabled = true;
     }
 
+    #region Egress Phases
     private int SetEgressPhase()
     {
-        playerRole = FindObjectOfType<Player>();
         if(playerRole == null){
-            Debug.LogError("playerRole null");
+            Debug.LogError("PlayerRole null in PhaseManager. cannot set egress! ");
+            return 0;
         }
         if (playerRole.getPlayerRole() == Player.Roles.Instructor)
         {
-            if (Input.GetKeyDown(KeyCode.Z)) return TriggerEgressSelected(1);
-            if (Input.GetKeyDown(KeyCode.X)) return TriggerEgressSelected(2);
-            if (Input.GetKeyDown(KeyCode.C)) return TriggerEgressSelected(3);
-            if (Input.GetKeyDown(KeyCode.V)) return TriggerEgressSelected(4);
-            if (Input.GetKeyDown(KeyCode.B)) return TriggerEgressSelected(Random.Range(1, 5));
-
-            return 0;
+            if (Input.GetKeyDown(KeyCode.Z)) 
+            {
+                CmdSetEgress(1);
+                return 1;
+            }
+            if (Input.GetKeyDown(KeyCode.X)) 
+            {
+                CmdSetEgress(2);
+                return 2;
+            }
+            if (Input.GetKeyDown(KeyCode.C)) 
+            {
+                CmdSetEgress(3);
+                return 3;
+            }
+            if (Input.GetKeyDown(KeyCode.V)) 
+            {
+                CmdSetEgress(4);
+                return 4;
+            }
+            if (Input.GetKeyDown(KeyCode.B)) 
+            {
+                int temp = Random.Range(1,5);
+                CmdSetEgress(temp);
+                return temp;
+            }
         }
-        else
-        {
-            Debug.Log("Only the instructor can select the egress phase.");
-            return 0;
-        }
+        return 0;
     }
 
     private int TriggerEgressSelected(int phase)
@@ -175,6 +216,8 @@ public class PhaseManager : NetworkBehaviour
         
         return phase;
     }
+
+    #endregion
 
     private void FindKeyNPCs()
     {
@@ -318,7 +361,7 @@ public class PhaseManager : NetworkBehaviour
     
     private void StartPhase()
     {
-        Debug.Log($"Entering Phase: {phaseList.Current.Phase}");
+        // Debug.Log($"Entering Phase: {phaseList.Current.Phase}");
         
         // First, check if we need to despawn civilians and medicals in Phase 3
         if (phaseList.Current.Phase == GamePhase.Phase3)
@@ -349,7 +392,7 @@ public class PhaseManager : NetworkBehaviour
 
         if (phaseList.MoveNext())
         {
-            // Debug.Log("Moving to next phase.");
+            // // Debug.Log("Moving to next phase.");
             ResetForward();
             StartPhase();
         }
@@ -365,7 +408,7 @@ public class PhaseManager : NetworkBehaviour
         if (phaseList.MovePrevious())
         {
             if(OnEgressSelected == null) OnEgressSelected += ExecuteEgressPhase;
-            // Debug.Log("Moving to previous phase.");
+            // // Debug.Log("Moving to previous phase.");
             ResetBackwards();
             StartPhase();
         }
@@ -375,14 +418,18 @@ public class PhaseManager : NetworkBehaviour
         }
     }
     private GameObject getRadSource(){
-        return allVillains[0].transform.GetChild(4).gameObject;
+        int len = allVillains[0].transform.childCount - 1;
+        return allVillains[0].transform.GetChild(len).gameObject;
     }
+
+    #region UnitVisablity
     private void HidePlayers(){
         if(playerUnits == null || playerUnits.Count == 0){
             Debug.LogError("Player units null, attempting to locate");
             GameObject temp = GameObject.Find("Player Units");
         }
         foreach(GameObject unit in playerUnits){
+            InitialY = unit.transform.position.y;
             unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y-9000f, unit.transform.position.z);
         }
         HideAllVehicles();
@@ -433,13 +480,17 @@ public class PhaseManager : NetworkBehaviour
             vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y-9000f, vehicle.transform.position.z);
         }
     }
+    #endregion
     private void HandleStartCivs()
     {
+        ToggleVillainWeapons(false);
+        InitializeDiscColors();
         foreach (GameObject civilian in allCivilians)
         {
             civilian.SetActive(true);
             // Set animation state to walking
             Animator animator = civilian.GetComponent<Animator>();
+            resetAnimator(civilian);
             
             // Enable the WaypointMover component
             WaypointMover mover = civilian.GetComponent<WaypointMover>();
@@ -454,7 +505,6 @@ public class PhaseManager : NetworkBehaviour
                     civilian.transform.position = mover.currentWaypoint.transform.position;
                     mover.waypoints.ResetToPhase1Settings();
                     mover.pathidx = 0;
-                    resetAnimator(civilian);
                 }
                 if(mover.waypoints.waypointsActiveInPhase1 == 1){
                     animator.SetBool("IsWalking", false);
@@ -535,60 +585,76 @@ public class PhaseManager : NetworkBehaviour
             }
         }
     }
-    private void ToggleGun(){
+    private void ToggleVillainWeapons(bool toggle){
         // toggles gun
-        GameObject weapon = allVillains[0].transform.GetChild(1).gameObject;
-        weapon.SetActive(!weapon.activeSelf);
+        foreach(GameObject villain in allVillains){
+            GameObject weapon = villain.transform.GetChild(1).gameObject;
+            weapon.SetActive(toggle);
+            // WaypointMover mover = villain.GetComponent
+            Animator animator = villain.GetComponent<Animator>();
+            animator.SetBool("IsHoldingWeapon", toggle);
+        }
     }
     private void Alarming(){
         // Receptionist hits duress alarm
-        Debug.Log("Duress alarm activated. Dispatcher notified.");
-        physicianHostage.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+        // Debug.Log("Duress alarm activated. Dispatcher notified.");
     }
     private void ExecuteEgressPhase(int selectedEgress)
     {
-        if(OnEgressSelected == null) return;
-        OnEgressSelected -= ExecuteEgressPhase; 
         SaveWaypointState();
-
-        Debug.Log($"Egress phase {selectedEgress} selected!");
-        egress = selectedEgress;
 
         foreach (GameObject npc in allNPCs)
         {
-            if (!npc.activeSelf || (npc.CompareTag("Civilians") || npc.CompareTag("Medicals"))) continue;
-
-            WaypointMover mover = npc.GetComponent<WaypointMover>();
-            if(mover.paths == null) mover.paths = mover.waypoints.transform.parent.gameObject;
-            if (mover == null || mover.paths == null || mover.waypoints == null)
+            if (!npc.activeSelf || npc.CompareTag("Civilians") || npc.CompareTag("Medicals"))
             {
-                Debug.LogWarning($"NPC {npc.name} has missing WaypointMover or path references.");
-                resetAnimator(npc);
                 continue;
             }
-            if(mover.waypoints.ActiveChildLength < 2) continue;
 
-            Transform path = mover.paths.transform.GetChild(mover.paths.transform.childCount-1);
-            Waypoints waypoints = path.transform.GetChild(egress-1).GetComponent<Waypoints>();
-            if(waypoints == null){
-                Debug.LogWarning("Waypoints null, so " + npc + " wont update their paths");
+            WaypointMover mover = npc.GetComponent<WaypointMover>();
+            if (mover == null)
+            {
+                Debug.LogWarning($"{npc.name} has no WaypointMover.");
                 continue;
-            }else {
-                mover.waypoints = waypoints;
-                mover.currentWaypoint = waypoints.GetNextWaypoint(waypoints.transform.GetChild(0));
-                mover.pathidx = mover.paths.transform.childCount-1;
-                if(GetCurrentPhase() != GamePhase.Phase1) 
-                    mover.waypoints.enableAll();
+            }
 
-                Animator animator = mover.GetComponent<Animator>();
-                if (animator != null)
-                {
-                    animator.SetBool("IsRunning", true);
-                    mover.moveSpeed = runSpeed;
-                }
-            } 
+            if (mover.paths == null)
+            {
+                mover.paths = mover.waypoints.transform.parent.gameObject;
+                // Debug.Log($"Assigned paths for {npc.name}: {mover.paths.name}");
+            }
+
+            int lastPathIndex = mover.paths.transform.childCount - 1;
+            Transform path = mover.paths.transform.GetChild(lastPathIndex);
+            // Debug.Log($"Last path for {npc.name}: {path.name}");
+
+            if (selectedEgress - 1 >= path.childCount)
+            {
+                Debug.LogError($"Egress index {selectedEgress - 1} out of range for {path.name}");
+                continue;
+            }
+
+            Waypoints waypoints = path.GetChild(selectedEgress - 1).GetComponent<Waypoints>();
+            if (waypoints == null)
+            {
+                Debug.LogError($"No Waypoints component found on {path.GetChild(selectedEgress - 1).name}");
+                continue;
+            }
+
+            mover.waypoints = waypoints;
+            mover.currentWaypoint = waypoints.GetNextWaypoint(waypoints.transform.GetChild(0));
+            mover.pathidx = lastPathIndex;
+
+            Animator animator = mover.GetComponent<Animator>();
+            if (animator != null)
+            {
+                animator.SetBool("IsRunning", true);
+                mover.moveSpeed = runSpeed;
+            }
         }
     }
+
+    #region Reset Phases
+
     private void ResetCurrent()
     {
         if (phaseList.Current == null) return;
@@ -646,7 +712,7 @@ public class PhaseManager : NetworkBehaviour
                     mover.waypoints.ActiveChildLength = state.activeChildLength;
                     mover.waypoints.isMovingForward = state.isMovingForward;
                     mover.waypoints.canLoop = state.canLoop;
-                    // Debug.Log("sameold: " + state.sameOld + "  for phase " + GetCurrentPhase() + " for npc: " + npc);
+                    // // Debug.Log("sameold: " + state.sameOld + "  for phase " + GetCurrentPhase() + " for npc: " + npc);
                     
                     if(state.sameOld)
                     {
@@ -689,7 +755,7 @@ public class PhaseManager : NetworkBehaviour
             foreach (GameObject npc in allNPCs)
             {
                 if(npc.activeSelf){
-                    npc.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
+                    // npc.transform.rotation = new Quaternion(0f, 0f, 0f, 1f);
                     WaypointMover mover = npc.GetComponent<WaypointMover>();
                     if (mover != null && mover.waypoints != null)
                     {
@@ -719,6 +785,10 @@ public class PhaseManager : NetworkBehaviour
             }
         }
     }
+
+    #endregion
+
+    #region SavingData
     private void SaveWaypointState()
     {
         if (phaseList.Current == null) return;
@@ -789,6 +859,10 @@ public class PhaseManager : NetworkBehaviour
             }
         }
     }
+
+    #endregion
+
+
     private void ToggleGammaKnife(){
         if (gammaKnifeObject != null) {
             gammaKnifeObject.SetActive(!gammaKnifeObject.activeSelf);
@@ -798,25 +872,25 @@ public class PhaseManager : NetworkBehaviour
     private void SpawnLLE(){
         if(LLE == null || LLE.Length == 0) LLE = GameObject.FindGameObjectsWithTag("LawEnforcement");
         foreach(GameObject unit in LLE){
-            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y+9000f, unit.transform.position.z);
+            unit.transform.position = new Vector3(unit.transform.position.x, InitialY, unit.transform.position.z);
         }
         if(LLEVehicles == null || LLEVehicles.Length == 0) LLEVehicles = GameObject.FindGameObjectsWithTag("LawEnforcementVehicle");
         foreach(GameObject vehicle in LLEVehicles){
-            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y+9000f, vehicle.transform.position.z);
+            vehicle.transform.position = new Vector3(vehicle.transform.position.x, InitialY, vehicle.transform.position.z);
         }
     }
     private void SpawnFD(){
         if (FD == null || FD.Length == 0) FD = GameObject.FindGameObjectsWithTag("FireDepartment");
         foreach(GameObject unit in FD){
-            unit.transform.position = new Vector3(unit.transform.position.x, unit.transform.position.y+9000f, unit.transform.position.z);
+            unit.transform.position = new Vector3(unit.transform.position.x, InitialY, unit.transform.position.z);
         }
          if(FDVehicles == null || FDVehicles.Length == 0) FDVehicles = GameObject.FindGameObjectsWithTag("FireDepartmentVehicle");
         foreach(GameObject vehicle in FDVehicles){
-            vehicle.transform.position = new Vector3(vehicle.transform.position.x, vehicle.transform.position.y+9000f, vehicle.transform.position.z);
+            vehicle.transform.position = new Vector3(vehicle.transform.position.x, InitialY, vehicle.transform.position.z);
         }
     }
     private void MoveNPCsForPhase(GamePhase phase){
-        Debug.Log($"Moving NPCs for phase: {phase}");
+        // Debug.Log($"Moving NPCs for phase: {phase}");
         
         if (!reverting){
             SaveWaypointState();
@@ -827,9 +901,7 @@ public class PhaseManager : NetworkBehaviour
         {
             case GamePhase.Phase1:
                 HandleStartCivs();
-                SaveAnimationState();
-                InitializeDiscColors();
-                if(allVillains[0].transform.GetChild(1).gameObject.activeSelf) ToggleGun();
+                ToggleVillainWeapons(false);
                 break;
                 
             case GamePhase.Phase2:
@@ -838,24 +910,32 @@ public class PhaseManager : NetworkBehaviour
                 DespawnOnEscape();
                 UpdateHostageDiscs();
                 UpdateVillainDiscs(Color.red);
-                if(!allVillains[0].transform.GetChild(1).gameObject.activeSelf) ToggleGun();
+                ToggleVillainWeapons(true);
                 break;
                 
             case GamePhase.Phase3:
                 resetAnimator(physicianHostage);
-                Debug.Log("The adversaries have taken " + physicianHostage + " hostage!");
+                // Debug.Log("The adversaries have taken " + physicianHostage + " hostage!");
                 break;
                 
             case GamePhase.Phase4:
                 if(reverting) {
                     HideLLE();
-                    ToggleGammaKnife();
+                    if(gammaKnifeObject.activeSelf) ToggleGammaKnife();
                 }
                 break;
             case GamePhase.Phase5:
                 if(!reverting) {
                     SpawnLLE();
                     ToggleGammaKnife();
+                    GameObject bubble = gammaKnifeObject.transform.GetChild(0).gameObject;
+                    int i=0;
+                    while(bubble.activeSelf && i<10){
+                        CmdToggleBubble();
+                        i++;
+                        // Debug.Log("bubble toggled again: " + i);
+                    }
+                    if(i==10) Debug.LogWarning("why bubble not toggle off ");
                 }
                 else HideFD();
 
@@ -885,7 +965,7 @@ public class PhaseManager : NetworkBehaviour
         foreach (GameObject npc in allNPCs)
         {
             if (!npc.activeSelf || (npc.CompareTag("Civilians") || npc.CompareTag("Medicals"))) {
-                // Debug.Log(npc + " not chosen-------------");
+                // // Debug.Log(npc + " not chosen-------------");
                 continue;
             }
 
@@ -899,7 +979,7 @@ public class PhaseManager : NetworkBehaviour
                 continue;
             }
             if(mover.waypoints.ActiveChildLength < 2 && GetCurrentPhase() == GamePhase.Phase1) {
-                // Debug.Log(npc + " active child length 1 or less, sitting?");
+                // // Debug.Log(npc + " active child length 1 or less, sitting?");
                 continue;
             }
 
@@ -913,7 +993,7 @@ public class PhaseManager : NetworkBehaviour
                 if(waypoints == null || waypoints.transform.childCount == 0){
                     continue;
                 }else if (waypoints.getActivity() == currentPhase){
-                    // Debug.Log(npc + " !---! " + waypoints + " active in current phase: " + waypoints.getActivity());
+                    // // Debug.Log(npc + " !---! " + waypoints + " active in current phase: " + waypoints.getActivity());
                     mover.waypoints = waypoints;
                     mover.currentWaypoint = waypoints.GetNextWaypoint(waypoints.transform.GetChild(0));
                     mover.pathidx = i;
@@ -928,7 +1008,7 @@ public class PhaseManager : NetworkBehaviour
                     }
                     break;
                 }
-                // else Debug.Log(npc + " !---! " + waypoints + " not active in current phase: " + waypoints.getActivity());
+                // else // Debug.Log(npc + " !---! " + waypoints + " not active in current phase: " + waypoints.getActivity());
             }
         }
     }
@@ -948,16 +1028,42 @@ public class PhaseManager : NetworkBehaviour
         }
         
         // THEN set position and rotation (order matters)
-        npc.transform.rotation = Quaternion.identity;
+
+        // Fix siting people in phase 1
+        npc.transform.rotation = Quaternion.Euler(npc.transform.rotation.eulerAngles.x, 45f, npc.transform.rotation.eulerAngles.z);
     }
     
+    #region Most Mirror Phase Stuff
 
     private void OnPhaseChanged(GamePhase oldPhase, GamePhase newPhase)
     {
-        Debug.Log($"Phase changed from {oldPhase} to {newPhase}");
+        // Debug.Log($"Phase changed from {oldPhase} to {newPhase}");
 
         phaseList.SetCurrentTo(newPhase);//locally updating
+
+        if (reverting)
+        {
+            ResetBackwards();
+        }
+
+        if (!reverting)
+        {
+            ResetForward();
+        }
+
         StartPhase();//every client now runs startPhase together including host
+
+        if (!isServer) // Only clients reset this flag here
+        {
+            reverting = false;
+        }
+    }
+
+    [ClientRpc]
+    private void RpcSetReverting(bool isReverting)
+    {
+        // // Debug.Log($"Client received reverting state: {isReverting}");
+        this.reverting = isReverting;
     }
 
     [Command(requiresAuthority = false)]
@@ -967,6 +1073,7 @@ public class PhaseManager : NetworkBehaviour
 
         if (phaseList.MoveNext())
         {
+            RpcSetReverting(false);
             ResetForward();
             SetPhase(phaseList.Current.Phase); //triggers OnPhaseChanged on all clients
         }
@@ -979,6 +1086,8 @@ public class PhaseManager : NetworkBehaviour
 
         if (phaseList.MovePrevious())
         {
+            RpcSetReverting(true); // Update on client side that we are reverting
+            ResetBackwards();
             SetPhase(phaseList.Current.Phase); //same
         }
     }
@@ -993,7 +1102,7 @@ public class PhaseManager : NetworkBehaviour
     {
         if (NetworkServer.active || NetworkClient.active)
         {
-            Debug.Log("PhaseHandling re-enabled by Mirror");
+            // Debug.Log("PhaseHandling re-enabled by Mirror");
             // Reinitialize components if needed
             if (phaseList == null){
                 phaseList = new PhaseLinkedList();
@@ -1025,7 +1134,7 @@ public class PhaseManager : NetworkBehaviour
     {
         if (isMirrorInitialization || NetworkServer.active || NetworkClient.active)
         {
-            Debug.Log("PhaseHandling disabled by Mirror (expected during network setup)");
+            // Debug.Log("PhaseHandling disabled by Mirror (expected during network setup)");
             isMirrorInitialization = false;
             return;
         }
@@ -1033,3 +1142,4 @@ public class PhaseManager : NetworkBehaviour
     }
 
 }
+#endregion
