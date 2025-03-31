@@ -223,7 +223,7 @@ public class WaypointMover : MonoBehaviour
             // Otherwise, continue to the next waypoint
             currentWaypoint = waypoints.GetNextWaypoint(currentWaypoint);
         }
-        if (waypoints.canLoop)
+        if (waypoints.canLoop || PhaseManager.Instance.GetCurrentPhase() == GamePhase.Phase7)
         {
             RotateTowardsWaypoint();
         }
@@ -248,7 +248,7 @@ public class WaypointMover : MonoBehaviour
     }
 
     // Will Slowly rotate the agent towards the current waypoint it is moving towards
-    private void RotateTowardsWaypoint()
+    public void RotateTowardsWaypoint()
     {
         // Gets direction to waypoint
         directionToWaypoint = (currentWaypoint.position - transform.position).normalized;
