@@ -2656,10 +2656,9 @@ GameObject:
   - component: {fileID: 3836989928184376500}
   - component: {fileID: 7229737188798329596}
   - component: {fileID: 7229737188798329595}
-  - component: {fileID: 7229737188798329594}
   - component: {fileID: 7229737188798329593}
   m_Layer: 0
-  m_Name: Officer_m_02 1
+  m_Name: Better_Officer_m_02 1
   m_TagString: LawEnforcement
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2727,49 +2726,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: badf09916faa57646b7a03984465e485, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 4
   maxSpeed: 5
   maxForce: 4
   slowingRadius: 2
   seperationRadius: 1
-  lookAheadDistance: 0.3
-  movementThreshhold: 0.01
-  animationDampTime: 0.1
-  pathWeight: 0.4
   pathUpdateInterval: 8
---- !u!114 &7229737188798329594
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7535725569315695732}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8ff3ba0becae47b8b9381191598957c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  syncDirection: 1
-  syncMode: 0
-  syncInterval: 0
-  target: {fileID: 7196636576121861838}
-  syncPosition: 1
-  syncRotation: 1
-  syncScale: 0
-  onlySyncOnChange: 1
-  compressRotation: 1
-  interpolatePosition: 1
-  interpolateRotation: 1
-  interpolateScale: 1
-  coordinateSpace: 0
-  timelineOffset: 1
-  showGizmos: 0
-  showOverlay: 0
-  overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
-  onlySyncOnChangeCorrectionMultiplier: 2
-  rotationSensitivity: 0.01
-  positionPrecision: 0.01
-  scalePrecision: 0.01
 --- !u!114 &7229737188798329593
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2783,9 +2744,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sceneId: 0
-  _assetId: 2162382249
   serverOnly: 0
-  visibility: 0
+  visible: 0
+  m_AssetId: 
   hasSpawned: 0
 --- !u!1 &7541513164333143998
 GameObject:

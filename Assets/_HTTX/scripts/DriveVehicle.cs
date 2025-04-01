@@ -114,6 +114,7 @@ public class DriveVehicle : NetworkBehaviour{
             mover.SetRunning(false);
             
         }
+        ToggleRing();
     }
     [Command(requiresAuthority = false)]
     private void CmdExitVehicle(List<GameObject> PlayerUnits){
@@ -138,7 +139,9 @@ public class DriveVehicle : NetworkBehaviour{
             mover.UpdateSpeed(oldSpeed);
             CmdToggleRenderer(true, PlayerUnit);
             mover.StopAllMovement();
+            mover.SetRunning(true);
         }
+        ToggleRing();
         passengers.Clear();
     }
     [Command(requiresAuthority = false)]
@@ -187,6 +190,11 @@ public class DriveVehicle : NetworkBehaviour{
         foreach (Renderer childRenderer in PlayerUnit.GetComponentsInChildren<Renderer>()) {
             childRenderer.enabled = toggle;
         }
+    }
+    private void ToggleRing(){
+        GameObject activeRing = this.transform.GetChild(0).gameObject;
+        if(activeRing != null) activeRing.SetActive(isActiveVehicle);
+        else Debug.LogError($"ring null for {this.gameObject}");
     }
     public void RegisterPlayer(Player player)
     {

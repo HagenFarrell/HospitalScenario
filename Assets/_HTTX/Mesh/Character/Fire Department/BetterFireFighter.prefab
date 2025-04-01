@@ -597,6 +597,7 @@ GameObject:
   - component: {fileID: 3034232109503217222}
   - component: {fileID: 3283541368383063167}
   - component: {fileID: 2124110657170080368}
+  - component: {fileID: -2929662547697398103}
   m_Layer: 0
   m_Name: BetterFireFighter
   m_TagString: FireDepartment
@@ -654,6 +655,23 @@ CapsuleCollider:
   m_Height: 1.797233
   m_Direction: 1
   m_Center: {x: 0, y: 0.80235225, z: 0}
+--- !u!114 &-2929662547697398103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2400439129582445820}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: badf09916faa57646b7a03984465e485, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxSpeed: 10
+  maxForce: 10
+  slowingRadius: 2
+  seperationRadius: 1
+  pathUpdateInterval: 8
 --- !u!1 &2451245615148534392
 GameObject:
   m_ObjectHideFlags: 0
@@ -2694,7 +2712,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2430cb405c90ff44ba4588b3f207b0d7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.075
+      value: 0.35
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2430cb405c90ff44ba4588b3f207b0d7, type: 3}
       propertyPath: m_LocalPosition.z

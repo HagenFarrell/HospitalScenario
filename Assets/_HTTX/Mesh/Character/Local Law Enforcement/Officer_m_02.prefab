@@ -2605,7 +2605,6 @@ GameObject:
   - component: {fileID: 3515592472721875962}
   - component: {fileID: 7035591371690933682}
   - component: {fileID: 7035591371690933685}
-  - component: {fileID: 7035591371690933684}
   - component: {fileID: 7035591371690933687}
   m_Layer: 0
   m_Name: Officer_m_02
@@ -2676,49 +2675,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: badf09916faa57646b7a03984465e485, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 4
-  maxSpeed: 5
-  maxForce: 4
+  maxSpeed: 10
+  maxForce: 10
   slowingRadius: 2
   seperationRadius: 1
-  lookAheadDistance: 0.3
-  movementThreshhold: 0.01
-  animationDampTime: 0.1
-  pathWeight: 0.4
   pathUpdateInterval: 8
---- !u!114 &7035591371690933684
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7881889519896781626}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8ff3ba0becae47b8b9381191598957c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  syncDirection: 1
-  syncMode: 0
-  syncInterval: 0
-  target: {fileID: 7361635443821132160}
-  syncPosition: 1
-  syncRotation: 1
-  syncScale: 0
-  onlySyncOnChange: 1
-  compressRotation: 1
-  interpolatePosition: 1
-  interpolateRotation: 1
-  interpolateScale: 1
-  coordinateSpace: 0
-  timelineOffset: 1
-  showGizmos: 0
-  showOverlay: 0
-  overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
-  onlySyncOnChangeCorrectionMultiplier: 2
-  rotationSensitivity: 0.01
-  positionPrecision: 0.01
-  scalePrecision: 0.01
 --- !u!114 &7035591371690933687
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2732,9 +2693,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sceneId: 0
-  _assetId: 1852953010
   serverOnly: 0
-  visibility: 0
+  visible: 0
+  m_AssetId: 
   hasSpawned: 0
 --- !u!1 &7933222166094475800
 GameObject:
@@ -3074,7 +3035,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2430cb405c90ff44ba4588b3f207b0d7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.051
+      value: 0.35
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 2430cb405c90ff44ba4588b3f207b0d7, type: 3}
       propertyPath: m_LocalPosition.z
