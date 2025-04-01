@@ -1109,6 +1109,15 @@ public class PhaseManager : NetworkBehaviour
                             mover.currentWaypoint = firstWaypoint;
                             npc.transform.position = firstWaypoint.position;
                         }
+
+                        // Reset is Dead and holding weapon for villians
+                        Animator animator = npc.GetComponent<Animator>();
+                        if (npc.CompareTag("Villains") || npc.CompareTag("OutsideVillains")){
+                            animator.Rebind();
+                            animator.SetBool("IsDead", false);
+                            animator.SetBool("IsHoldingWeapon", true);
+                            animator.SetBool("IsRunning", true);
+                        }
                     }
                 }
             }
