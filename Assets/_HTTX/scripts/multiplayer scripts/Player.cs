@@ -106,7 +106,7 @@ public class Player : NetworkBehaviour
     {
 
         roof = GameObject.Find("Roof");
-        alarmNoise = GetComponent<AudioSource>();
+        alarmNoise = GameObject.Find("GuyWithTheSpeakers").GetComponent<AudioSource>();
         /*AudioListener audioListener = transform.GetChild(1).GetComponent<AudioListener>();
 
         // Disable the AudioListener on non-local players (if this is not the local player's camera)
@@ -429,18 +429,18 @@ public class Player : NetworkBehaviour
     {
         if (phaseManager == null || !isLocalPlayer || playerRole != Roles.Instructor) return;
 
-        if (Input.GetKeyDown(KeyCode.Alpha0) && playerRole == Roles.Instructor) // Next phase
+        if (Input.GetKeyDown(KeyCode.Alpha0) && (playerRole == Roles.Instructor)) // Next phase
         {
             phaseManager.CmdNextPhase();
             //phaseManager.NextPhase();
-            if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) SoundAlarm();
+            if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) CmdSoundAlarm();
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha9) && playerRole == Roles.Instructor) // Previous phase
         {
            phaseManager.CmdPreviousPhase();
             // phaseManager.PreviousPhase();
-            if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) SoundAlarm();
+            if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) CmdSoundAlarm();
         }
 
         if (Input.GetKeyDown(KeyCode.T) && playerRole == Roles.Instructor) // toggle big dome
@@ -461,10 +461,16 @@ public class Player : NetworkBehaviour
         }
     }
 
-    private void SoundAlarm()
+    [Command]
+    private void CmdSoundAlarm()
     {
-        if (playerRole == Roles.Dispatch || playerRole == Roles.Instructor)
-            alarmNoise.Play();
+        RpcPlayAlarm();
+    }
+
+    [ClientRpc]
+    void RpcPlayAlarm()
+    {
+        alarmNoise.Play(); 
     }
     private GameObject[] GetNpcs(string role)
     {
