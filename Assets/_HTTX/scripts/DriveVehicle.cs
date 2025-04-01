@@ -114,7 +114,6 @@ public class DriveVehicle : NetworkBehaviour{
             mover.SetRunning(false);
             
         }
-        ToggleRing();
     }
     [Command(requiresAuthority = false)]
     private void CmdExitVehicle(List<GameObject> PlayerUnits){
@@ -140,7 +139,6 @@ public class DriveVehicle : NetworkBehaviour{
             CmdToggleRenderer(true, PlayerUnit);
             mover.StopAllMovement();
         }
-        ToggleRing();
         passengers.Clear();
     }
     [Command(requiresAuthority = false)]
@@ -163,11 +161,6 @@ public class DriveVehicle : NetworkBehaviour{
         float YRotation = PlayerUnit.transform.eulerAngles.y;
         transform.eulerAngles = new Vector3(transform.eulerAngles.x, YRotation, transform.eulerAngles.z);
         mover.SetRunning(false);
-    }
-    private void ToggleRing(){
-        GameObject activeRing = this.transform.GetChild(0).gameObject;
-        if(activeRing != null) activeRing.SetActive(isActiveVehicle);
-        else Debug.LogError($"ring null for {this.gameObject}");
     }
     private bool CanDriveThis(GameObject PlayerUnit){
         return (PlayerUnit.CompareTag("LawEnforcement") && gameObject.CompareTag("LawEnforcementVehicle")) ||
