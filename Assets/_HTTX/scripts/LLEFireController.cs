@@ -33,88 +33,22 @@ public class LLEFireController : NetworkBehaviour
         }
     }
 
-    // Called on server when the local Instructor presses the fire key
     [Command(requiresAuthority = false)]
     void CmdFireCommand()
     {
+        // First, handle any selected units (for backward compatibility)
         List<GameObject> SelectedChars = player.GetSelectedChars();
-
-        foreach (GameObject unit in SelectedChars)
-        {
-            AIMover mover = unit.GetComponent<AIMover>();
-            // Skip if this NPC isn’t armed or isn’t Law Enforcement
-            if (!mover.IsArmedUnit || !unit.CompareTag("LawEnforcement"))
-            {
-                // Debug.Log($"Armed: {mover.IsArmedUnit}, LLE: {unit.CompareTag("LawEnforcement")}");
-                continue;
-            }
-
-            GameObject visibleHostile = GetVisibleHostile(unit.transform);
-            if (visibleHostile != null)
-            {
-                // Debug.Log("hostile found");
-                Animator unitAnimator = unit.GetComponent<Animator>();
-                Animator hostileAnimator = visibleHostile.GetComponent<Animator>();
-
-                if (unitAnimator != null)
-                {
-                    mover.StopAllMovement();
-                    unitAnimator.SetTrigger("FireWeapon");
-                    unitAnimator.SetBool("IsHoldingWeapon", true);
-                    // unitAnimator.SetBool("IsAiming", true);
-                }
-                if (hostileAnimator != null)
-                {
-                    hostileAnimator.SetTrigger("Kill");
-                    hostileAnimator.SetBool("IsDead", true);
-                    // decides randomly between headshot or normal
-                    int rand = Random.Range(0,2);
-                    hostileAnimator.SetInteger("KillVariable", rand); 
-                    // Debug.Log($"Killvar: {rand}");
-                }
-                StartCoroutine(ResetFireTrigger(unitAnimator, unit));
-            }
-            RpcDoFireOnAllClients(visibleHostile, unit);
-        }
+        
+        // Even if no units are selected, tell all clients to check their units
+        RpcTriggerAllLLEUnits();
     }
 
-    // Broadcast to all clients to trigger fire animations
+    // Add this new RPC method
     [ClientRpc]
-    void RpcDoFireOnAllClients(GameObject visibleHostile, GameObject unit)
+    void RpcTriggerAllLLEUnits()
     {
-        AIMover mover = unit.GetComponent<AIMover>();
-        // Skip if this NPC isn’t armed or isn’t Law Enforcement
-        if (!mover.IsArmedUnit || !unit.CompareTag("LawEnforcement"))
-        {
-            // Debug.Log($"Armed: {mover.IsArmedUnit}, LLE: {unit.CompareTag("LawEnforcement")}");
-            return;
-        }
-
-        if (visibleHostile != null)
-        {
-            // Debug.Log("hostile found");
-            Animator unitAnimator = unit.GetComponent<Animator>();
-            Animator hostileAnimator = visibleHostile.GetComponent<Animator>();
-
-            if (unitAnimator != null)
-            {
-                mover.StopAllMovement();
-                unitAnimator.SetTrigger("FireWeapon");
-                unitAnimator.SetBool("IsHoldingWeapon", true);
-                // unitAnimator.SetBool("IsAiming", true);
-            }
-            if (hostileAnimator != null)
-            {
-                hostileAnimator.SetTrigger("Kill");
-                hostileAnimator.SetBool("IsDead", true);
-                // decides randomly between headshot or normal
-                int rand = Random.Range(0,2);
-                hostileAnimator.SetInteger("KillVariable", rand); 
-                // Debug.Log($"Killvar: {rand}");
-            }
-            StartCoroutine(ResetFireTrigger(unitAnimator, unit));
-        }
-        // FireAllLLEUnits();
+        // Each client runs this to check all their LLE units
+        FireAllLLEUnits();
     }
 
     // Checks for visible hostiles using raycasting (LOS check)
@@ -178,5 +112,44 @@ public class LLEFireController : NetworkBehaviour
     {
         if(player == null) player = FindObjectOfType<Player>();
         return player.getPlayerRole() == Player.Roles.Instructor;
+    }
+
+    void FireAllLLEUnits()
+    {
+        // Get all LLE units
+        GameObject[] lleUnits = GameObject.FindGameObjectsWithTag("LawEnforcement");
+        
+        foreach (GameObject unit in lleUnits)
+        {
+            if (unit == null) continue;
+            
+            AIMover mover = unit.GetComponent<AIMover>();
+            // Skip if this NPC isn't armed or mover is null
+            if (mover == null || !mover.IsArmedUnit)
+            {
+                continue;
+            }
+
+            GameObject visibleHostile = GetVisibleHostile(unit.transform);
+            if (visibleHostile != null)
+            {
+                Animator unitAnimator = unit.GetComponent<Animator>();
+                if (unitAnimator == null) continue;
+                
+                Animator hostileAnimator = visibleHostile.GetComponent<Animator>();
+                if (hostileAnimator == null) continue;
+
+                mover.StopAllMovement();
+                unitAnimator.SetBool("IsHoldingWeapon", true);
+                unitAnimator.SetTrigger("FireWeapon");
+
+                hostileAnimator.SetTrigger("Kill");
+                hostileAnimator.SetBool("IsDead", true);
+                int rand = Random.Range(0,2);
+                hostileAnimator.SetInteger("KillVariable", rand);
+                
+                StartCoroutine(ResetFireTrigger(unitAnimator, unit));
+            }
+        }
     }
 }
