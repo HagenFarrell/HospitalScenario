@@ -127,6 +127,7 @@ public class PhaseManager : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.Q))
         {
+            // Debug.LogWarning("Resetting the current phase doesn't really work right now...");
             ResetCurrent();
         }
     }
@@ -765,12 +766,16 @@ public class PhaseManager : NetworkBehaviour
                         
                         mover.currentWaypoint = lastWaypoint;
                         npc.transform.position = mover.currentWaypoint.position;
-                        resetAnimator(npc);
                         
                         // Reset animations when teleporting
                         Animator animator = npc.GetComponent<Animator>();
                         if (animator != null)
                         {
+                            animator.SetBool("IsWalking", false);
+                            animator.SetBool("IsRunning", false);
+                            animator.SetBool("ToSitting", false);
+                            animator.SetBool("IsThreatPresent", false);
+
                             // Reset crouching for hostages
                             if ((phase == GamePhase.Phase3 || phase == GamePhase.Phase4 || phase == GamePhase.Phase5) && npc.CompareTag("Hostages"))
                             {
