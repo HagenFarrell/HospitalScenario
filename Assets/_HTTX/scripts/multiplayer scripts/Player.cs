@@ -6,6 +6,8 @@ using System.Linq;
 
 public class Player : NetworkBehaviour
 {
+
+    private bool flag = true;
     public float moveSpeed = 10f; // Horizontal movement speed
     public float verticalSpeed = 5f; // Vertical movement speed
     public float mouseSensitivity = 100f; // Sensitivity for mouse look
@@ -101,10 +103,29 @@ public class Player : NetworkBehaviour
         return currentId;
     }
 
+    private bool isCursorConfined = true;
+
+    void updateCursorState()
+    {
+        if (isCursorConfined)
+        {
+            Cursor.lockState = CursorLockMode.Confined;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }
+    }
+
+    [Client]
+    void Awake()
+    {
+        updateCursorState();
+    }
+
     [Client]
     void Start()
     {
-
         roof = GameObject.Find("Roof");
         alarmNoise = GameObject.Find("GuyWithTheSpeakers").GetComponent<AudioSource>();
         /*AudioListener audioListener = transform.GetChild(1).GetComponent<AudioListener>();
@@ -242,9 +263,20 @@ public class Player : NetworkBehaviour
         // Debug.Log("Scene objects initialized successfully.");
     }
 
+    
+    
     [Client]
     void Update()
     {
+
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            isCursorConfined = !isCursorConfined;
+            updateCursorState();
+        }
+        
+        if(!flag && Input.GetKey(KeyCode.UpArrow)) Cursor.lockState = CursorLockMode.Confined;
+        
         if (!isLocalPlayer)
         {
             transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z); // Adjust height
