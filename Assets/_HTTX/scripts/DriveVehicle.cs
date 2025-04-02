@@ -132,6 +132,9 @@ public class DriveVehicle : NetworkBehaviour{
         // Debug.Log($"{PlayerUnit} exiting vehicle: {this.gameObject}");
         isActiveVehicle = false;
         foreach(GameObject PlayerUnit in PlayerUnits){
+            // check if roles match up
+            if(ControlPlayer.getPlayerRole() != Player.Roles.Instructor && !PlayerUnit.CompareTag(ControlPlayer.getPlayerRole().ToString())) continue;
+
             AIMover mover = PlayerUnit.GetComponent<AIMover>();
             if(mover == null){
                 Debug.LogWarning($"mover null for {PlayerUnit}, cannot exit vehicle");
