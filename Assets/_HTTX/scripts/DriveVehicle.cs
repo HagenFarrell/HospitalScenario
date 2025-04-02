@@ -84,10 +84,12 @@ public class DriveVehicle : NetworkBehaviour{
     }
     [Command(requiresAuthority = false)]
     private void CmdEnterVehicle(List<GameObject> PlayerUnits){
+        ToggleRing();
         RpcEnterVehicle(PlayerUnits);
     }
     [ClientRpc]
     private void RpcEnterVehicle(List<GameObject> PlayerUnits){
+        ToggleRing();
         EnterVehicle(PlayerUnits);
     }
     private void EnterVehicle(List<GameObject> PlayerUnits){
@@ -114,19 +116,25 @@ public class DriveVehicle : NetworkBehaviour{
             mover.SetRunning(false);
             
         }
+        ToggleRing();
     }
     [Command(requiresAuthority = false)]
     private void CmdExitVehicle(List<GameObject> PlayerUnits){
+        ToggleRing();
         RpcExitVehicle(PlayerUnits);
     }
     [ClientRpc]
     private void RpcExitVehicle(List<GameObject> PlayerUnits){
+        ToggleRing();
         ExitVehicle(PlayerUnits);
     }
     private void ExitVehicle(List<GameObject> PlayerUnits){
         // Debug.Log($"{PlayerUnit} exiting vehicle: {this.gameObject}");
         isActiveVehicle = false;
         foreach(GameObject PlayerUnit in PlayerUnits){
+            // check if roles match up
+            if(ControlPlayer.getPlayerRole() != Player.Roles.Instructor && !PlayerUnit.CompareTag(ControlPlayer.getPlayerRole().ToString())) continue;
+
             AIMover mover = PlayerUnit.GetComponent<AIMover>();
             if(mover == null){
                 Debug.LogWarning($"mover null for {PlayerUnit}, cannot exit vehicle");
@@ -138,7 +146,9 @@ public class DriveVehicle : NetworkBehaviour{
             mover.UpdateSpeed(oldSpeed);
             CmdToggleRenderer(true, PlayerUnit);
             mover.StopAllMovement();
+            mover.SetRunning(true);
         }
+        ToggleRing();
         passengers.Clear();
     }
     [Command(requiresAuthority = false)]
@@ -187,6 +197,11 @@ public class DriveVehicle : NetworkBehaviour{
         foreach (Renderer childRenderer in PlayerUnit.GetComponentsInChildren<Renderer>()) {
             childRenderer.enabled = toggle;
         }
+    }
+    private void ToggleRing(){
+        GameObject activeRing = this.transform.GetChild(0).gameObject;
+        if(activeRing != null) activeRing.SetActive(isActiveVehicle);
+        else Debug.LogError($"ring null for {this.gameObject}");
     }
     public void RegisterPlayer(Player player)
     {

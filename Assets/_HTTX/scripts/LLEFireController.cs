@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror; // Networking
@@ -40,15 +40,15 @@ public class LLEFireController : NetworkBehaviour
         List<GameObject> SelectedChars = player.GetSelectedChars();
         
         // Even if no units are selected, tell all clients to check their units
-        RpcTriggerAllLLEUnits();
+        RpcTriggerAllLLEUnits(SelectedChars);
     }
 
     // Add this new RPC method
     [ClientRpc]
-    void RpcTriggerAllLLEUnits()
+    void RpcTriggerAllLLEUnits(List<GameObject> SelectedChars)
     {
         // Each client runs this to check all their LLE units
-        FireAllLLEUnits();
+        FireAllLLEUnits(SelectedChars);
     }
 
     // Checks for visible hostiles using raycasting (LOS check)
@@ -114,14 +114,15 @@ public class LLEFireController : NetworkBehaviour
         return player.getPlayerRole() == Player.Roles.Instructor;
     }
 
-    void FireAllLLEUnits()
+    void FireAllLLEUnits(List<GameObject> lleUnits)
     {
         // Get all LLE units
-        GameObject[] lleUnits = GameObject.FindGameObjectsWithTag("LawEnforcement");
+        // List<GameObject> lleUnits = player.GetSelectedChars();
         
         foreach (GameObject unit in lleUnits)
         {
             if (unit == null) continue;
+            if(!unit.CompareTag("LawEnforcement")) continue;
             
             AIMover mover = unit.GetComponent<AIMover>();
             // Skip if this NPC isn't armed or mover is null
@@ -129,6 +130,8 @@ public class LLEFireController : NetworkBehaviour
             {
                 continue;
             }
+            // sometimes they fire twice, use this to debug
+            // Debug.Log($"{unit} is firing because he was selected");
 
             GameObject visibleHostile = GetVisibleHostile(unit.transform);
             if (visibleHostile != null)
@@ -145,6 +148,7 @@ public class LLEFireController : NetworkBehaviour
 
                 hostileAnimator.SetTrigger("Kill");
                 hostileAnimator.SetBool("IsDead", true);
+                // decide between headshot or normal (0 or 1)
                 int rand = Random.Range(0,2);
                 hostileAnimator.SetInteger("KillVariable", rand);
                 
