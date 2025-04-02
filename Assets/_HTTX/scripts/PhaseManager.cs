@@ -1111,6 +1111,7 @@ public class PhaseManager : NetworkBehaviour
                         }
                     }
                 }
+                RpcResetVillainAnimations();
             }
         }
 
@@ -1121,6 +1122,25 @@ public class PhaseManager : NetworkBehaviour
     public void SetPhase(GamePhase newPhase)
     {
         syncedPhase = newPhase; //triggers hook on clients
+    }
+
+    // Reset animation for 7 to 6 for villians
+
+    [ClientRpc]
+    void RpcResetVillainAnimations()
+    {
+        foreach (GameObject npc in allVillains)
+        {
+            if (!npc.activeSelf) continue;
+            
+            Animator animator = npc.GetComponent<Animator>();
+            if (animator == null) continue;
+            
+            animator.Rebind();
+            animator.SetBool("IsDead", false);
+            animator.SetBool("IsHoldingWeapon", true);
+            animator.SetBool("IsRunning", true);
+        }
     }
 
     private void OnEnable()
