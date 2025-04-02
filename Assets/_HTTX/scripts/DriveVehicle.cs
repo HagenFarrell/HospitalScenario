@@ -65,6 +65,11 @@ public class DriveVehicle : NetworkBehaviour{
         bool canEnter = false;
         foreach (GameObject unit in SelectedChars)
         {
+            AIMover mover = unit.GetComponent<AIMover>();
+            if(mover == null){
+                Debug.LogWarning($"AImover null for {unit}");
+            }
+            if(mover.IsDriving) continue;
             // debug.log($"{unit} is close enough?");
             float distance = Vector3.Distance(unit.transform.position, transform.position);
             if (distance <= entryRadius && CanDriveThis(unit))
@@ -79,7 +84,6 @@ public class DriveVehicle : NetworkBehaviour{
             // Debug.LogWarning("No valid units in range!");
             return;
         }
-
         CmdEnterVehicle(SelectedChars);
     }
     [Command(requiresAuthority = false)]
@@ -98,12 +102,15 @@ public class DriveVehicle : NetworkBehaviour{
             return;
         }
         foreach(GameObject PlayerUnit in PlayerUnits){
-            AIMover mover = PlayerUnit.GetComponent<AIMover>();
             if (!CanDriveThis(PlayerUnit)) continue;
+
+            AIMover mover = PlayerUnit.GetComponent<AIMover>();
             if(mover == null){
                 Debug.LogWarning($"mover null for {PlayerUnit}, cannot exit vehicle");
                 continue;
             }
+            if(mover.IsDriving) continue;
+            mover.IsDriving = true;
             
             SetVars(PlayerUnit);
             CmdToggleRenderer(false, PlayerUnit);
@@ -139,6 +146,7 @@ public class DriveVehicle : NetworkBehaviour{
             if(mover == null){
                 Debug.LogWarning($"mover null for {PlayerUnit}, cannot exit vehicle");
             }
+            mover.IsDriving = false;
             Vector3 exitPosition = PlayerUnit.transform.position;
             exitPosition.x = transform.position.x + entryRadius;
             

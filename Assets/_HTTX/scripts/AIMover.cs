@@ -22,7 +22,7 @@ public class AIMover : MonoBehaviour
     // Animation parameter hashes for efficiency
     private readonly int walkingHash = Animator.StringToHash("IsWalking");
     private readonly int speedHash = Animator.StringToHash("Speed");
-    public bool IsDriving { get; set; }
+    public bool IsDriving;
 
 
     // ---- Pathingfinding variables ----
@@ -31,6 +31,7 @@ public class AIMover : MonoBehaviour
     private Pathfinder pathfinder;
     private List<Vector3> path;
     private int currentWaypoint = 0;
+
 
 
     private Vector3 previousSteering = Vector3.zero;
