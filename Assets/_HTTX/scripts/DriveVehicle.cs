@@ -138,6 +138,7 @@ public class DriveVehicle : NetworkBehaviour{
             mover.UpdateSpeed(oldSpeed);
             CmdToggleRenderer(true, PlayerUnit);
             mover.StopAllMovement();
+            mover.SetRunning(true);
         }
         passengers.Clear();
     }
