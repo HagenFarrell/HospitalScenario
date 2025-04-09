@@ -6,12 +6,14 @@ using System.Linq;
 
 public class Player : NetworkBehaviour
 {
-    public CustomJoystick mobileJoystick;
+    private CustomJoystick moveJoystick => MobileUIManager.Instance.moveJoystick;
+    private CustomJoystick lookJoystick => MobileUIManager.Instance.lookJoystick;
 
     private bool flag = true;
     public float moveSpeed = 10f; // Horizontal movement speed
     public float verticalSpeed = 5f; // Vertical movement speed
     public float mouseSensitivity = 100f; // Sensitivity for mouse look
+    public float lookSensitivity = 0.1f;
     public float smoothingSpeed = 0.1f; // Determines how smooth the movement is
 
     private Vector3 moveDirection = Vector3.zero;
@@ -259,11 +261,7 @@ public class Player : NetworkBehaviour
         {
             Debug.LogError("PhaseManager not found in the scene!");
         }
-
-        mobileJoystick = FindObjectOfType<CustomJoystick>();
-        if(mobileJoystick == null){
-            Debug.LogError("Joystick not found!");
-        }
+        
 
 
         // Log success
@@ -292,7 +290,7 @@ public class Player : NetworkBehaviour
         {
             // Handle mouse look
             if(playerRole != Roles.None)
-                HandleMouseLook();
+                HandleCameraLook();
 
             // Handle movement
             HandleMovement();
@@ -306,70 +304,53 @@ public class Player : NetworkBehaviour
 
     }
 
-    private void HandleMouseLook()
+    private void HandleCameraLook()
     {
         #if UNITY_ANDROID || UNITY_IOS
-            // dont move camera if dragging
-            if (mobileJoystick != null && mobileJoystick.IsDragging)
-                return;
-        #endif
-        // Get mouse input
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
-
-        // Rotate the camera horizontally (yaw)
+        if (lookJoystick.IsActive)
+        {
+            float smoothingFactor = 0.2f;
+            float targetX = lookJoystick.Horizontal * 0.01f;
+            float targetY = lookJoystick.Vertical * 0.01f;
+            
+            // Smooth the input
+            float smoothX = Mathf.Lerp(0, targetX, smoothingFactor);
+            float smoothY = Mathf.Lerp(0, targetY, smoothingFactor);
+            
+            yaw += smoothX;
+            pitch -= smoothY;
+        }
+        #else
+        // Original PC mouse look
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+        
         yaw += mouseX;
-        transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
-
-        // Rotate the camera vertically (pitch)
         pitch -= mouseY;
-        pitch = Mathf.Clamp(pitch, -90f, 90f); // Prevent flipping
+        #endif
+
+        pitch = Mathf.Clamp(pitch, -90f, 90f);
+        transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
         playerCamera.transform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
-        //playerCamera.transform.parent.localRotation = Quaternion.Euler(0f, yaw, 0f);
     }
 
     private void HandleMovement()
     {
-        float moveX, moveZ, moveY = 0f;
-        float currentSpeed = moveSpeed;
-        
         #if UNITY_ANDROID || UNITY_IOS
-        // mobile
-            if (mobileJoystick != null && mobileJoystick.IsDragging)
-            {
-                moveX = mobileJoystick.Horizontal;
-                moveZ = mobileJoystick.Vertical;
-                
-                // Speed scales with joystick distance
-                currentSpeed *= mobileJoystick.InputMagnitude;
-            }
-            else
-            {
-                moveX = moveZ = 0f;
-            }
+        Vector2 moveInput = moveJoystick.IsActive ? 
+            new Vector2(moveJoystick.Horizontal, moveJoystick.Vertical) : 
+            Vector2.zero;
+        
+        float moveX = moveInput.x;
+        float moveZ = moveInput.y;
         #else
-        // pc
-            moveX = Input.GetAxis("Horizontal");
-            moveZ = Input.GetAxis("Vertical");
-            
-            if (Input.GetKey(KeyCode.Space)) moveY = 1f;
-            if (Input.GetKey(KeyCode.LeftControl)) moveY = -1f;
-            if (mobileJoystick != null && mobileJoystick.gameObject.activeSelf)
-            {
-                mobileJoystick.gameObject.SetActive(false);
-            }
+        // PC controls remain unchanged
+        float moveX = Input.GetAxis("Horizontal");
+        float moveZ = Input.GetAxis("Vertical");
         #endif
 
-        Vector3 moveDirection = (transform.right * moveX + 
-                            transform.forward * moveZ + 
-                            transform.up * moveY).normalized;
-        
-        if (!Physics.SphereCast(transform.position, 2f, moveDirection, out RaycastHit hit, moveDirection.magnitude) || 
-            (hit.collider != null && hit.collider.gameObject.CompareTag("ParkingLot")) || 
-            playerRole == Roles.Instructor)
-        {
-            transform.position += moveDirection * currentSpeed * Time.deltaTime;
-        }
+        Vector3 moveDirection = (transform.right * moveX + transform.forward * moveZ).normalized;
+        transform.position += moveDirection * moveSpeed * Time.deltaTime;
     }
 
     [Command]

@@ -4,34 +4,23 @@ using UnityEngine.UI;
 
 public class CustomJoystick : MonoBehaviour, IDragHandler, IPointerUpHandler, IPointerDownHandler
 {
-    [Header("References")]
-    public RectTransform joystickBackground;
-    public RectTransform joystickHandle;
+    [Header("Visuals")]
+    public RectTransform background;
+    public RectTransform handle;
+    public float handleRange = 1f;
     
-    [Header("Settings")]
-    [Range(0.1f, 2f)] public float maxHandleDistance = 1f;
-    public bool normalizeInput = false;
+    [Header("Behavior")] 
+    public bool returnsToCenter = true;
+    public bool isLookJoystick = false; // Different behavior for look vs move
 
-    private CanvasGroup canvasGroup;
     private Vector2 inputVector = Vector2.zero;
     private Vector2 joystickCenter;
-    private bool isDragging = false;
+    private bool isActive = false;
 
-    void Awake()
+    void Start()
     {
-        canvasGroup = GetComponent<CanvasGroup>();
-        
-        #if !UNITY_ANDROID && !UNITY_IOS
-        // Disable completely on non-mobile platforms
-        canvasGroup.alpha = 0;
-        canvasGroup.blocksRaycasts = false;
-        canvasGroup.interactable = false;
-        this.enabled = false; // Disables the entire script
-        return;
-        #endif
-        
-        joystickCenter = joystickBackground.position;
-        joystickHandle.anchoredPosition = Vector2.zero;
+        joystickCenter = background.position;
+        if (returnsToCenter) handle.anchoredPosition = Vector2.zero;
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -41,44 +30,29 @@ public class CustomJoystick : MonoBehaviour, IDragHandler, IPointerUpHandler, IP
 
     public void OnDrag(PointerEventData eventData)
     {
-        Vector2 touchPosition = eventData.position;
-        Vector2 direction = touchPosition - joystickCenter;
+        Vector2 direction = eventData.position - joystickCenter;
+        float radius = background.sizeDelta.x * 0.5f * handleRange;
         
-        // Calculate input based on distance from center
-        float distance = direction.magnitude;
-        float normalizedDistance = Mathf.Clamp01(distance / (joystickBackground.sizeDelta.x * 0.5f));
-        
-        if (distance > maxHandleDistance * joystickBackground.sizeDelta.x * 0.5f)
+        // Handle position
+        if (direction.magnitude > radius)
         {
-            direction = direction.normalized * maxHandleDistance * joystickBackground.sizeDelta.x * 0.5f;
+            direction = direction.normalized * radius;
         }
+        handle.anchoredPosition = direction;
         
-        // Position the "stick"
-        joystickHandle.anchoredPosition = direction;
-        
-        // Calculate input values
-        if (normalizeInput)
-        {
-            inputVector = direction.normalized * normalizedDistance;
-        }
-        else
-        {
-            inputVector = direction / (joystickBackground.sizeDelta.x * 0.5f * maxHandleDistance);
-        }
-        
-        isDragging = true;
+        // Normalized input
+        inputVector = direction / radius;
+        isActive = true;
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
+        if (returnsToCenter) handle.anchoredPosition = Vector2.zero;
         inputVector = Vector2.zero;
-        joystickHandle.anchoredPosition = Vector2.zero;
-        isDragging = false;
+        isActive = false;
     }
 
-    // Public properties to access input
     public float Horizontal => inputVector.x;
     public float Vertical => inputVector.y;
-    public float InputMagnitude => inputVector.magnitude; // For speed control
-    public bool IsDragging => isDragging;
+    public bool IsActive => isActive;
 }
