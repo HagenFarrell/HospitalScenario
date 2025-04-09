@@ -164,12 +164,9 @@ public class PhaseManager : NetworkBehaviour
     }
 
     #region Egress Phases
+    
     private int SetEgressPhase()
     {
-        if(playerRole == null){
-            Debug.LogError("PlayerRole null in PhaseManager. cannot set egress! ");
-            return 0;
-        }
         if (playerRole.getPlayerRole() == Player.Roles.Instructor)
         {
             if (Input.GetKeyDown(KeyCode.Z)) 
@@ -200,6 +197,14 @@ public class PhaseManager : NetworkBehaviour
             }
         }
         return 0;
+    }
+    public int SetEgressPhase(int egnum){
+        if(playerRole == null){
+            Debug.LogError("PlayerRole null in PhaseManager. cannot set egress! ");
+            return 0;
+        }
+        if (playerRole.getPlayerRole() == Player.Roles.Instructor) CmdSetEgress(egnum);
+        return egnum;
     }
 
     private int TriggerEgressSelected(int phase)

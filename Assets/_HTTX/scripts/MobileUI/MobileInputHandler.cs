@@ -68,4 +68,20 @@ public class MobileInputHandler : MonoBehaviour
     public void OnDeselectAll(){
         player.DeselectAll();
     }
+    public void OnEgress1(){
+        PhaseManager.Instance.SetEgressPhase(1);
+    }
+    public void OnEgress2(){
+        PhaseManager.Instance.SetEgressPhase(2);
+    }
+    public void OnEgress3(){
+        PhaseManager.Instance.SetEgressPhase(3);
+    }
+    public void OnEgress4(){
+        PhaseManager.Instance.SetEgressPhase(4);
+    }
+    public void OnEgressRand(){
+        int temp = Random.Range(1,5);
+        PhaseManager.Instance.SetEgressPhase(temp);
+    }
 }
