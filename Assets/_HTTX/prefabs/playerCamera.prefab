@@ -109,12 +109,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0
-  moveJoystick: {fileID: 0}
-  lookJoystick: {fileID: 0}
+  mobileUICanvas: {fileID: 0}
+  mobileUIRaycaster: {fileID: 0}
   moveSpeed: 25
   verticalSpeed: 10
-  mouseSensitivity: 1000
-  lookSensitivity: 5
+  mouseSensitivity: 100
+  lookSensitivity: 120
   smoothingSpeed: 0.1
   radeyeToolPrefab: {fileID: 0}
   radeyeCircleTool: {fileID: 0}

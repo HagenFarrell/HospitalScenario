@@ -13,7 +13,7 @@ public class Player : NetworkBehaviour
     public float moveSpeed = 10f; // Horizontal movement speed
     public float verticalSpeed = 5f; // Vertical movement speed
     public float mouseSensitivity = 100f; // Sensitivity for mouse look
-    public float lookSensitivity = 0.1f;
+    public float lookSensitivity = 100f;
     public float smoothingSpeed = 0.1f; // Determines how smooth the movement is
 
     private Vector3 moveDirection = Vector3.zero;
@@ -304,26 +304,32 @@ public class Player : NetworkBehaviour
 
     }
 
+    private Vector2 _lookVelocity; // Cache for smoothing
+
     private void HandleCameraLook()
     {
         #if UNITY_ANDROID || UNITY_IOS
         if (lookJoystick.IsActive)
         {
-            float smoothingFactor = 0.2f;
-            float targetX = lookJoystick.Horizontal * 0.01f;
-            float targetY = lookJoystick.Vertical * 0.01f;
+            // Get raw input (already smoothed by joystick)
+            Vector2 rawInput = new Vector2(
+                lookJoystick.GetSmoothedHorizontal(),
+                lookJoystick.GetSmoothedVertical()
+            );
             
-            // Smooth the input
-            float smoothX = Mathf.Lerp(0, targetX, smoothingFactor);
-            float smoothY = Mathf.Lerp(0, targetY, smoothingFactor);
+            // Apply sensitivity and deltaTime
+            Vector2 targetInput = rawInput * lookSensitivity * Time.deltaTime;
             
-            yaw += smoothX;
-            pitch -= smoothY;
+            // Proper smoothing (velocity-based)
+            _lookVelocity = Vector2.Lerp(_lookVelocity, targetInput, 0.2f);
+            
+            yaw += _lookVelocity.x;
+            pitch -= _lookVelocity.y;
         }
         #else
-        // Original PC mouse look
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+        // PC controls
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
         
         yaw += mouseX;
         pitch -= mouseY;
@@ -383,6 +389,10 @@ public class Player : NetworkBehaviour
 
     private void HandleNPCInteraction()
     {
+        #if UNITY_ANDROID || UNITY_IOS
+        // Skip if touching UI
+        if (MobileUIManager.Instance.IsTouchingUI()) return;
+        #endif
         if(radeyeToolInstance != null && radeyeToolInstance.IsActive())
         {
             //// Debug.Log("NPC movement is disabled while radeye tool is active");
