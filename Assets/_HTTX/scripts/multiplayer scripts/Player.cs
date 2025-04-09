@@ -352,10 +352,11 @@ public class Player : NetworkBehaviour
         #else
         // PC controls remain unchanged
         float moveX = Input.GetAxis("Horizontal");
+        float moveY = Input.GetAxis("YAxis");
         float moveZ = Input.GetAxis("Vertical");
         #endif
 
-        Vector3 moveDirection = (transform.right * moveX + transform.forward * moveZ).normalized;
+        Vector3 moveDirection = (transform.right * moveX + transform.forward * moveZ + transform.up * moveY).normalized;
         transform.position += moveDirection * moveSpeed * Time.deltaTime;
     }
 
