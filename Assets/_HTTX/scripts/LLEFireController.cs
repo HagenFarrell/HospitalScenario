@@ -12,6 +12,9 @@ public class LLEFireController : NetworkBehaviour
     void Start(){
         player = FindObjectOfType<Player>();
     }
+    void RegisterPlayer(Player player){
+        this.player = player;
+    }
 
     void Update()
     {
@@ -31,6 +34,9 @@ public class LLEFireController : NetworkBehaviour
             // Debug.Log("firekey pressed");
             CmdFireCommand();
         }
+    }
+    public void ExternalFire(){
+        CmdFireCommand();
     }
 
     [Command(requiresAuthority = false)]

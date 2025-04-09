@@ -6,11 +6,14 @@ using System.Linq;
 
 public class Player : NetworkBehaviour
 {
+    private CustomJoystick moveJoystick => MobileUIManager.Instance.moveJoystick;
+    private CustomJoystick lookJoystick => MobileUIManager.Instance.lookJoystick;
 
     private bool flag = true;
     public float moveSpeed = 10f; // Horizontal movement speed
     public float verticalSpeed = 5f; // Vertical movement speed
     public float mouseSensitivity = 100f; // Sensitivity for mouse look
+    public float lookSensitivity = 100f;
     public float smoothingSpeed = 0.1f; // Determines how smooth the movement is
 
     private Vector3 moveDirection = Vector3.zero;
@@ -184,6 +187,8 @@ public class Player : NetworkBehaviour
         {
             PhaseManager.Instance.RegisterPlayer(this);
             DriveVehicle.Instance.RegisterPlayer(this);
+            MobileUIManager.Instance.RegisterPlayer(this);
+            // LLEFireController.Instance.RegisterPlayer(this);
         }
     }
 
@@ -258,6 +263,8 @@ public class Player : NetworkBehaviour
         {
             Debug.LogError("PhaseManager not found in the scene!");
         }
+        
+
 
         // Log success
         // Debug.Log("Scene objects initialized successfully.");
@@ -285,7 +292,7 @@ public class Player : NetworkBehaviour
         {
             // Handle mouse look
             if(playerRole != Roles.None)
-                HandleMouseLook();
+                HandleCameraLook();
 
             // Handle movement
             HandleMovement();
@@ -299,53 +306,61 @@ public class Player : NetworkBehaviour
 
     }
 
-    private void HandleMouseLook()
+    private Vector2 _lookVelocity; // Cache for smoothing
+
+    private void HandleCameraLook()
     {
-        // Get mouse input
+        #if UNITY_ANDROID || UNITY_IOS
+        if (lookJoystick.IsActive)
+        {
+            // Get raw input (already smoothed by joystick)
+            Vector2 rawInput = new Vector2(
+                lookJoystick.GetSmoothedHorizontal(),
+                lookJoystick.GetSmoothedVertical()
+            );
+            
+            // Apply sensitivity and deltaTime
+            Vector2 targetInput = rawInput * lookSensitivity * Time.deltaTime;
+            
+            // Proper smoothing (velocity-based)
+            _lookVelocity = Vector2.Lerp(_lookVelocity, targetInput, 0.2f);
+            
+            yaw += _lookVelocity.x;
+            pitch -= _lookVelocity.y;
+        }
+        #else
+        // PC controls
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
-
-        // Rotate the camera horizontally (yaw)
+        
         yaw += mouseX;
-        transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
-
-        // Rotate the camera vertically (pitch)
         pitch -= mouseY;
-        pitch = Mathf.Clamp(pitch, -90f, 90f); // Prevent flipping
+        #endif
+
+        pitch = Mathf.Clamp(pitch, -90f, 90f);
+        transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
         playerCamera.transform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
-        //playerCamera.transform.parent.localRotation = Quaternion.Euler(0f, yaw, 0f);
     }
 
     private void HandleMovement()
     {
-        // Get input for movement
-        float moveX = Input.GetAxis("Horizontal"); // Strafe left/right
-        float moveZ = Input.GetAxis("Vertical");   // Move forward/backward
+        #if UNITY_ANDROID || UNITY_IOS
+        Vector2 moveInput = moveJoystick.IsActive ? 
+            new Vector2(moveJoystick.Horizontal, moveJoystick.Vertical) : 
+            Vector2.zero;
+        
+        float moveX = moveInput.x;
+        float moveZ = moveInput.y;
+        float moveY = MobileInputHandler.verticalInput;
+        #else
+        // PC controls remain unchanged
+        float moveX = Input.GetAxis("Horizontal");
         float moveY = Input.GetAxis("YAxis");
+        float moveZ = Input.GetAxis("Vertical");
+        #endif
 
-        // Create movement vector relative to the camera's facing direction
-        moveDirection = (transform.right * moveX + transform.forward * moveZ + transform.up * moveY).normalized;
-        Vector3 movement = moveDirection * moveSpeed * Time.deltaTime;
-
-
-        // Apply movement locally
-        //If no collision is detected OR if the role is instructor 
-        if (!Physics.SphereCast(transform.position, 2f, moveDirection, out RaycastHit hit, movement.magnitude) || (hit.collider != null && hit.collider.gameObject.CompareTag("ParkingLot")) || playerRole == Roles.Instructor)
-        {
-                transform.position += movement; 
-        }
-
-        if (isLocalPlayer && movement.magnitude > 0.01f)
-        {
-            lastMoveTime = Time.time;
-
-            if (Vector3.Distance(transform.position, lastSentPosition) > 0.05f)
-            {
-                lastSentPosition = transform.position;
-                CmdMove(transform.position);
-            }
-        }
-
+        Vector3 moveDirection = (transform.right * moveX + transform.forward * moveZ + transform.up * moveY).normalized;
+        transform.position += moveDirection * moveSpeed * Time.deltaTime;
     }
 
     [Command]
@@ -375,9 +390,22 @@ public class Player : NetworkBehaviour
             }
         }
     }
+    public void DeselectAll(){
+        foreach(GameObject npc in selectedChars){
+            GameObject moveToolRing = npc.transform.GetChild(2).gameObject;
+            moveToolRing.SetActive(false);
+        }
+        selectedChars.Clear();
+    }
 
     private void HandleNPCInteraction()
     {
+        #if UNITY_ANDROID || UNITY_IOS
+        // Skip if touching UI
+        if (MobileUIManager.Instance.IsTouchingUI()) {
+            return;
+        }
+        #endif
         if(radeyeToolInstance != null && radeyeToolInstance.IsActive())
         {
             //// Debug.Log("NPC movement is disabled while radeye tool is active");
@@ -457,39 +485,53 @@ public class Player : NetworkBehaviour
         }
     }
 
+    public void MoveNextPhase(){
+        if (phaseManager == null || !isLocalPlayer || playerRole != Roles.Instructor) return;
+        phaseManager.CmdNextPhase();
+        if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) CmdSoundAlarm();
+    }
+    public void MovePrevPhase(){
+        if (phaseManager == null || !isLocalPlayer || playerRole != Roles.Instructor) return;
+        phaseManager.CmdPreviousPhase();
+        // phaseManager.PreviousPhase();
+        if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) CmdSoundAlarm();
+    }
+    public void ToggleBubble(){
+        if (phaseManager == null || !isLocalPlayer || playerRole != Roles.Instructor) return;
+        phaseManager.CmdToggleBubble();
+        if (isLocalPlayer)
+        {
+            GameObject bubble = phaseManager.gammaKnifeObject.transform.GetChild(0).gameObject;
+            bubble.SetActive(!bubble.activeSelf);
+        }
+    }
+    public void ToggleRoof(){
+        if (phaseManager == null || !isLocalPlayer || playerRole != Roles.Instructor) return;
+        roof.SetActive(!roof.activeInHierarchy);
+    }
+
     private void HandlePhaseManagement()
     {
         if (phaseManager == null || !isLocalPlayer || playerRole != Roles.Instructor) return;
 
         if (Input.GetKeyDown(KeyCode.Alpha0) && (playerRole == Roles.Instructor)) // Next phase
         {
-            phaseManager.CmdNextPhase();
-            //phaseManager.NextPhase();
-            if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) CmdSoundAlarm();
+            MoveNextPhase();   
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha9) && playerRole == Roles.Instructor) // Previous phase
         {
-           phaseManager.CmdPreviousPhase();
-            // phaseManager.PreviousPhase();
-            if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) CmdSoundAlarm();
+            MovePrevPhase();
         }
 
         if (Input.GetKeyDown(KeyCode.T) && playerRole == Roles.Instructor) // toggle big dome
         {
-            phaseManager.CmdToggleBubble();
-            //GameObject bubble = phaseManager.gammaKnifeObject.transform.GetChild(0).gameObject;
-            //bubble.SetActive(!bubble.activeSelf);
-             if (isLocalPlayer)
-            {
-                GameObject bubble = phaseManager.gammaKnifeObject.transform.GetChild(0).gameObject;
-                bubble.SetActive(!bubble.activeSelf);
-            }
+            ToggleBubble();
         }
 
         if(Input.GetKeyDown(KeyCode.Y) && playerRole == Roles.Instructor) //toggle roof
         {
-            roof.SetActive(!roof.activeInHierarchy);
+            ToggleRoof();
         }
     }
 
@@ -587,6 +629,10 @@ public class Player : NetworkBehaviour
                 return;
         }
 
+        #if UNITY_ANDROID || UNITY_IOS
+        MobileUIManager.Instance.RegisterPlayer(this);
+        MobileUIManager.Instance.RoleBasedUI(playerRole);
+        #endif
         CmdSetRole(playerRole);
         moveableChars = GetNpcs(npcRole);
 
