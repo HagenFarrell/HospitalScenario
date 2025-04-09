@@ -12,6 +12,9 @@ public class LLEFireController : NetworkBehaviour
     void Start(){
         player = FindObjectOfType<Player>();
     }
+    void RegisterPlayer(Player player){
+        this.player = player;
+    }
 
     void Update()
     {

@@ -187,6 +187,8 @@ public class Player : NetworkBehaviour
         {
             PhaseManager.Instance.RegisterPlayer(this);
             DriveVehicle.Instance.RegisterPlayer(this);
+            MobileUIManager.Instance.RegisterPlayer(this);
+            // LLEFireController.Instance.RegisterPlayer(this);
         }
     }
 
@@ -476,39 +478,53 @@ public class Player : NetworkBehaviour
         }
     }
 
+    public void MoveNextPhase(){
+        if (phaseManager == null || !isLocalPlayer || playerRole != Roles.Instructor) return;
+        phaseManager.CmdNextPhase();
+        if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) CmdSoundAlarm();
+    }
+    public void MovePrevPhase(){
+        if (phaseManager == null || !isLocalPlayer || playerRole != Roles.Instructor) return;
+        phaseManager.CmdPreviousPhase();
+        // phaseManager.PreviousPhase();
+        if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) CmdSoundAlarm();
+    }
+    public void ToggleBubble(){
+        if (phaseManager == null || !isLocalPlayer || playerRole != Roles.Instructor) return;
+        phaseManager.CmdToggleBubble();
+        if (isLocalPlayer)
+        {
+            GameObject bubble = phaseManager.gammaKnifeObject.transform.GetChild(0).gameObject;
+            bubble.SetActive(!bubble.activeSelf);
+        }
+    }
+    public void ToggleRoof(){
+        if (phaseManager == null || !isLocalPlayer || playerRole != Roles.Instructor) return;
+        roof.SetActive(!roof.activeInHierarchy);
+    }
+
     private void HandlePhaseManagement()
     {
         if (phaseManager == null || !isLocalPlayer || playerRole != Roles.Instructor) return;
 
         if (Input.GetKeyDown(KeyCode.Alpha0) && (playerRole == Roles.Instructor)) // Next phase
         {
-            phaseManager.CmdNextPhase();
-            //phaseManager.NextPhase();
-            if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) CmdSoundAlarm();
+            MoveNextPhase();   
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha9) && playerRole == Roles.Instructor) // Previous phase
         {
-           phaseManager.CmdPreviousPhase();
-            // phaseManager.PreviousPhase();
-            if (phaseManager.GetCurrentPhase() == GamePhase.Phase2) CmdSoundAlarm();
+            MovePrevPhase();
         }
 
         if (Input.GetKeyDown(KeyCode.T) && playerRole == Roles.Instructor) // toggle big dome
         {
-            phaseManager.CmdToggleBubble();
-            //GameObject bubble = phaseManager.gammaKnifeObject.transform.GetChild(0).gameObject;
-            //bubble.SetActive(!bubble.activeSelf);
-             if (isLocalPlayer)
-            {
-                GameObject bubble = phaseManager.gammaKnifeObject.transform.GetChild(0).gameObject;
-                bubble.SetActive(!bubble.activeSelf);
-            }
+            ToggleBubble();
         }
 
         if(Input.GetKeyDown(KeyCode.Y) && playerRole == Roles.Instructor) //toggle roof
         {
-            roof.SetActive(!roof.activeInHierarchy);
+            ToggleRoof();
         }
     }
 
@@ -606,6 +622,10 @@ public class Player : NetworkBehaviour
                 return;
         }
 
+        #if UNITY_ANDROID || UNITY_IOS
+        MobileUIManager.Instance.RegisterPlayer(this);
+        MobileUIManager.Instance.RoleBasedUI(playerRole);
+        #endif
         CmdSetRole(playerRole);
         moveableChars = GetNpcs(npcRole);
 

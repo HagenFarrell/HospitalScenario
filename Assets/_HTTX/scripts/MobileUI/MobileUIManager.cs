@@ -1,48 +1,70 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class MobileUIManager : MonoBehaviour
-{
+public class MobileUIManager : MonoBehaviour {
+    private Player player;
     public static MobileUIManager Instance { get; private set; }
 
     [SerializeField] private CanvasGroup mobileUICanvasGroup;
     [SerializeField] public CustomJoystick moveJoystick;
     [SerializeField] public CustomJoystick lookJoystick;
+    [SerializeField] public GameObject InstructorButtons;
+    [SerializeField] public GameObject LLEFDButtons;
+    bool enable;
 
-    void Awake()
-    {
-        if (Instance == null)
-        {
+    void Awake() {
+        if (Instance == null) {
             Instance = this;
             DontDestroyOnLoad(gameObject);
             InitializeUI();
         }
-        else
-        {
+        else {
             Destroy(gameObject);
         }
     }
+    public void RegisterPlayer(Player player) {
+        this.player = player;
+    }
 
-    void InitializeUI()
-    {
+    void InitializeUI() {
+        mobileUICanvasGroup.alpha = 0;
         #if UNITY_ANDROID || UNITY_IOS
-        EnableMobileUI(true);
+        enable = true;
+        // EnableMobileUI();
         #else
-        EnableMobileUI(false);
+        enable = false;
+        // EnableMobileUI();
         #endif
     }
 
-    public void EnableMobileUI(bool enable)
-    {
+    public void EnableMobileUI() {
         mobileUICanvasGroup.blocksRaycasts = enable;
         mobileUICanvasGroup.interactable = enable;
         mobileUICanvasGroup.alpha = enable ? 1 : 0;
+        Debug.Log(enable);
 
         moveJoystick.SetRaycastBlocking(enable);
         lookJoystick.SetRaycastBlocking(enable);
     }
-    public bool IsTouchingUI()
-    {
+    public void RoleBasedUI(Player.Roles role) {
+        bool isValidRole = 
+            role == Player.Roles.Instructor;
+
+        InstructorButtons.SetActive(isValidRole && enable);
+        isValidRole = 
+            role == Player.Roles.LawEnforcement
+             || role == Player.Roles.FireDepartment
+             || role == Player.Roles.Instructor;
+
+        LLEFDButtons.SetActive(isValidRole && enable);
+
+        enable = 
+            role != Player.Roles.None
+             && role != Player.Roles.Dispatch;
+
+        EnableMobileUI();
+    }
+    public bool IsTouchingUI() {
         // Safety check
         if (EventSystem.current == null || !EventSystem.current.IsActive()){
             return false;
@@ -58,5 +80,9 @@ public class MobileUIManager : MonoBehaviour
         {
             return EventSystem.current.IsPointerOverGameObject();
         }
+    }
+
+    public Player GetPlayer(){
+        return player;
     }
 }
