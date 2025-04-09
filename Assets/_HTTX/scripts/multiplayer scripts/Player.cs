@@ -349,6 +349,7 @@ public class Player : NetworkBehaviour
         
         float moveX = moveInput.x;
         float moveZ = moveInput.y;
+        float moveY = MobileInputHandler.verticalInput;
         #else
         // PC controls remain unchanged
         float moveX = Input.GetAxis("Horizontal");
