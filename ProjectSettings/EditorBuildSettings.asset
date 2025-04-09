@@ -8,4 +8,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_HTTX/Scenes/Hospital.unity
     guid: fa0da64bc09ce834da74b17cf8929985
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 921bc8d122f1745a2bf1e4e562623288, type: 2}
+    com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 9e48d7d24c28a4b35b25bc206d67fd70, type: 2}

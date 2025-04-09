@@ -6,6 +6,7 @@ using System.Linq;
 
 public class Player : NetworkBehaviour
 {
+    public CustomJoystick mobileJoystick;
 
     private bool flag = true;
     public float moveSpeed = 10f; // Horizontal movement speed
@@ -259,6 +260,12 @@ public class Player : NetworkBehaviour
             Debug.LogError("PhaseManager not found in the scene!");
         }
 
+        mobileJoystick = FindObjectOfType<CustomJoystick>();
+        if(mobileJoystick == null){
+            Debug.LogError("Joystick not found!");
+        }
+
+
         // Log success
         // Debug.Log("Scene objects initialized successfully.");
     }
@@ -318,34 +325,42 @@ public class Player : NetworkBehaviour
 
     private void HandleMovement()
     {
-        // Get input for movement
-        float moveX = Input.GetAxis("Horizontal"); // Strafe left/right
-        float moveZ = Input.GetAxis("Vertical");   // Move forward/backward
-        float moveY = Input.GetAxis("YAxis");
-
-        // Create movement vector relative to the camera's facing direction
-        moveDirection = (transform.right * moveX + transform.forward * moveZ + transform.up * moveY).normalized;
-        Vector3 movement = moveDirection * moveSpeed * Time.deltaTime;
-
-
-        // Apply movement locally
-        //If no collision is detected OR if the role is instructor 
-        if (!Physics.SphereCast(transform.position, 2f, moveDirection, out RaycastHit hit, movement.magnitude) || (hit.collider != null && hit.collider.gameObject.CompareTag("ParkingLot")) || playerRole == Roles.Instructor)
-        {
-                transform.position += movement; 
-        }
-
-        if (isLocalPlayer && movement.magnitude > 0.01f)
-        {
-            lastMoveTime = Time.time;
-
-            if (Vector3.Distance(transform.position, lastSentPosition) > 0.05f)
+        float moveX, moveZ, moveY = 0f;
+        float currentSpeed = moveSpeed;
+        
+        #if UNITY_ANDROID || UNITY_IOS
+        // mobile
+            if (mobileJoystick != null && mobileJoystick.IsDragging)
             {
-                lastSentPosition = transform.position;
-                CmdMove(transform.position);
+                moveX = mobileJoystick.Horizontal;
+                moveZ = mobileJoystick.Vertical;
+                
+                // Speed scales with joystick distance
+                currentSpeed *= mobileJoystick.InputMagnitude;
             }
-        }
+            else
+            {
+                moveX = moveZ = 0f;
+            }
+        #else
+        // pc
+            moveX = Input.GetAxis("Horizontal");
+            moveZ = Input.GetAxis("Vertical");
+            
+            if (Input.GetKey(KeyCode.Space)) moveY = 1f;
+            if (Input.GetKey(KeyCode.LeftControl)) moveY = -1f;
+        #endif
 
+        Vector3 moveDirection = (transform.right * moveX + 
+                            transform.forward * moveZ + 
+                            transform.up * moveY).normalized;
+        
+        if (!Physics.SphereCast(transform.position, 2f, moveDirection, out RaycastHit hit, moveDirection.magnitude) || 
+            (hit.collider != null && hit.collider.gameObject.CompareTag("ParkingLot")) || 
+            playerRole == Roles.Instructor)
+        {
+            transform.position += moveDirection * currentSpeed * Time.deltaTime;
+        }
     }
 
     [Command]

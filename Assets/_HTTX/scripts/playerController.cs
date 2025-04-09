@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class playerController : MonoBehaviour
 {
+    [Header("Mobile Controls")]
+    public CustomJoystick mobileJoystick;
     public float moveSpeed = 10f; // Horizontal movement speed
     public float verticalSpeed = 5f; // Vertical movement speed
     public float smoothingSpeed = 0.1f; // Determines how smooth the movement is
