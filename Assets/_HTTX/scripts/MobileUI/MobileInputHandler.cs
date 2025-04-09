@@ -63,7 +63,7 @@ public class MobileInputHandler : MonoBehaviour
         DriveVehicle.Instance.TryEnterVehicle(player.GetSelectedChars());
     }
     public void OnExitVehicle(){
-        DriveVehicle.Instance.TryExitVehicle(player.GetSelectedChars());
+        DriveVehicle.Instance.TryExitVehicle(DriveVehicle.Instance.passengers);
     }
     public void OnDeselectAll(){
         player.DeselectAll();
