@@ -1,16 +1,27 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 public class MobileInputHandler : MonoBehaviour
 {
     private Player player;
     [SerializeField] private LLEFireController fireController;
+    [SerializeField] private GameObject carcar;
+    private List<DriveVehicle> playerVehicles;
     public static float verticalInput = 0f;
     void Awake(){
         player = Player.LocalPlayerInstance;
         if(player == null) {
             Debug.LogWarning("Player null in input handler, searching..");
             player = FindObjectOfType<Player>();
+        }
+        initVehicles();
+    }
+    private void initVehicles(){
+        int children = carcar.transform.childCount;
+        playerVehicles = new List<DriveVehicle>();
+        for(int i=0; i<children; i++){
+            playerVehicles.Add(carcar.transform.GetChild(i).GetComponent<DriveVehicle>());
         }
     }
     public void OnUpPressed()
@@ -60,10 +71,14 @@ public class MobileInputHandler : MonoBehaviour
         }
     }
     public void OnEnterVehicle(){
-        DriveVehicle.Instance.TryEnterVehicle(player.GetSelectedChars());
+        foreach(DriveVehicle vehicle in playerVehicles){
+            vehicle.TryEnterVehicle(player.GetSelectedChars());
+        }
     }
     public void OnExitVehicle(){
-        DriveVehicle.Instance.TryExitVehicle(DriveVehicle.Instance.passengers);
+        foreach(DriveVehicle vehicle in playerVehicles){
+            vehicle.TryExitVehicle(vehicle.passengers);
+        }
     }
     public void OnDeselectAll(){
         player.DeselectAll();

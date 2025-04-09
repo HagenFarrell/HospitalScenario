@@ -2132,6 +2132,7 @@ MonoBehaviour:
   MaxCapacity: 4
   entryRadius: 5.5
   driveSpeed: 5
+  passengers: []
 --- !u!1001 &89015906
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12141,6 +12142,7 @@ MonoBehaviour:
   MaxCapacity: 7
   entryRadius: 2.5
   driveSpeed: 6
+  passengers: []
 --- !u!1 &591394417
 GameObject:
   m_ObjectHideFlags: 0
@@ -38349,6 +38351,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fireController: {fileID: 939593182}
+  carcar: {fileID: 1152318683}
 --- !u!1 &1881561051
 GameObject:
   m_ObjectHideFlags: 0
@@ -39373,6 +39376,7 @@ MonoBehaviour:
   MaxCapacity: 5
   entryRadius: 3
   driveSpeed: 7
+  passengers: []
 --- !u!1001 &1941506076
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -43649,6 +43653,7 @@ MonoBehaviour:
   MaxCapacity: 5
   entryRadius: 3
   driveSpeed: 7
+  passengers: []
 --- !u!4 &543450652076212290 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3034232109503217222, guid: 0b92e6e20c22d8940b00081dc3cfda04, type: 3}

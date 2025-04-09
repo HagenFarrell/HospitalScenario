@@ -42,7 +42,6 @@ public class DriveVehicle : NetworkBehaviour{
         }
         if(Input.GetKeyDown(KeyCode.L)){ // exit vehicle
             isActiveVehicle = false;
-            List<GameObject> SelectedChars = ControlPlayer.GetSelectedChars();
             TryExitVehicle(passengers);
             return;
         }
@@ -76,6 +75,8 @@ public class DriveVehicle : NetworkBehaviour{
                 canEnter = true;
                 break;
             }
+            Debug.LogWarning($"{unit} failed to enter vehicle. can drive: {CanDriveThis(unit)}");
+            Debug.LogWarning($"distance: {distance}, radius: {entryRadius}");
         }
 
         if (!canEnter)
