@@ -308,6 +308,11 @@ public class Player : NetworkBehaviour
 
     private void HandleMouseLook()
     {
+        #if UNITY_ANDROID || UNITY_IOS
+            // dont move camera if dragging
+            if (mobileJoystick != null && mobileJoystick.IsDragging)
+                return;
+        #endif
         // Get mouse input
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
@@ -349,6 +354,10 @@ public class Player : NetworkBehaviour
             
             if (Input.GetKey(KeyCode.Space)) moveY = 1f;
             if (Input.GetKey(KeyCode.LeftControl)) moveY = -1f;
+            if (mobileJoystick != null && mobileJoystick.gameObject.activeSelf)
+            {
+                mobileJoystick.gameObject.SetActive(false);
+            }
         #endif
 
         Vector3 moveDirection = (transform.right * moveX + 
