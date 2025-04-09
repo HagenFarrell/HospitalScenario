@@ -391,7 +391,9 @@ public class Player : NetworkBehaviour
     {
         #if UNITY_ANDROID || UNITY_IOS
         // Skip if touching UI
-        if (MobileUIManager.Instance.IsTouchingUI()) return;
+        if (MobileUIManager.Instance.IsTouchingUI()) {
+            return;
+        }
         #endif
         if(radeyeToolInstance != null && radeyeToolInstance.IsActive())
         {

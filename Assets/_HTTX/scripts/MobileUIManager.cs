@@ -43,15 +43,20 @@ public class MobileUIManager : MonoBehaviour
     }
     public bool IsTouchingUI()
     {
-        return (Input.touchCount > 0) && EventSystem.current.IsPointerOverGameObject(GetTouchId());
-    }
+        // Safety check
+        if (EventSystem.current == null || !EventSystem.current.IsActive()){
+            return false;
+        }
 
-    private int GetTouchId()
-    {
-        #if UNITY_ANDROID || UNITY_IOS
-        return Input.GetTouch(0).fingerId;
-        #else
-        return -1; // Mouse pointer
-        #endif
+        // Handle both mouse and touch input
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+            return EventSystem.current.IsPointerOverGameObject(touch.fingerId);
+        }
+        else
+        {
+            return EventSystem.current.IsPointerOverGameObject();
+        }
     }
 }
