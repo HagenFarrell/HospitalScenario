@@ -43,10 +43,7 @@ public class DriveVehicle : NetworkBehaviour{
         if(Input.GetKeyDown(KeyCode.L)){ // exit vehicle
             isActiveVehicle = false;
             List<GameObject> SelectedChars = ControlPlayer.GetSelectedChars();
-            CmdExitVehicle(passengers);
-            passengers.Clear();
-            if(passengers.Count > 0)
-                passengers = new List<GameObject>();
+            TryExitVehicle(passengers);
             return;
         }
         if(isActiveVehicle && passengers.Count > 0){
@@ -59,9 +56,10 @@ public class DriveVehicle : NetworkBehaviour{
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, entryRadius);
     }
-    private void TryEnterVehicle(List<GameObject> SelectedChars)
+    public void TryEnterVehicle(List<GameObject> SelectedChars)
     {
         // Check if ANY selected unit is close enough AND can drive this vehicle
+        Debug.Log("Attempting to enter vehicle");
         bool canEnter = false;
         foreach (GameObject unit in SelectedChars)
         {
@@ -70,10 +68,11 @@ public class DriveVehicle : NetworkBehaviour{
                 Debug.LogWarning($"AImover null for {unit}");
             }
             if(mover.IsDriving) continue;
-            // debug.log($"{unit} is close enough?");
+            Debug.Log($"{unit} is close enough?");
             float distance = Vector3.Distance(unit.transform.position, transform.position);
             if (distance <= entryRadius && CanDriveThis(unit))
             {
+                Debug.Log("can enter vehicle! attempting...");
                 canEnter = true;
                 break;
             }
@@ -124,6 +123,12 @@ public class DriveVehicle : NetworkBehaviour{
             
         }
         ToggleRing();
+    }
+    public void TryExitVehicle(List<GameObject> PlayerUnits){
+        CmdExitVehicle(PlayerUnits);
+        passengers.Clear();
+        if(passengers.Count > 0)
+            passengers = new List<GameObject>();
     }
     [Command(requiresAuthority = false)]
     private void CmdExitVehicle(List<GameObject> PlayerUnits){

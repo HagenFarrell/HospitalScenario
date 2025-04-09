@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 public class MobileInputHandler : MonoBehaviour
 {
     private Player player;
+    [SerializeField] private LLEFireController fireController;
     public static float verticalInput = 0f;
     void Awake(){
         player = Player.LocalPlayerInstance;
@@ -55,7 +56,16 @@ public class MobileInputHandler : MonoBehaviour
     public void OnFireButton(){
         if(player == null) player = FindObjectOfType<Player>();
         if(player.getPlayerRole() == Player.Roles.Instructor){
-            
+            fireController.ExternalFire();
         }
+    }
+    public void OnEnterVehicle(){
+        DriveVehicle.Instance.TryEnterVehicle(player.GetSelectedChars());
+    }
+    public void OnExitVehicle(){
+        DriveVehicle.Instance.TryExitVehicle(player.GetSelectedChars());
+    }
+    public void OnDeselectAll(){
+        player.DeselectAll();
     }
 }

@@ -35,6 +35,9 @@ public class LLEFireController : NetworkBehaviour
             CmdFireCommand();
         }
     }
+    public void ExternalFire(){
+        CmdFireCommand();
+    }
 
     [Command(requiresAuthority = false)]
     void CmdFireCommand()

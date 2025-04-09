@@ -390,6 +390,13 @@ public class Player : NetworkBehaviour
             }
         }
     }
+    public void DeselectAll(){
+        foreach(GameObject npc in selectedChars){
+            GameObject moveToolRing = npc.transform.GetChild(2).gameObject;
+            moveToolRing.SetActive(false);
+        }
+        selectedChars.Clear();
+    }
 
     private void HandleNPCInteraction()
     {

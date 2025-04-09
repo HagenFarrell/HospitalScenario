@@ -41,7 +41,6 @@ public class MobileUIManager : MonoBehaviour {
         mobileUICanvasGroup.blocksRaycasts = enable;
         mobileUICanvasGroup.interactable = enable;
         mobileUICanvasGroup.alpha = enable ? 1 : 0;
-        Debug.Log(enable);
 
         moveJoystick.SetRaycastBlocking(enable);
         lookJoystick.SetRaycastBlocking(enable);
