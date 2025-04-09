@@ -17,7 +17,7 @@ public class DriveVehicle : NetworkBehaviour{
     private float oldSpeed;
     
     
-    List<GameObject> passengers;
+    public List<GameObject> passengers;
     private void Start(){
         passengers = new List<GameObject>();
     }
@@ -80,7 +80,7 @@ public class DriveVehicle : NetworkBehaviour{
 
         if (!canEnter)
         {
-            // Debug.LogWarning("No valid units in range!");
+            Debug.LogWarning("No valid units in range!");
             return;
         }
         CmdEnterVehicle(SelectedChars);

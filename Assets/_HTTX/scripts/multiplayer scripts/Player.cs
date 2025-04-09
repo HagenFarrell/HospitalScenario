@@ -360,7 +360,27 @@ public class Player : NetworkBehaviour
         #endif
 
         Vector3 moveDirection = (transform.right * moveX + transform.forward * moveZ + transform.up * moveY).normalized;
-        transform.position += moveDirection * moveSpeed * Time.deltaTime;
+        Vector3 movement = moveDirection * moveSpeed * Time.deltaTime;
+        transform.position += movement;
+        
+        //If no collision is detected OR if the role is instructor 
+        if (!Physics.SphereCast(transform.position, 2f, moveDirection, out RaycastHit hit, movement.magnitude)
+         || (hit.collider != null && hit.collider.gameObject.CompareTag("ParkingLot"))
+         || playerRole == Roles.Instructor)
+        {
+                transform.position += movement; 
+        }
+
+        if (isLocalPlayer && movement.magnitude > 0.01f)
+        {
+            lastMoveTime = Time.time;
+
+            if (Vector3.Distance(transform.position, lastSentPosition) > 0.05f)
+            {
+                lastSentPosition = transform.position;
+                CmdMove(transform.position);
+            }
+        }
     }
 
     [Command]
