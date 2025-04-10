@@ -22,7 +22,8 @@ public class RadEyeTool : NetworkBehaviour
 
         gameObject.SetActive(true);
         renderers = GetComponentsInChildren<MeshRenderer>();
-        SetToolVisibility(!isActive);
+        isActive = false;
+        SetToolVisibility(isActive);
     }
 
     void Update()
@@ -121,7 +122,7 @@ public class RadEyeTool : NetworkBehaviour
             radiationDisplay.gameObject.SetActive(state);
         }
 
-        Debug.Log($"RadEye Tool toggled: {(state ? "ON" : "OFF")}");
+        // Debug.Log($"RadEye Tool toggled: {(state ? "ON" : "OFF")}");
     }
 
     float CalculateRadiation(Vector3 objectPosition)
