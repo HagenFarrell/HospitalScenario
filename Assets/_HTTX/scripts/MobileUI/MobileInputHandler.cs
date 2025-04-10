@@ -10,11 +10,7 @@ public class MobileInputHandler : MonoBehaviour
     private List<DriveVehicle> playerVehicles;
     public static float verticalInput = 0f;
     void Awake(){
-        player = Player.LocalPlayerInstance;
-        if(player == null) {
-            Debug.LogWarning("Player null in input handler, searching..");
-            player = FindObjectOfType<Player>();
-        }
+        player = Player.LocalPlayerInstance; // will be null on start
         initVehicles();
     }
     private void initVehicles(){
@@ -76,11 +72,13 @@ public class MobileInputHandler : MonoBehaviour
         }
     }
     public void OnEnterVehicle(){
+        if(player == null) player = Player.LocalPlayerInstance;
         foreach(DriveVehicle vehicle in playerVehicles){
             vehicle.TryEnterVehicle(player.GetSelectedChars());
         }
     }
     public void OnExitVehicle(){
+        if(player == null) player = Player.LocalPlayerInstance;
         foreach(DriveVehicle vehicle in playerVehicles){
             vehicle.TryExitVehicle(vehicle.passengers);
         }
@@ -92,6 +90,7 @@ public class MobileInputHandler : MonoBehaviour
         radeye.SetToolVisibility(!radeye.isActive);
     }
     public void OnDeselectAll(){
+        if(player == null) player = Player.LocalPlayerInstance;
         player.DeselectAll();
     }
     public void OnEgress1(){

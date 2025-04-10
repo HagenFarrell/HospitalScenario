@@ -187,8 +187,6 @@ public class Player : NetworkBehaviour
         {
             PhaseManager.Instance.RegisterPlayer(this);
             DriveVehicle.Instance.RegisterPlayer(this);
-            MobileUIManager.Instance.RegisterPlayer(this);
-            // LLEFireController.Instance.RegisterPlayer(this);
         }
     }
 
@@ -650,7 +648,6 @@ public class Player : NetworkBehaviour
         }
 
         #if UNITY_ANDROID || UNITY_IOS
-        MobileUIManager.Instance.RegisterPlayer(this);
         MobileUIManager.Instance.RoleBasedUI(playerRole);
         #endif
         CmdSetRole(playerRole);

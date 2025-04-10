@@ -30,9 +30,9 @@ public class DriveVehicle : NetworkBehaviour{
     }
     private void Update(){
         Instance = this;
-        if(ControlPlayer == null) ControlPlayer = FindObjectOfType<Player>();
+        if(ControlPlayer == null) ControlPlayer = Player.LocalPlayerInstance;
         if(ControlPlayer == null) {
-            // Debug.LogError("PlayerController null in DriveVehicle");
+            // Debug.LogError("Player null in DriveVehicle");
             return;
         }
         if(Input.GetKeyDown(KeyCode.K)){ // enter vehicle
@@ -55,10 +55,11 @@ public class DriveVehicle : NetworkBehaviour{
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, entryRadius);
     }
+    // checks all 4 vehicles, collects 
     public void TryEnterVehicle(List<GameObject> SelectedChars)
     {
         // Check if ANY selected unit is close enough AND can drive this vehicle
-        Debug.Log("Attempting to enter vehicle");
+        // Debug.Log("Attempting to enter vehicle");
         bool canEnter = false;
         foreach (GameObject unit in SelectedChars)
         {
@@ -67,21 +68,21 @@ public class DriveVehicle : NetworkBehaviour{
                 Debug.LogWarning($"AImover null for {unit}");
             }
             if(mover.IsDriving) continue;
-            Debug.Log($"{unit} is close enough?");
+            // Debug.Log($"{unit} is close enough?");
             float distance = Vector3.Distance(unit.transform.position, transform.position);
             if (distance <= entryRadius && CanDriveThis(unit))
             {
-                Debug.Log("can enter vehicle! attempting...");
+                // Debug.Log("can enter vehicle! attempting...");
                 canEnter = true;
                 break;
             }
-            Debug.LogWarning($"{unit} failed to enter vehicle. can drive: {CanDriveThis(unit)}");
-            Debug.LogWarning($"distance: {distance}, radius: {entryRadius}");
+            // Debug.LogWarning($"{unit} failed to enter vehicle. can drive: {CanDriveThis(unit)}");
+            // Debug.LogWarning($"distance: {distance}, radius: {entryRadius}");
         }
 
         if (!canEnter)
         {
-            Debug.LogWarning("No valid units in range!");
+            // Debug.LogWarning("No valid units in range!");
             return;
         }
         CmdEnterVehicle(SelectedChars);
