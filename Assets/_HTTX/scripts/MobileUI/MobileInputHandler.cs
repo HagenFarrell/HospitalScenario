@@ -6,7 +6,7 @@ public class MobileInputHandler : MonoBehaviour
 {
     private Player player;
     [SerializeField] private LLEFireController fireController;
-    [SerializeField] private GameObject carcar;
+    [SerializeField] private GameObject vehiclesParent;
     private List<DriveVehicle> playerVehicles;
     public static float verticalInput = 0f;
     void Awake(){
@@ -18,10 +18,15 @@ public class MobileInputHandler : MonoBehaviour
         initVehicles();
     }
     private void initVehicles(){
-        int children = carcar.transform.childCount;
+        if(vehiclesParent == null){
+            Debug.LogWarning("Vehicles parent not assigned in editor, searching");
+            vehiclesParent = GameObject.Find("Player Vehicles");
+        }
+        
+        int children = vehiclesParent.transform.childCount;
         playerVehicles = new List<DriveVehicle>();
         for(int i=0; i<children; i++){
-            playerVehicles.Add(carcar.transform.GetChild(i).GetComponent<DriveVehicle>());
+            playerVehicles.Add(vehiclesParent.transform.GetChild(i).GetComponent<DriveVehicle>());
         }
     }
     public void OnUpPressed()
@@ -40,32 +45,32 @@ public class MobileInputHandler : MonoBehaviour
     }
     
     public void OnNextPhase(){
-        if(player == null) player = FindObjectOfType<Player>();
+        if(player == null) player = Player.LocalPlayerInstance;
         if(player.getPlayerRole() == Player.Roles.Instructor){
             player.MoveNextPhase();
         }
     }
     public void OnPrevPhase(){
-        if(player == null) player = FindObjectOfType<Player>();
+        if(player == null) player = Player.LocalPlayerInstance;
         if(player.getPlayerRole() == Player.Roles.Instructor){
             player.MovePrevPhase();
         }
         
     }
     public void OnBubbleToggle(){
-        if(player == null) player = FindObjectOfType<Player>();
+        if(player == null) player = Player.LocalPlayerInstance;
         if(player.getPlayerRole() == Player.Roles.Instructor){
             player.ToggleBubble();
         }
     }
     public void OnRoofToggle(){
-        if(player == null) player = FindObjectOfType<Player>();
+        if(player == null) player = Player.LocalPlayerInstance;
         if(player.getPlayerRole() == Player.Roles.Instructor){
             player.ToggleRoof();
         }
     }
     public void OnFireButton(){
-        if(player == null) player = FindObjectOfType<Player>();
+        if(player == null) player = Player.LocalPlayerInstance;
         if(player.getPlayerRole() == Player.Roles.Instructor){
             fireController.ExternalFire();
         }
@@ -79,6 +84,12 @@ public class MobileInputHandler : MonoBehaviour
         foreach(DriveVehicle vehicle in playerVehicles){
             vehicle.TryExitVehicle(vehicle.passengers);
         }
+    }
+    public void OnRadeyeToggle(){
+        if(player == null) player = Player.LocalPlayerInstance;
+        RadEyeTool radeye = player.radeyeToolInstance;
+        if(radeye == null) Debug.LogWarning("radeye null");
+        radeye.SetToolVisibility(!radeye.isActive);
     }
     public void OnDeselectAll(){
         player.DeselectAll();

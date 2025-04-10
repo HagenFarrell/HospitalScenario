@@ -31,7 +31,7 @@ public class Player : NetworkBehaviour
     private float ignoreServerUpdateDuration = 0.2f; // Ignore server update for 0.2s after local move
 
     [SerializeField] private GameObject radeyeToolPrefab; // Reference to the Radeye prefab
-    private RadEyeTool radeyeToolInstance; // Holds the instantiated Radeye tool
+    public RadEyeTool radeyeToolInstance { get; private set; } // Holds the instantiated Radeye tool
 
 
     [SerializeField] private GameObject radeyeCircleTool;
