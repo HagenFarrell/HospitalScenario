@@ -7,6 +7,7 @@ public class MobileInputHandler : MonoBehaviour
     private Player player;
     [SerializeField] private LLEFireController fireController;
     [SerializeField] private GameObject vehiclesParent;
+    [SerializeField] private PauseMenu pauseMenu;
     private List<DriveVehicle> playerVehicles;
     public static float verticalInput = 0f;
     void Awake(){
@@ -108,5 +109,8 @@ public class MobileInputHandler : MonoBehaviour
     public void OnEgressRand(){
         int temp = Random.Range(1,5);
         PhaseManager.Instance.SetEgressPhase(temp);
+    }
+    public void OnPauseButton(){
+        pauseMenu.TogglePauseMenu();
     }
 }
