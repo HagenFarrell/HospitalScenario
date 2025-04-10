@@ -9,7 +9,7 @@ public class RadEyeTool : NetworkBehaviour
     public Text radiationDisplay;
     public Camera mainCamera;
 
-    private bool isActive = false;
+    public bool isActive{ get; private set; }
     private Renderer[] renderers;
     private Player player;
     private bool isToolLocal = false;
@@ -107,7 +107,7 @@ public class RadEyeTool : NetworkBehaviour
         Debug.LogError("Radiation source not found! Make sure the hierarchy and tag are correct.");
     }
 
-    void SetToolVisibility(bool state)
+    public void SetToolVisibility(bool state)
     {
         if (renderers == null)
             renderers = GetComponentsInChildren<MeshRenderer>();
