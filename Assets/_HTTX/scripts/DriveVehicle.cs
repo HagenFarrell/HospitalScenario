@@ -115,7 +115,11 @@ public class DriveVehicle : NetworkBehaviour{
             
             SetVars(PlayerUnit);
             CmdToggleRenderer(false, PlayerUnit);
-            mover.UpdateSpeed(oldSpeed + driveSpeed);
+
+            #if !(UNITY_ANDROID || UNITY_IOS)
+            mover.UpdateSpeed(oldSpeed + driveSpeed); 
+            #endif
+
             passengers.Add(PlayerUnit);
             PlayerUnit.transform.position = transform.position;
             float YRotation = transform.transform.eulerAngles.y;
