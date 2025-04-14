@@ -97,7 +97,7 @@
 * **Basic Workflow/Example Usage:**
     1.  The Instructor starts the application and hosts a server session, selecting the "Instructor" role.
     2.  Other participants start the application, select their roles (LLE, FD, Dispatcher, etc.), and connect as clients to the Instructor's IP address.
-    3.  Once all participants are connected, the Instructor likely initiates Phase 1 of the narrative scenario using instructor-specific UI controls.
+    3.  Once all participants are connected, the Instructorinitiates Phase 1 of the narrative scenario using "0" and "9" to move forward and backwards. Respective of the keys location.
     4.  Participants interact based on their roles (e.g., LLE moves units, Dispatcher observes cameras) as the Instructor advances through the phases.
     5.  The session continues until the Instructor ends the simulation.
 * **Testing:**
