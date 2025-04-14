@@ -60,7 +60,7 @@
 ## Key Features
 
 * **Multiplayer Sessions:** Supports 6+ participants joining a session via KCP protocol (local network), with one acting as host/instructor and others as clients.
-* **Role-Based Access:** Participants select roles (LLE, FD, Dispatcher, RSO, OSS, Instructor, Spectator) which determine their viewpoint, available tools, and interactions within the simulation.
+* **Role-Based Access:** Participants select roles (LLE, FD, Dispatcher , Instructor, Spectator) which determine their viewpoint, available tools, and interactions within the simulation.
 * **Instructor-Led Narrative:** The instructor controls the progression of the simulation through predefined phases of a radiological theft scenario (7 phases implemented).
 * **Character/Vehicle Movement:** LLE and FD participants can command their respective units to move to specific locations on the exterior of the building using a point-and-click interface. Vehicles require a character to be "inside" to move.
 * **RADeye Simulation:** LLE, FD, and Instructor roles can use a RADeye tool to check the simulated radiation dose rate on specific characters, which accounts for distance and shielding from objects like vehicles.
