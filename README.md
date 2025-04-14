@@ -38,7 +38,7 @@
 * **Background:**
     * This project was developed for the sponsor, IST METIL, to provide a dynamic, role-specific training environment for tactical response teams. It aims to simulate critical decision-making in a no-fault environment during a high-stress event like a radiological material theft. The scenario progresses through distinct phases, from the initial hostile takeover to the adversaries' egress attempt.
 * **Intended Users/Audience:**
-    * Primarily personnel involved in emergency and tactical response within the defense industry and related fields, including Local Law Enforcement (LLE), Fire Department (FD), Dispatchers, Radiation Safety Officers (RSO), and Onsite Security (OSS) personnel undergoing training. Instructors utilize the tool to guide the exercise, and spectator roles are also available.
+    * Primarily personnel involved in emergency and tactical response within the defense industry and related fields, including Local Law Enforcement (LLE), Fire Department (FD),  and Dispatchers. Instructors utilize the tool to guide the exercise, and spectator roles are also available.
 
 ## Goals and Objectives
 
