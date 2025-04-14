@@ -26,8 +26,7 @@
 8.  [Challenges and Problems Encountered](#challenges-and-problems-encountered)
 9.  [Current Status and Remaining Work](#current-status-and-remaining-work-to-do)
 10. [Recommendations for Future Teams](#recommendations-for-future-teams)
-11. [License](#license)
-12. [Acknowledgments](#acknowledgments)
+11. [Acknowledgments](#acknowledgments)
 
 ---
 
@@ -93,7 +92,7 @@
     2.  **Client (Participants):**
         * Option 1 (Second Editor Instance): You can run a second instance of the Unity editor with the same project (if your machine can handle it).
         * Option 2 (Build and Run): Use Unity's `File -> Build and Run` option to create a standalone executable. Run this executable.
-        * In the client instance (either editor or build), select the desired role (e.g., LLE, FD) and choose "Client". Enter the IP address of the host machine (must be on the same local network) and connect.
+        * In the client instance (either editor or build), select "Client". Enter the IP address of the host machine (must be on the same local network) and connect, then select desired role (e.g., LLE, FD).
 * **Basic Workflow/Example Usage:**
     1.  The Instructor starts the application and hosts a server session, selecting the "Instructor" role.
     2.  Other participants start the application, select their roles (LLE, FD, Dispatcher, etc.), and connect as clients to the Instructor's IP address.
