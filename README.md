@@ -78,7 +78,7 @@
     1.  Clone the repository: `git clone https://github.com/HagenFarrell/HospitalScenario.git`
     2.  Navigate to the project directory: `cd HospitalScenario`
     3.  Open the `HospitalScenario` project using the Unity Hub (ensure Unity version 2021.1.4f1 is installed and selected).
-    4.  Once the project is open in the Unity Editor, locate and open the main scene file within `Assets/_HTTX/_Scenes/` (likely named `HospitalScene` or similar).
+    4.  Once the project is open in the Unity Editor, locate and open the main scene file within `Assets/_HTTX/Scenes/`
     5.  No additional package installations or configurations are typically required beyond letting Unity import the project assets.
 * **Hardware Setup:**
     * it runs on a standard PC. Ensure PC meets Unity's minimum requirements, with a dedicated GPU recommended.
@@ -107,25 +107,27 @@
 
 * The core project assets specific to this simulation are organized within the `Assets/_HTTX` folder. The structure inside `_HTTX` is as follows:
     ```
-    HospitalScenario/
+    HospitalScenario/       # Root folder cloned from Git
     ├── Assets/
-    │   ├── _HTTX/
-    │   │   ├── _Animator/      # Animator controllers and animations
-    │   │   ├── _prefabs/       # Core prefabs (Characters, vehicles, UI, tools?)
-    │   │   ├── _Scripts/       # All C# scripts (Networking, Roles, AI, Tools, UI Logic, Narrative Phases, etc.)
-    │   │   ├── _Materials/     # Materials specific to HTTX assets
-    │   │   ├── _Scenes/        # Main simulation scene(s) located here
-    │   │   ├── _Shaders/       # Custom shaders, if any
-    │   │   ├── _Sound/         # Audio clips and mixers
-    │   │   ├── _Sprites/       # UI sprites and icons
-    │   │   ├── _Timeline/      # Unity Timeline assets, if used for narrative
-    │   │   ├── _Textures/      # Textures specific to HTTX assets
-    │   │   └── _URP/           # Universal Render Pipeline specific assets/settings
-    │   ├── ...               # Other standard Unity folders & third-party assets (Mirror, TextMeshPro, etc.)
-    ├── Packages/             # Unity package manager manifest (package.json)
-    ├── ProjectSettings/      # Unity project configuration
+    │   ├── _HTTX/          # Main folder for project-specific assets
+    │   │   ├── Animation/
+    │   │   ├── Audio/
+    │   │   ├── Materials/      # Also Asphalt_materials, etc.
+    │   │   ├── Mesh/
+    │   │   ├── Mirror-35.1.0/  # Mirror Networking assets
+    │   │   ├── Resources/
+    │   │   ├── Scenes/         # Main simulation scene(s) located here
+    │   │   ├── scripts/        # All C# scripts for the project
+    │   │   ├── shaders/
+    │   │   ├── Textures/
+    │   │   ├── prefabs/        # Core prefabs (Characters, vehicles, UI, tools)
+    │   │   ├── ui/             # UI specific assets
+    │   │   └── ...             # Other folders like images, nappin, stuff for radeye
+    │   └── ...             # Other standard Unity folders & third-party assets outside _HTTX (e.g., TextMeshPro)
+    ├── Packages/           # Unity package manager manifest (package.json)
+    ├── ProjectSettings/    # Unity project configuration
     ├── .gitignore
-    └── README.md
+    └── README.md           # This file
     ```
 
 ## Challenges and Problems Encountered
