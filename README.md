@@ -153,10 +153,7 @@
     * **Raydiance Incompatibility:** The Mirror-based implementation is incompatible with the target Avalon Holographics/Raydiance template environment (See Challenges section).
 * **Future Work / To-Do List:**
     * [ ] **Major Task: Investigate/Implement Raydiance Integration:** Address the challenges outlined above to port the simulation to the Avalon Holographics Raydiance environment. This involves resolving network manager conflicts and player instantiation issues.
-    * [ ] **Implement RSO/OSS Specific Interactions:** Review the scenario document and implement any specific functionalities intended for the Radiation Safety Officer and Onsite Security roles that are not yet present (if any).
-    * [ ] **Add Hostage/Downed Adversary Dragging:** Implement the suggested feature allowing LLE characters to drag hostages or downed adversaries away from the source (as mentioned in requirement documents).
     * [ ] **Investigate/Fix FD Animation Bug:** Attempt to identify the cause of the rare Phase 7 FD unit animation issue and implement a fix.
-    * [ ] *(Add any other specific features or fixes your team planned)*
 
 ## Recommendations for Future Teams
 
@@ -174,10 +171,6 @@
 * **General Advice:**
     * Allocate extra time specifically for network testing, especially if attempting Raydiance integration.
     * Document any changes made during the Raydiance integration process meticulously.
-
-## License
-
-* The license for this project is currently undetermined. Future teams should consult with the Faculty Advisor (Dr. Matthew Gerber) and/or the Sponsor (IST METIL) to clarify usage and distribution rights before proceeding with further development or deployment.
 
 ## Acknowledgments
 
