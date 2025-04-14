@@ -89,7 +89,7 @@
     1.  Open the main project scene (e.g., `HospitalScene`) in the Unity Editor.
     2.  Click the "Play" button at the top center of the editor interface.
 * **Running Multiplayer Tests:**
-    1.  **Host (Instructor):** Start the project in the Unity Editor. Select the "Instructor" role. Choose to "Host" the game, likely using the KCP transport protocol provided by Mirror.
+    1.  **Host (Instructor):** Start the project in the Unity Editor. Select the "Instructor" role. Choose to "Host" the game.
     2.  **Client (Participants):**
         * Option 1 (Second Editor Instance): You can run a second instance of the Unity editor with the same project (if your machine can handle it).
         * Option 2 (Build and Run): Use Unity's `File -> Build and Run` option to create a standalone executable. Run this executable.
