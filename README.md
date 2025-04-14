@@ -142,7 +142,7 @@
 
 * **Project Status:** **Fully Functional (Mirror Version)**. The current version of the project, utilizing Mirror for networking, is fully functional and implements the core requirements outlined in the scenario document.
 * **Completed Work:**
-    * All specified roles (LLE, FD, Dispatcher, RSO, OSS, Instructor, Spectator) are implemented with role-specific views and controls.
+    * All specified roles (LLE, FD, Dispatcher, Instructor, Spectator) are implemented with role-specific views and controls.
     * The complete 7-phase narrative scenario is implemented and controllable by the Instructor.
     * Multiplayer functionality via Mirror Networking is stable on a local network (LAN).
     * LLE/FD character movement is functional.
