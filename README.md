@@ -26,159 +26,163 @@
 8.  [Challenges and Problems Encountered](#challenges-and-problems-encountered)
 9.  [Current Status and Remaining Work](#current-status-and-remaining-work-to-do)
 10. [Recommendations for Future Teams](#recommendations-for-future-teams)
-11. [Documentation & Resources](#documentation--resources)
-12. [License](#license)
-13. [Acknowledgments](#acknowledgments)
+11. [License](#license)
+12. [Acknowledgments](#acknowledgments)
 
 ---
 
 ## Project Overview
 
 * **What is the project?**
-    * [Provide a concise, high-level summary of the project. What problem does it aim to solve? What is the main purpose or outcome?]
+    * HTTX (Holotable Table Top Exercise) is an instructor-led, multiplayer tactical training exercise designed for 6+ participants. It simulates an alarm response scenario, specifically a radiological theft within a hospital setting. The primary goal is for participants, playing various roles, to collaboratively position law enforcement (LLE) and fire department (FD) assets to prevent adversaries from successfully removing a radiological source from the premises.
 * **Background:**
-    * 
+    * This project was developed for the sponsor, IST METIL, to provide a dynamic, role-specific training environment for tactical response teams. It aims to simulate critical decision-making in a no-fault environment during a high-stress event like a radiological material theft. The scenario progresses through distinct phases, from the initial hostile takeover to the adversaries' egress attempt.
 * **Intended Users/Audience:**
-    * Defense industry
+    * Primarily personnel involved in emergency and tactical response within the defense industry and related fields, including Local Law Enforcement (LLE), Fire Department (FD), Dispatchers, Radiation Safety Officers (RSO), and Onsite Security (OSS) personnel undergoing training. Instructors utilize the tool to guide the exercise, and spectator roles are also available.
 
 ## Goals and Objectives
 
 * **Primary Goal:**
-    * [State the main overarching goal of the project.]
+    * To develop a robust, multiplayer, instructor-led tactical training simulation (HTTX) for alarm response scenarios involving radiological threats, enabling participants to practice coordinated responses and prevent threat egress.
 * **Key Objectives:**
-    * [List the specific, measurable objectives your team set out to achieve. Use bullet points.]
-    * Objective 1: [e.g., Develop a functional prototype capable of X.]
-    * Objective 2: [e.g., Achieve Y performance metric.]
-    * Objective 3: [e.g., Integrate components A and B.]
-    * ...
+    * Develop a stable multiplayer environment supporting 6+ participants simultaneously within the Unity/Mirror framework.
+    * Implement distinct, role-specific views, controls, and tools (e.g., LLE/FD character/vehicle control, RADeye tool access, Dispatcher camera views).
+    * Create a controllable, phased narrative engine allowing the instructor to guide the scenario through predefined stages of a radiological theft.
+    * Implement core interactive tools, including character/vehicle movement for LLE/FD and a functional RADeye tool displaying simulated dose rates with object shielding considerations.
+    * Ensure consistent, repeatable narrative progression and character placement for non-player characters (NPCs) across different simulation sessions.
+    * Develop comprehensive instructor controls, including narrative progression, egress point selection, simulation settings (audio/visuals), and initiating LLE firing actions.
 
 ## Technology Stack
 
 * **Programming Languages:** C#
-* **Frameworks/Libraries:** Unity MIRROR 35.1 
-* **Development Tools:** GitHub, Unity 2021.1.4f1
+* **Frameworks/Libraries:** Unity Mirror Networking (Mirror)
+* **Development Tools:** GitHub, Unity Editor (Version 2021.1.4f1)
 
 ## Key Features
 
-* [List the main functionalities implemented in the project.]
-* **Feature 1:** [Brief description of the feature.]
-* **Feature 2:** [Brief description of the feature.]
-* **Feature 3:** [Brief description of the feature.]
-* ...
-* [Optional: Include screenshots, GIFs, or links to videos demonstrating key features if helpful.]
+* **Multiplayer Sessions:** Supports 6+ participants joining a session via KCP protocol (local network), with one acting as host/instructor and others as clients.
+* **Role-Based Access:** Participants select roles (LLE, FD, Dispatcher, RSO, OSS, Instructor, Spectator) which determine their viewpoint, available tools, and interactions within the simulation.
+* **Instructor-Led Narrative:** The instructor controls the progression of the simulation through predefined phases of a radiological theft scenario (7 phases implemented).
+* **Character/Vehicle Movement:** LLE and FD participants can command their respective units to move to specific locations on the exterior of the building using a point-and-click interface. Vehicles require a character to be "inside" to move.
+* **RADeye Simulation:** LLE, FD, and Instructor roles can use a RADeye tool to check the simulated radiation dose rate on specific characters, which accounts for distance and shielding from objects like vehicles.
+* **Dispatcher View:** The Dispatcher role has access to a unique view simulating security camera feeds from inside the building.
+* **Instructor Controls:** The instructor has overarching control, including managing narrative phases, selecting adversary egress points, triggering LLE weapon fire, and adjusting simulation settings (visuals/audio).
 
 ## Project Setup & Installation
 
 * **Prerequisites:**
-    * [List any software, hardware, or accounts needed before setup. e.g., Python 3.9+, Node.js v16+, Specific OS, AWS Account]
+    * Unity Editor (Version **2021.1.4f1** specifically)
+    * Git client
+    * A computer with a dedicated graphics card is recommended for adequate performance.
 * **Software Setup Steps:**
-    1.  Clone the repository: `git clone [repository URL]`
-    2.  Navigate to the project directory: `cd [project-directory-name]`
-    3.  [Install dependencies: e.g., `pip install -r requirements.txt` or `npm install`]
-    4.  [Database setup/migrations: e.g., `python manage.py migrate`]
-    5.  [Configuration: Explain any necessary environment variables or configuration files (e.g., `.env`, `config.json`). Mention if there's an example file (`.env.example`). DO NOT commit sensitive keys.]
-    6.  [Any other specific setup steps]
-* **Hardware Setup (if applicable):**
-    * [Describe how to connect any hardware components. Include wiring diagrams or links to them if available.]
-    * [Mention any specific firmware flashing steps.]
+    1.  Clone the repository: `git clone https://github.com/HagenFarrell/HospitalScenario.git`
+    2.  Navigate to the project directory: `cd HospitalScenario` (or the name you cloned it as)
+    3.  Open the `HospitalScenario` project using the Unity Hub (ensure Unity version 2021.1.4f1 is installed and selected).
+    4.  Once the project is open in the Unity Editor, locate and open the main scene file within `Assets/_HTTX/_Scenes/` (likely named `HospitalScene` or similar).
+    5.  No additional package installations or configurations are typically required beyond letting Unity import the project assets.
+* **Hardware Setup:**
+    * No specific hardware (like VR/AR headsets) is strictly required to run the base simulation.
+    * While optimized for AR (like Magic Leap), it runs on a standard PC. Ensure PC meets Unity's minimum requirements, with a dedicated GPU recommended.
 
 ## Usage
 
-* **Running the Project:**
-    * [How do you start the application/system? e.g., `python main.py`, `npm start`, `docker-compose up`]
+* **Running the Project (Editor):**
+    1.  Open the main project scene (e.g., `HospitalScene`) in the Unity Editor.
+    2.  Click the "Play" button at the top center of the editor interface.
+* **Running Multiplayer Tests:**
+    1.  **Host (Instructor):** Start the project in the Unity Editor. Select the "Instructor" role. Choose to "Host" the game, likely using the KCP transport protocol provided by Mirror.
+    2.  **Client (Participants):**
+        * Option 1 (Second Editor Instance): You can run a second instance of the Unity editor with the same project (if your machine can handle it).
+        * Option 2 (Build and Run): Use Unity's `File -> Build and Run` option to create a standalone executable. Run this executable.
+        * In the client instance (either editor or build), select the desired role (e.g., LLE, FD) and choose "Client". Enter the IP address of the host machine (must be on the same local network) and connect.
 * **Basic Workflow/Example Usage:**
-    * [Provide a simple walkthrough of how to use the core functionality. Step-by-step instructions are best.]
-    * 1. [Start the application/system as described above.]
-    * 2. [Perform Action A (e.g., Navigate to URL, press button X).]
-    * 3. [Perform Action B (e.g., Input data Y, observe result Z).]
+    1.  The Instructor starts the application and hosts a server session, selecting the "Instructor" role.
+    2.  Other participants start the application, select their roles (LLE, FD, Dispatcher, etc.), and connect as clients to the Instructor's IP address.
+    3.  Once all participants are connected, the Instructor likely initiates Phase 1 of the narrative scenario using instructor-specific UI controls.
+    4.  Participants interact based on their roles (e.g., LLE moves units, Dispatcher observes cameras) as the Instructor advances through the phases.
+    5.  The session continues until the Instructor ends the simulation.
 * **Testing:**
-    * [How can someone run the tests (if any exist)? e.g., `pytest`, `npm test`]
+    * Testing is primarily done through manual interaction and running multiplayer sessions as described above. There are no automated test suites currently configured.
 
 ## Project Structure
 
-* [Provide a brief overview of the repository's directory structure. Highlight key folders and their purpose.]
+* The core project assets specific to this simulation are organized within the `Assets/_HTTX` folder. The structure inside `_HTTX` is as follows:
     ```
-    .
-    ├── data/             # Raw or processed data files
-    ├── docs/             # Project documentation, reports, diagrams
-    ├── hardware/         # Schematics, PCB designs, CAD files (if applicable)
-    ├── src/ or [app_name]/ # Main source code directory
-    │   ├── modules/      # Core logic modules
-    │   ├── api/          # API endpoints (if applicable)
-    │   ├── ui/           # User interface components (if applicable)
-    │   └── main.py       # Main entry point script
-    ├── tests/            # Unit tests, integration tests
-    ├── scripts/          # Helper scripts (e.g., deployment, data processing)
-    ├── .gitignore        # Files ignored by Git
-    ├── requirements.txt  # Python dependencies (or package.json, etc.)
-    └── README.md         # This file
+    HospitalScenario/
+    ├── Assets/
+    │   ├── _HTTX/
+    │   │   ├── _Animator/      # Animator controllers and animations
+    │   │   ├── _prefabs/       # Core prefabs (Characters, vehicles, UI, tools?)
+    │   │   ├── _Scripts/       # All C# scripts (Networking, Roles, AI, Tools, UI Logic, Narrative Phases, etc.)
+    │   │   ├── _Materials/     # Materials specific to HTTX assets
+    │   │   ├── _Scenes/        # Main simulation scene(s) located here
+    │   │   ├── _Shaders/       # Custom shaders, if any
+    │   │   ├── _Sound/         # Audio clips and mixers
+    │   │   ├── _Sprites/       # UI sprites and icons
+    │   │   ├── _Timeline/      # Unity Timeline assets, if used for narrative
+    │   │   ├── _Textures/      # Textures specific to HTTX assets
+    │   │   └── _URP/           # Universal Render Pipeline specific assets/settings
+    │   ├── ...               # Other standard Unity folders & third-party assets (Mirror, TextMeshPro, etc.)
+    ├── Packages/             # Unity package manager manifest (package.json)
+    ├── ProjectSettings/      # Unity project configuration
+    ├── .gitignore
+    └── README.md
     ```
-    * [Adjust the example structure to match your project.]
 
 ## Challenges and Problems Encountered
 
-* [This is a critical section for the next team. Be honest and detailed.]
-* **Challenge 1: [Brief Title, e.g., Sensor Integration Issues]**
-    * [Describe the challenge. What was the problem? When did it occur (especially note issues towards the end)?]
-    * [What approaches did you try to solve it?]
-    * [What was the outcome? Was it resolved, partially resolved, or remains an open issue?]
-    * [Any insights or specific difficulties encountered (e.g., library incompatibility, hardware limitations, noisy data)?]
-* **Challenge 2: [Brief Title, e.g., Performance Bottlenecks]**
-    * [Description, attempts, outcome, insights.]
-* **Challenge 3: [Brief Title, e.g., Difficulties with Algorithm X]**
-    * [Description, attempts, outcome, insights.]
-* **End-of-Project Hurdles:**
-    * [Specifically mention any problems that arose late in the project timeline that might not be fully resolved or documented elsewhere. e.g., last-minute integration failures, unexpected bugs during final testing, difficulties meeting a specific requirement under pressure.]
+* **Challenge 1: Integration with Raydiance Package / Avalon Holographics Template**
+    * **Description:** A primary goal towards the end of the project was to port the HTTX simulation to a specific hardware template provided by Avalon Holographics, which utilizes their "Raydiance" Unity package. This package includes its own networking components.
+    * **Problem:** Significant difficulties arose when trying to integrate our existing multiplayer functionality (built using Mirror Networking) with the Raydiance network manager. The Raydiance codebase was found to be complex, and its network manager required substantial refactoring to work alongside or replace our Mirror-based player prefabs and scripts.
+    * **Attempts:** Initial attempts were made to understand the Raydiance networking code and identify points of integration or replacement.
+    * **Outcome:** **Unresolved.** Due to the complexity and the extensive refactoring required for the Raydiance network manager, the integration was not successfully completed. The project currently remains functional using the standard Mirror Networking implementation.
+    * **Insights/Hurdle:** This represents a major end-of-project hurdle. The next team tasked with porting to the Avalon Holographics hardware will need to dedicate significant time to either deeply refactor the Raydiance networking components to work with the existing HTTX structure OR potentially rebuild the HTTX multiplayer logic using the Raydiance networking system. Understanding the Raydiance package will be critical.
 
 ## Current Status and Remaining Work (To-Do)
 
-* **Project Status:** [Overall assessment - e.g., Functional prototype, Proof-of-concept, Partially complete, Meets X out of Y objectives]
+* **Project Status:** **Fully Functional (Mirror Version)**. The current version of the project, utilizing Mirror for networking, is fully functional and implements the core requirements outlined in the scenario document.
 * **Completed Work:**
-    * [Briefly summarize what has been successfully implemented and tested.]
+    * All specified roles (LLE, FD, Dispatcher, RSO, OSS, Instructor, Spectator) are implemented with role-specific views and controls.
+    * The complete 7-phase narrative scenario is implemented and controllable by the Instructor.
+    * Multiplayer functionality via Mirror Networking is stable on a local network (LAN).
+    * LLE/FD character movement is functional.
+    * LLE/FD vehicle movement (with character present) is functional.
+    * RADeye tool is implemented and functional.
+    * Instructor-triggered LLE firing interaction is implemented.
 * **Known Bugs / Issues:**
-    * [List specific bugs or limitations you are aware of.]
-    * [Issue 1: Description, steps to reproduce if known.]
-    * [Issue 2: Description.]
+    * **Intermittent Animation Bug:** An issue has occurred *once* where Fire Department (FD) units became unanimated during Phase 7. The trigger for this is unknown, and it has not been reliably recreated. Most of the time, animations function correctly through all phases.
+    * **Raydiance Incompatibility:** The Mirror-based implementation is incompatible with the target Avalon Holographics/Raydiance template environment (See Challenges section).
 * **Future Work / To-Do List:**
-    * [This is the primary handover list for the next team. Be specific.]
-    * [ ] **Task 1:** [e.g., Implement user authentication.]
-    * [ ] **Task 2:** [e.g., Improve accuracy of sensor readings (potential methods: X, Y).]
-    * [ ] **Task 3:** [e.g., Refactor the data processing module for better efficiency.]
-    * [ ] **Task 4:** [e.g., Complete integration of component Z.]
-    * [ ] **Task 5:** [e.g., Add comprehensive unit tests for module A.]
-    * [ ] **Task 6:** [e.g., Deploy the application to [Platform].]
-    * [ ] **Task 7:** [e.g., Resolve known bug #1 mentioned above.]
+    * [ ] **Major Task: Investigate/Implement Raydiance Integration:** Address the challenges outlined above to port the simulation to the Avalon Holographics Raydiance environment. This involves resolving network manager conflicts and player instantiation issues.
+    * [ ] **Implement RSO/OSS Specific Interactions:** Review the scenario document and implement any specific functionalities intended for the Radiation Safety Officer and Onsite Security roles that are not yet present (if any).
+    * [ ] **Add Hostage/Downed Adversary Dragging:** Implement the suggested feature allowing LLE characters to drag hostages or downed adversaries away from the source (as mentioned in requirement documents).
+    * [ ] **Investigate/Fix FD Animation Bug:** Attempt to identify the cause of the rare Phase 7 FD unit animation issue and implement a fix.
+    * [ ] *(Add any other specific features or fixes your team planned)*
 
 ## Recommendations for Future Teams
 
-* [Offer advice based on your experience.]
-* **Technical Suggestions:**
-    * [e.g., "Consider using library X instead of Y for feature Z, as we found Y had limitations."]
-    * [e.g., "Focus on optimizing the database queries in file `abc.py` early on."]
-    * [e.g., "Be careful with the power requirements for hardware component Q."]
-* **Process Suggestions:**
-    * [e.g., "Allocate more time for integration testing than initially planned."]
-    * [e.g., "Document configuration changes meticulously."]
-* **Potential Enhancements (Beyond To-Do):**
-    * [Ideas for features or improvements that were outside your scope but could be valuable additions.]
-
-## Documentation & Resources
-
-* **Final Report:** [Link to your final project report PDF/document]
-* **Presentation Slides:** [Link to final presentation slides]
-* **Design Documents:** [Link to system architecture diagrams, UI mockups, requirements documents]
-* **Datasheets (for hardware):** [Links to important datasheets]
-* **External Tutorials/References:** [Links to helpful articles, tutorials, or documentation used]
+* **Focus on Raydiance Integration:** The primary technical hurdle is integrating with the Avalon Holographics template, specifically its "Raydiance" package and associated light field camera hardware/software.
+    * **Understand Raydiance Networking:** Dedicate significant time upfront to thoroughly understand the networking manager included in the Raydiance package. This was the main blocker previously.
+    * **Player Instantiation:** Investigate player prefab instantiation within the Raydiance template. Currently, player prefabs based on the Mirror setup appear to be destroyed upon loading in the Raydiance environment. Solving this is critical.
+    * **Role Selection Integration:** Even if instantiation is fixed, ensure the `Player.cs` role selection logic correctly registers the player's chosen role within the Raydiance networking system. This connection needs to be established.
+* **UI Interaction Workaround (Light Field Camera):**
+    * Be aware of potential conflicts between standard Unity UI interaction (mouse clicks) and the light field camera's input handling.
+    * A partial workaround was implemented by Hagen Farrell:
+        * A script was created to detect if the cursor is over a UI element.
+        * If so, it forwards the mouse click directly to Unity's EventSystem, bypassing the light field camera's input capture for that click.
+        * The script execution order was modified so this detection script runs *before* the light field camera's input scripts, ensuring UI clicks are intercepted correctly when needed.
+        * *(Future teams may need to refine or adapt this workaround depending on further Raydiance integration progress).*
+* **General Advice:**
+    * Allocate extra time specifically for network testing, especially if attempting Raydiance integration.
+    * Document any changes made during the Raydiance integration process meticulously.
 
 ## License
 
-* [Specify the project's license. If unsure, check with your university/department. Common options include MIT, Apache 2.0, GPL, or specific university licenses. Example:]
-* This project is licensed under the [Your License Name] - see the `LICENSE.md` file (if applicable) for details. If no `LICENSE.md` file is present, contact the original team or faculty advisor regarding usage rights.
+* The license for this project is currently undetermined. Future teams should consult with the Faculty Advisor (Dr. Matthew Gerber) and/or the Sponsor (IST METIL) to clarify usage and distribution rights before proceeding with further development or deployment.
 
 ## Acknowledgments
 
-* [Thank anyone who provided significant help - advisors, sponsors, TAs, other students, open-source projects you relied on.]
-* Special thanks to [Name/Group] for their guidance and support.
-* This project utilized the following open-source libraries: [List key libraries if desired].
+* Special thanks to our Faculty Advisor, **Dr. Matthew Gerber**, for guidance and support throughout this project.
+* We also thank our sponsor, **IST METIL**, for providing the project opportunity and context.
 
 ---
