@@ -76,13 +76,12 @@
     * A computer with a dedicated graphics card is recommended for adequate performance.
 * **Software Setup Steps:**
     1.  Clone the repository: `git clone https://github.com/HagenFarrell/HospitalScenario.git`
-    2.  Navigate to the project directory: `cd HospitalScenario` (or the name you cloned it as)
+    2.  Navigate to the project directory: `cd HospitalScenario`
     3.  Open the `HospitalScenario` project using the Unity Hub (ensure Unity version 2021.1.4f1 is installed and selected).
     4.  Once the project is open in the Unity Editor, locate and open the main scene file within `Assets/_HTTX/_Scenes/` (likely named `HospitalScene` or similar).
     5.  No additional package installations or configurations are typically required beyond letting Unity import the project assets.
 * **Hardware Setup:**
-    * No specific hardware (like VR/AR headsets) is strictly required to run the base simulation.
-    * While optimized for AR (like Magic Leap), it runs on a standard PC. Ensure PC meets Unity's minimum requirements, with a dedicated GPU recommended.
+    * it runs on a standard PC. Ensure PC meets Unity's minimum requirements, with a dedicated GPU recommended.
 
 ## Usage
 
