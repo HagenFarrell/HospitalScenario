@@ -31,10 +31,10 @@ public class Player : NetworkBehaviour
     private float ignoreServerUpdateDuration = 0.2f; // Ignore server update for 0.2s after local move
 
     [SerializeField] private GameObject radeyeToolPrefab; // Reference to the Radeye prefab
+    private GameObject startingButtons;
     public RadEyeTool radeyeToolInstance { get; private set; } // Holds the instantiated Radeye tool
 
 
-    [SerializeField] private GameObject radeyeCircleTool;
 
     public enum Roles
     {
@@ -192,7 +192,25 @@ public class Player : NetworkBehaviour
 
     private void AssignButtonOnClick()
     {
-        // Find the buttons in the scene
+        // Find the buttons in the scene without using .find
+        startingButtons = MobileUIManager.Instance.StartingButtons;
+        if(startingButtons == null){
+            Debug.LogWarning("Searching for startingbuttons, null in uimanager");
+            startingButtons = GameObject.Find("StartingButtons");
+        }
+        if(startingButtons != null){
+            startingButtons.SetActive(true);
+            Button[] buttons = startingButtons.GetComponentsInChildren<Button>();
+
+            foreach (Button button in buttons)
+            {
+                Button temp = button;
+                temp.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(temp));
+            }
+            return;
+        }
+        
+        Debug.LogWarning("startingbuttons null, searching for every button");
         Button lawEnfButton = GameObject.Find("LawEnfButton")?.GetComponent<Button>();
         Button fireDeptButton = GameObject.Find("FireDeptButton")?.GetComponent<Button>();
         Button instructorButton = GameObject.Find("InstructorButton")?.GetComponent<Button>();
@@ -589,6 +607,7 @@ public class Player : NetworkBehaviour
 
     public void onButtonClick(Button button)
     {
+        Debug.Log($"{button.name} clicked");
         if (!isLocalPlayer)
         {
             Debug.LogError("onButtonClick called on a non-local player!");
@@ -696,34 +715,6 @@ public class Player : NetworkBehaviour
     {
         // Set the role on all clients
         playerRole = role;
-    }
-
-    private void MoveCircleToMousePosition()
-    {
-        // Get the current active camera
-        Camera activeCam = playerCamera;
-
-        // Get the mouse position in screen space
-        Vector3 mousePosition = Input.mousePosition;
-
-        // Convert the mouse position to a ray
-        Ray ray = activeCam.ScreenPointToRay(mousePosition);
-        RaycastHit hit;
-
-        // LayerMask to exclude radeyeCircleTool (IgnoreRaycast layer)
-        int layerMask = ~LayerMask.GetMask("IgnoreRaycast"); // Exclude the IgnoreRaycast layer
-
-        // Perform the raycast with the layer mask
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
-        {
-            // Move the circle to the hit point
-            radeyeCircleTool.transform.position = hit.point;
-        }
-        else
-        {
-            // Default position in front of the camera
-            radeyeCircleTool.transform.position = ray.origin + ray.direction * 10f;
-        }
     }
 
 

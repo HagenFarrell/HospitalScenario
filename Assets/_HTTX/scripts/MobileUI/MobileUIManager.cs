@@ -10,6 +10,7 @@ public class MobileUIManager : MonoBehaviour {
     [SerializeField] public GameObject InstructorButtons;
     [SerializeField] public GameObject EgressButtons;
     [SerializeField] public GameObject LLEFDButtons;
+    [SerializeField] public GameObject StartingButtons;
     bool enable;
 
     void Awake() {
