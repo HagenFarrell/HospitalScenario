@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class MobileUIManager : MonoBehaviour {
-    private Player player;
     public static MobileUIManager Instance { get; private set; }
 
     [SerializeField] private CanvasGroup mobileUICanvasGroup;
@@ -21,9 +20,6 @@ public class MobileUIManager : MonoBehaviour {
         else {
             Destroy(gameObject);
         }
-    }
-    public void RegisterPlayer(Player player) {
-        this.player = player;
     }
 
     void InitializeUI() {
@@ -79,9 +75,5 @@ public class MobileUIManager : MonoBehaviour {
         {
             return EventSystem.current.IsPointerOverGameObject();
         }
-    }
-
-    public Player GetPlayer(){
-        return player;
     }
 }

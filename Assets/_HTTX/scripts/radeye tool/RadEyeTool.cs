@@ -9,7 +9,7 @@ public class RadEyeTool : NetworkBehaviour
     public Text radiationDisplay;
     public Camera mainCamera;
 
-    private bool isActive = false;
+    public bool isActive{ get; private set; }
     private Renderer[] renderers;
     private Player player;
     private bool isToolLocal = false;
@@ -34,56 +34,55 @@ public class RadEyeTool : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.R))
         {
-            isActive = !isActive;
-            SetToolVisibility(isActive);
+            SetToolVisibility(!isActive);
         }
 
        if (isActive && Input.GetMouseButtonDown(0))
-{
-    Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-    Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red, 2f); // Visualize ray
-    
-    // Use SphereCast instead of Raycast for better hit detection
-    float sphereRadius = 0.5f;
-    if (Physics.SphereCast(ray, sphereRadius, out RaycastHit hit))
-    {
-        Debug.Log($"Hit object: {hit.collider.name} with tag: {hit.collider.tag}");
-        
-        // Check if we hit an NPC directly or their parent/child has the correct tag
-        Transform hitTransform = hit.transform;
-        bool isValidNPC = false;
-        
-        // Check the hit object and all its parents for the correct tag
-        while (hitTransform != null)
         {
-            if (hitTransform.CompareTag("FireDepartment") || 
-                hitTransform.CompareTag("LawEnforcement"))
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red, 2f); // Visualize ray
+            
+            // Use SphereCast instead of Raycast for better hit detection
+            float sphereRadius = 0.5f;
+            if (Physics.SphereCast(ray, sphereRadius, out RaycastHit hit))
             {
-                isValidNPC = true;
-                break;
+                Debug.Log($"Hit object: {hit.collider.name} with tag: {hit.collider.tag}");
+                
+                // Check if we hit an NPC directly or their parent/child has the correct tag
+                Transform hitTransform = hit.transform;
+                bool isValidNPC = false;
+                
+                // Check the hit object and all its parents for the correct tag
+                while (hitTransform != null)
+                {
+                    if (hitTransform.CompareTag("FireDepartment") || 
+                        hitTransform.CompareTag("LawEnforcement"))
+                    {
+                        isValidNPC = true;
+                        break;
+                    }
+                    hitTransform = hitTransform.parent;
+                }
+                
+                if (isValidNPC)
+                {
+                    float radiationLevel = CalculateRadiation(hit.point);
+                    DisplayRadiation(radiationLevel, true);
+                    Debug.Log($"Radiation displayed: {radiationLevel} R for {hitTransform.name}");
+                }
+                else
+                {
+                    // Log the exact tag to help debugging
+                    Debug.Log($"Hit invalid object. Tag needed: FireDepartment or LawEnforcement, Found: {hit.collider.tag}");
+                    DisplayRadiation(0f, false);
+                }
             }
-            hitTransform = hitTransform.parent;
+            else
+            {
+                Debug.Log("No hit detected");
+                DisplayRadiation(0f, false);
+            }
         }
-        
-        if (isValidNPC)
-        {
-            float radiationLevel = CalculateRadiation(hit.point);
-            DisplayRadiation(radiationLevel, true);
-            Debug.Log($"Radiation displayed: {radiationLevel} R for {hitTransform.name}");
-        }
-        else
-        {
-            // Log the exact tag to help debugging
-            Debug.Log($"Hit invalid object. Tag needed: FireDepartment or LawEnforcement, Found: {hit.collider.tag}");
-            DisplayRadiation(0f, false);
-        }
-    }
-    else
-    {
-        Debug.Log("No hit detected");
-        DisplayRadiation(0f, false);
-    }
-}
     }
 
     void AssignRadiationSource()
@@ -107,8 +106,9 @@ public class RadEyeTool : NetworkBehaviour
         Debug.LogError("Radiation source not found! Make sure the hierarchy and tag are correct.");
     }
 
-    void SetToolVisibility(bool state)
+    public void SetToolVisibility(bool state)
     {
+        isActive = state;
         if (renderers == null)
             renderers = GetComponentsInChildren<MeshRenderer>();
 
@@ -122,7 +122,7 @@ public class RadEyeTool : NetworkBehaviour
             radiationDisplay.gameObject.SetActive(state);
         }
 
-        Debug.Log($"RadEye Tool toggled: {(state ? "ON" : "OFF")}");
+        // Debug.Log($"RadEye Tool toggled: {(state ? "ON" : "OFF")}");
     }
 
     float CalculateRadiation(Vector3 objectPosition)

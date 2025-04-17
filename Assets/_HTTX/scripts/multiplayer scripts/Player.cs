@@ -31,7 +31,7 @@ public class Player : NetworkBehaviour
     private float ignoreServerUpdateDuration = 0.2f; // Ignore server update for 0.2s after local move
 
     [SerializeField] private GameObject radeyeToolPrefab; // Reference to the Radeye prefab
-    private RadEyeTool radeyeToolInstance; // Holds the instantiated Radeye tool
+    public RadEyeTool radeyeToolInstance { get; private set; } // Holds the instantiated Radeye tool
 
 
     [SerializeField] private GameObject radeyeCircleTool;
@@ -187,8 +187,6 @@ public class Player : NetworkBehaviour
         {
             PhaseManager.Instance.RegisterPlayer(this);
             DriveVehicle.Instance.RegisterPlayer(this);
-            MobileUIManager.Instance.RegisterPlayer(this);
-            // LLEFireController.Instance.RegisterPlayer(this);
         }
     }
 
@@ -360,7 +358,27 @@ public class Player : NetworkBehaviour
         #endif
 
         Vector3 moveDirection = (transform.right * moveX + transform.forward * moveZ + transform.up * moveY).normalized;
-        transform.position += moveDirection * moveSpeed * Time.deltaTime;
+        Vector3 movement = moveDirection * moveSpeed * Time.deltaTime;
+        transform.position += movement;
+        
+        //If no collision is detected OR if the role is instructor 
+        if (!Physics.SphereCast(transform.position, 2f, moveDirection, out RaycastHit hit, movement.magnitude)
+         || (hit.collider != null && hit.collider.gameObject.CompareTag("ParkingLot"))
+         || playerRole == Roles.Instructor)
+        {
+                transform.position += movement; 
+        }
+
+        if (isLocalPlayer && movement.magnitude > 0.01f)
+        {
+            lastMoveTime = Time.time;
+
+            if (Vector3.Distance(transform.position, lastSentPosition) > 0.05f)
+            {
+                lastSentPosition = transform.position;
+                CmdMove(transform.position);
+            }
+        }
     }
 
     [Command]
@@ -630,7 +648,6 @@ public class Player : NetworkBehaviour
         }
 
         #if UNITY_ANDROID || UNITY_IOS
-        MobileUIManager.Instance.RegisterPlayer(this);
         MobileUIManager.Instance.RoleBasedUI(playerRole);
         #endif
         CmdSetRole(playerRole);
