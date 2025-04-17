@@ -195,70 +195,18 @@ public class Player : NetworkBehaviour
         // Find the buttons in the scene without using .find
         startingButtons = MobileUIManager.Instance.StartingButtons;
         if(startingButtons == null){
-            Debug.LogWarning("Searching for startingbuttons, null in uimanager");
+            Debug.LogWarning("Searching for startingbuttons, null from uimanager in player.cs");
             startingButtons = GameObject.Find("StartingButtons");
         }
-        if(startingButtons != null){
-            startingButtons.SetActive(true);
-            Button[] buttons = startingButtons.GetComponentsInChildren<Button>();
+        startingButtons.SetActive(true);
+        Button[] buttons = startingButtons.GetComponentsInChildren<Button>();
 
-            foreach (Button button in buttons)
-            {
-                Button temp = button;
-                temp.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(temp));
-            }
-            return;
-        }
-        
-        Debug.LogWarning("startingbuttons null, searching for every button");
-        Button lawEnfButton = GameObject.Find("LawEnfButton")?.GetComponent<Button>();
-        Button fireDeptButton = GameObject.Find("FireDeptButton")?.GetComponent<Button>();
-        Button instructorButton = GameObject.Find("InstructorButton")?.GetComponent<Button>();
-        Button dispatchButton = GameObject.Find("DispatchButton")?.GetComponent<Button>();
-        Button spectatorButton = GameObject.Find("SpectatorButton")?.GetComponent<Button>();
-
-        // Debug: Check if buttons are found
-        if (lawEnfButton == null)
+        foreach (Button button in buttons)
         {
-            Debug.LogError("LawEnfButton not found!");
+            Button temp = button;
+            temp.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(temp));
         }
-        if (fireDeptButton == null)
-        {
-            Debug.LogError("FireDeptButton not found!");
-        }
-        if (instructorButton == null)
-        {
-            Debug.LogError("InstructorButton not found!");
-        }
-
-        // Assign the onClick event for each button
-        if (lawEnfButton != null)
-        {
-            lawEnfButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(lawEnfButton));
-            // Debug.Log("LawEnfButton onClick assigned.");
-        }
-
-        if (fireDeptButton != null)
-        {
-            fireDeptButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(fireDeptButton));
-            // Debug.Log("FireDeptButton onClick assigned.");
-        }
-
-        if (instructorButton != null)
-        {
-            instructorButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(instructorButton));
-            // Debug.Log("InstructorButton onClick assigned.");
-        }
-        if (dispatchButton != null)
-        {
-            dispatchButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(dispatchButton));
-            // Debug.Log("dispatchButton onClick assigned.");
-        }
-        if (spectatorButton != null)
-        {
-            spectatorButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(spectatorButton));
-            // Debug.Log("spectatorButton onClick assigned.");
-        }
+        return;
     }
 
     private void InitializeSceneObjects()
@@ -274,7 +222,7 @@ public class Player : NetworkBehaviour
             npcs.SetCamera(playerCamera);
         }
         // Find PhaseManager in the scene
-        phaseManager = FindObjectOfType<PhaseManager>();
+        phaseManager = PhaseManager.Instance;
         if (phaseManager == null)
         {
             Debug.LogError("PhaseManager not found in the scene!");
