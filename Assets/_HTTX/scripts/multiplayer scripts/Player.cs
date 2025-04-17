@@ -669,10 +669,9 @@ public class Player : NetworkBehaviour
         moveableChars = GetNpcs(npcRole);
 
         // Hide UI
-        GameObject buttonUI = button.gameObject.transform.parent.gameObject;
-        if (buttonUI != null)
+        if (startingButtons != null)
         {
-            buttonUI.gameObject.SetActive(false);
+            startingButtons.SetActive(false);
         }
         else
         {
