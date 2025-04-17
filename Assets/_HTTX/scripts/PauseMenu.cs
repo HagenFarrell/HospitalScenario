@@ -10,7 +10,6 @@ using UnityEditor;
 public class PauseMenu : MonoBehaviour
 {
     public GameObject pauseMenuUI;
-    public Button pauseButton;
     private bool isPaused = false;
 
     void Start()
@@ -43,9 +42,7 @@ public class PauseMenu : MonoBehaviour
         }
         else
         {
-            Debug.Log("Resuming game...");
-            pauseMenuUI.SetActive(false);
-            Time.timeScale = 1;
+            ResumeGame();
         }
     }
 
@@ -56,20 +53,21 @@ public class PauseMenu : MonoBehaviour
         Time.timeScale = 1;
     }
 
-    public void QuitToMainMenu()
-    {
-        Debug.Log("Returning to Main Menu...");
-        Time.timeScale = 1;
-        SceneManager.LoadScene("MainMenuScene");  // Make sure scene name matches
-    }
+    // main menu no longer exists
+    // public void QuitToMainMenu()
+    // {
+    //     // Debug.Log("Returning to Main Menu...");
+    //     Time.timeScale = 1;
+    //     SceneManager.LoadScene("MainMenuScene");  // Make sure scene name matches
+    // }
 
     public void QuitGame()
     {
-        Debug.Log("Quitting game...");
+        // Debug.Log("Quitting game...");
         Application.Quit();
 
-#if UNITY_EDITOR
+        #if UNITY_EDITOR
             EditorApplication.isPlaying = false;
-#endif
+        #endif
     }
 }

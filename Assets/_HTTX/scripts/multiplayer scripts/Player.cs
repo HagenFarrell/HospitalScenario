@@ -418,12 +418,10 @@ public class Player : NetworkBehaviour
 
     private void HandleNPCInteraction()
     {
-        #if UNITY_ANDROID || UNITY_IOS
         // Skip if touching UI
         if (MobileUIManager.Instance.IsTouchingUI()) {
             return;
         }
-        #endif
         if(radeyeToolInstance != null && radeyeToolInstance.IsActive())
         {
             //// Debug.Log("NPC movement is disabled while radeye tool is active");
@@ -647,9 +645,7 @@ public class Player : NetworkBehaviour
                 return;
         }
 
-        #if UNITY_ANDROID || UNITY_IOS
         MobileUIManager.Instance.RoleBasedUI(playerRole);
-        #endif
         CmdSetRole(playerRole);
         moveableChars = GetNpcs(npcRole);
 
