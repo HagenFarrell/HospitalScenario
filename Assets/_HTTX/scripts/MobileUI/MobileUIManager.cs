@@ -8,6 +8,7 @@ public class MobileUIManager : MonoBehaviour {
     [SerializeField] public CustomJoystick moveJoystick;
     [SerializeField] public CustomJoystick lookJoystick;
     [SerializeField] public GameObject InstructorButtons;
+    [SerializeField] public GameObject EgressButtons;
     [SerializeField] public GameObject LLEFDButtons;
     bool enable;
 
@@ -40,6 +41,12 @@ public class MobileUIManager : MonoBehaviour {
 
         moveJoystick.SetRaycastBlocking(enable);
         lookJoystick.SetRaycastBlocking(enable);
+    }
+    public void ToggleEgressUI(bool setActive){
+        if(EgressButtons == null){
+            Debug.LogWarning("egress buttons null");
+        }
+        EgressButtons.SetActive(setActive);
     }
     public void RoleBasedUI(Player.Roles role) {
         bool isValidRole = 

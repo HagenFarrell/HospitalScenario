@@ -204,12 +204,13 @@ public class PhaseManager : NetworkBehaviour
             return 0;
         }
         if (playerRole.getPlayerRole() == Player.Roles.Instructor) CmdSetEgress(egnum);
+        MobileUIManager.Instance.ToggleEgressUI(false);
         return egnum;
     }
 
     private int TriggerEgressSelected(int phase)
     {
-
+        Debug.Log("this function is used");
         if (OnEgressSelected != null)
         {
             OnEgressSelected.Invoke(phase);
@@ -897,6 +898,7 @@ public class PhaseManager : NetworkBehaviour
     }
     private void MoveNPCsForPhase(GamePhase phase){
         // Debug.Log($"Moving NPCs for phase: {phase}");
+        MobileUIManager.Instance.ToggleEgressUI(false);
         
         if (!reverting){
             SaveWaypointState();
@@ -948,9 +950,9 @@ public class PhaseManager : NetworkBehaviour
                 break;
             case GamePhase.Phase6:
                 if(!reverting) SpawnFD();
-                
                 break;
             case GamePhase.Phase7:
+                MobileUIManager.Instance.ToggleEgressUI(true);
                 SetEgressPhase();
                 break;
             default:
