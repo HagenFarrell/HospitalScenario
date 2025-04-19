@@ -31,10 +31,10 @@ public class Player : NetworkBehaviour
     private float ignoreServerUpdateDuration = 0.2f; // Ignore server update for 0.2s after local move
 
     [SerializeField] private GameObject radeyeToolPrefab; // Reference to the Radeye prefab
+    private GameObject startingButtons;
     public RadEyeTool radeyeToolInstance { get; private set; } // Holds the instantiated Radeye tool
 
 
-    [SerializeField] private GameObject radeyeCircleTool;
 
     public enum Roles
     {
@@ -192,55 +192,21 @@ public class Player : NetworkBehaviour
 
     private void AssignButtonOnClick()
     {
-        // Find the buttons in the scene
-        Button lawEnfButton = GameObject.Find("LawEnfButton")?.GetComponent<Button>();
-        Button fireDeptButton = GameObject.Find("FireDeptButton")?.GetComponent<Button>();
-        Button instructorButton = GameObject.Find("InstructorButton")?.GetComponent<Button>();
-        Button dispatchButton = GameObject.Find("DispatchButton")?.GetComponent<Button>();
-        Button spectatorButton = GameObject.Find("SpectatorButton")?.GetComponent<Button>();
+        // Find the buttons in the scene without using .find
+        startingButtons = MobileUIManager.Instance.StartingButtons;
+        if(startingButtons == null){
+            Debug.LogWarning("Searching for startingbuttons, null from uimanager in player.cs");
+            startingButtons = GameObject.Find("StartingButtons");
+        }
+        startingButtons.SetActive(true);
+        Button[] buttons = startingButtons.GetComponentsInChildren<Button>();
 
-        // Debug: Check if buttons are found
-        if (lawEnfButton == null)
+        foreach (Button button in buttons)
         {
-            Debug.LogError("LawEnfButton not found!");
+            Button temp = button;
+            temp.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(temp));
         }
-        if (fireDeptButton == null)
-        {
-            Debug.LogError("FireDeptButton not found!");
-        }
-        if (instructorButton == null)
-        {
-            Debug.LogError("InstructorButton not found!");
-        }
-
-        // Assign the onClick event for each button
-        if (lawEnfButton != null)
-        {
-            lawEnfButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(lawEnfButton));
-            // Debug.Log("LawEnfButton onClick assigned.");
-        }
-
-        if (fireDeptButton != null)
-        {
-            fireDeptButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(fireDeptButton));
-            // Debug.Log("FireDeptButton onClick assigned.");
-        }
-
-        if (instructorButton != null)
-        {
-            instructorButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(instructorButton));
-            // Debug.Log("InstructorButton onClick assigned.");
-        }
-        if (dispatchButton != null)
-        {
-            dispatchButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(dispatchButton));
-            // Debug.Log("dispatchButton onClick assigned.");
-        }
-        if (spectatorButton != null)
-        {
-            spectatorButton.onClick.AddListener(() => LocalPlayerInstance.onButtonClick(spectatorButton));
-            // Debug.Log("spectatorButton onClick assigned.");
-        }
+        return;
     }
 
     private void InitializeSceneObjects()
@@ -256,7 +222,7 @@ public class Player : NetworkBehaviour
             npcs.SetCamera(playerCamera);
         }
         // Find PhaseManager in the scene
-        phaseManager = FindObjectOfType<PhaseManager>();
+        phaseManager = PhaseManager.Instance;
         if (phaseManager == null)
         {
             Debug.LogError("PhaseManager not found in the scene!");
@@ -418,12 +384,10 @@ public class Player : NetworkBehaviour
 
     private void HandleNPCInteraction()
     {
-        #if UNITY_ANDROID || UNITY_IOS
         // Skip if touching UI
         if (MobileUIManager.Instance.IsTouchingUI()) {
             return;
         }
-        #endif
         if(radeyeToolInstance != null && radeyeToolInstance.IsActive())
         {
             //// Debug.Log("NPC movement is disabled while radeye tool is active");
@@ -591,6 +555,7 @@ public class Player : NetworkBehaviour
 
     public void onButtonClick(Button button)
     {
+        Debug.Log($"{button.name} clicked");
         if (!isLocalPlayer)
         {
             Debug.LogError("onButtonClick called on a non-local player!");
@@ -647,17 +612,14 @@ public class Player : NetworkBehaviour
                 return;
         }
 
-        #if UNITY_ANDROID || UNITY_IOS
         MobileUIManager.Instance.RoleBasedUI(playerRole);
-        #endif
         CmdSetRole(playerRole);
         moveableChars = GetNpcs(npcRole);
 
         // Hide UI
-        GameObject buttonUI = button.gameObject.transform.parent.gameObject;
-        if (buttonUI != null)
+        if (startingButtons != null)
         {
-            buttonUI.gameObject.SetActive(false);
+            startingButtons.SetActive(false);
         }
         else
         {
@@ -700,34 +662,6 @@ public class Player : NetworkBehaviour
     {
         // Set the role on all clients
         playerRole = role;
-    }
-
-    private void MoveCircleToMousePosition()
-    {
-        // Get the current active camera
-        Camera activeCam = playerCamera;
-
-        // Get the mouse position in screen space
-        Vector3 mousePosition = Input.mousePosition;
-
-        // Convert the mouse position to a ray
-        Ray ray = activeCam.ScreenPointToRay(mousePosition);
-        RaycastHit hit;
-
-        // LayerMask to exclude radeyeCircleTool (IgnoreRaycast layer)
-        int layerMask = ~LayerMask.GetMask("IgnoreRaycast"); // Exclude the IgnoreRaycast layer
-
-        // Perform the raycast with the layer mask
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
-        {
-            // Move the circle to the hit point
-            radeyeCircleTool.transform.position = hit.point;
-        }
-        else
-        {
-            // Default position in front of the camera
-            radeyeCircleTool.transform.position = ray.origin + ray.direction * 10f;
-        }
     }
 
 
