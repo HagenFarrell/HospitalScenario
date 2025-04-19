@@ -416,7 +416,7 @@ public class Player : NetworkBehaviour
                     selectedChars.Add(hitObj);
                     // Debug.Log($"Added {hitObj.name} to selectedChars");
                 }
-                if (selectedChars.Count > 0)
+                else if (selectedChars.Count > 0)
                 {
                     Vector3 targetPosition = hit.point;
                     uint[] npcNetIds = new uint[selectedChars.Count];
