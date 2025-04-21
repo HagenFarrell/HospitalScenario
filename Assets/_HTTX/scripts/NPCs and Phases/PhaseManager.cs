@@ -952,7 +952,8 @@ public class PhaseManager : NetworkBehaviour
                 if(!reverting) SpawnFD();
                 break;
             case GamePhase.Phase7:
-                MobileUIManager.Instance.ToggleEgressUI(true);
+                if (playerRole.getPlayerRole() == Player.Roles.Instructor)
+                    MobileUIManager.Instance.ToggleEgressUI(true);
                 SetEgressPhase();
                 break;
             default:
