@@ -420,9 +420,14 @@ public class Player : NetworkBehaviour
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 GameObject hitObj = hit.collider.gameObject;
-                // Debug.Log($"Raycast hit: {hitObj.name} (Tag: {hitObj.tag})");
 
-                if (hitObj.tag == playerRole.ToString() || (playerRole == Roles.Instructor && hitObj.tag != "Untagged"))
+                AIMover mover = hitObj.GetComponent<AIMover>(); // ensure only movable npcs are selected
+                bool selectable = 
+                    (hitObj.tag == playerRole.ToString()
+                     || (playerRole == Roles.Instructor && hitObj.tag != "Untagged"))
+                     && mover != null;
+                
+                if (selectable)
                 {
                     // Debug.Log($"NPC {hitObj.name} selected!");
                     GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
