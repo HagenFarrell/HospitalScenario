@@ -169,27 +169,27 @@ public class PhaseManager : NetworkBehaviour
     {
         if (playerRole.getPlayerRole() == Player.Roles.Instructor)
         {
-            if (Input.GetKeyDown(KeyCode.Z)) 
+            if (Input.GetKeyDown(KeyCode.Alpha1)) 
             {
                 CmdSetEgress(1);
                 return 1;
             }
-            if (Input.GetKeyDown(KeyCode.X)) 
+            if (Input.GetKeyDown(KeyCode.Alpha2)) 
             {
                 CmdSetEgress(2);
                 return 2;
             }
-            if (Input.GetKeyDown(KeyCode.C)) 
+            if (Input.GetKeyDown(KeyCode.Alpha3)) 
             {
                 CmdSetEgress(3);
                 return 3;
             }
-            if (Input.GetKeyDown(KeyCode.V)) 
+            if (Input.GetKeyDown(KeyCode.Alpha4)) 
             {
                 CmdSetEgress(4);
                 return 4;
             }
-            if (Input.GetKeyDown(KeyCode.B)) 
+            if (Input.GetKeyDown(KeyCode.Alpha5)) 
             {
                 int temp = Random.Range(1,5);
                 CmdSetEgress(temp);
