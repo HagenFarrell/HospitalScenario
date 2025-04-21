@@ -7,8 +7,11 @@ public class MobileUIManager : MonoBehaviour {
     [SerializeField] private GameObject mobileUIContainer;
     [SerializeField] public CustomJoystick moveJoystick;
     [SerializeField] public CustomJoystick lookJoystick;
-    [SerializeField] public GameObject InstructorButtons;
-    [SerializeField] public GameObject EgressButtons;
+
+    [SerializeField] public GameObject InstructorButtonsEgress;
+    [SerializeField] public GameObject InstructorButtonsSides;
+    [SerializeField] public GameObject InstructorButtonsBottom;
+    
     [SerializeField] public GameObject LLEFDButtons;
     [SerializeField] public GameObject StartingButtons;
     bool enable;
@@ -27,8 +30,9 @@ public class MobileUIManager : MonoBehaviour {
     void InitializeUI() {
         mobileUIContainer.SetActive(false);
         LLEFDButtons.SetActive(false);
-        EgressButtons.SetActive(false);
-        InstructorButtons.SetActive(false);
+        InstructorButtonsEgress.SetActive(false);
+        InstructorButtonsSides.SetActive(false);
+        InstructorButtonsBottom.SetActive(false);
         #if UNITY_ANDROID || UNITY_IOS
         enable = true;
         // EnableMobileUI();
@@ -45,15 +49,17 @@ public class MobileUIManager : MonoBehaviour {
         lookJoystick.SetRaycastBlocking(enable);
     }
     public void ToggleEgressUI(bool setActive){
-        if(EgressButtons == null){
+        if(InstructorButtonsEgress == null){
             Debug.LogWarning("egress buttons null");
         }
-        EgressButtons.SetActive(setActive);
+        InstructorButtonsEgress.SetActive(setActive);
     }
     public void RoleBasedUI(Player.Roles role) {
         bool isValidRole = 
             role == Player.Roles.Instructor;
-        InstructorButtons.SetActive(isValidRole);
+        InstructorButtonsEgress.SetActive(isValidRole);
+        InstructorButtonsSides.SetActive(isValidRole);
+        InstructorButtonsBottom.SetActive(isValidRole);
 
         isValidRole = 
             role == Player.Roles.LawEnforcement

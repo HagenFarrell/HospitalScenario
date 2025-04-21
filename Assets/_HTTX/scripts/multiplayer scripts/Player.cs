@@ -325,12 +325,11 @@ public class Player : NetworkBehaviour
 
         Vector3 moveDirection = (transform.right * moveX + transform.forward * moveZ + transform.up * moveY).normalized;
         Vector3 movement = moveDirection * moveSpeed * Time.deltaTime;
-        transform.position += movement;
         
         //If no collision is detected OR if the role is instructor 
         if (!Physics.SphereCast(transform.position, 2f, moveDirection, out RaycastHit hit, movement.magnitude)
          || (hit.collider != null && hit.collider.gameObject.CompareTag("ParkingLot"))
-         || playerRole == Roles.Instructor)
+         || (playerRole == Roles.Instructor || playerRole == Roles.Spectator))
         {
                 transform.position += movement; 
         }
@@ -416,7 +415,7 @@ public class Player : NetworkBehaviour
                     selectedChars.Add(hitObj);
                     // Debug.Log($"Added {hitObj.name} to selectedChars");
                 }
-                if (selectedChars.Count > 0)
+                else if (selectedChars.Count > 0)
                 {
                     Vector3 targetPosition = hit.point;
                     uint[] npcNetIds = new uint[selectedChars.Count];
