@@ -374,11 +374,26 @@ public class Player : NetworkBehaviour
         }
     }
     public void DeselectAll(){
-        foreach(GameObject npc in selectedChars){
+        List<GameObject> tempSelectedChars = new List<GameObject>(selectedChars);
+        foreach(GameObject npc in tempSelectedChars){
+            AIMover mover = npc.GetComponent<AIMover>();
+            if(mover == null){
+                Debug.LogWarning($"mover null for {npc} in DeselectAll, Player.cs");
+                continue;
+            }
+            // don't deselect units that are driving
+            if(mover.IsDriving) continue;
+            DeselectChar(npc);
+        }
+    }
+    private void DeselectChar(GameObject npc){
+        if ((npc.tag == playerRole.ToString() || (playerRole == Roles.Instructor && npc.tag != "Untagged")) && selectedChars.Contains(npc))
+        {
             GameObject moveToolRing = npc.transform.GetChild(2).gameObject;
             moveToolRing.SetActive(false);
+            selectedChars.Remove(npc);
+            return;
         }
-        selectedChars.Clear();
     }
 
     private void HandleNPCInteraction()
@@ -454,14 +469,14 @@ public class Player : NetworkBehaviour
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
-                GameObject hitObj = hit.collider.gameObject;
-                if (hitObj.tag == playerRole.ToString() || (playerRole == Roles.Instructor && hitObj.tag != "Untagged"))
-                {
-                    GameObject moveToolRing = hitObj.transform.GetChild(2).gameObject;
-                    moveToolRing.SetActive(false);
-                    selectedChars.Remove(hitObj);
-                    return;
-                }
+                // Transform npcTransform = hit.collider.transform;
+                // // move up to the root object of the unit
+                // while (npcTransform.parent.parent != null){
+                //     npcTransform = npcTransform.parent;
+                // }
+                
+                GameObject hitObj = hit.collider.GetComponentInParent<AIMover>().gameObject;
+                DeselectChar(hitObj);
             }
         }
     }

@@ -5,7 +5,6 @@ public class cameraSwitch : MonoBehaviour
 {
     private Camera[] cameras; // Array to hold the cameras
     private int activeCameraIndex = 0; // Index of the currently active camera
-    private npcMovement npcMovement;
 
     public List<GameObject> DispatchCams;
 
