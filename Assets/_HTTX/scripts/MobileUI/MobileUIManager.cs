@@ -57,7 +57,7 @@ public class MobileUIManager : MonoBehaviour {
     public void RoleBasedUI(Player.Roles role) {
         bool isValidRole = 
             role == Player.Roles.Instructor;
-        InstructorButtonsEgress.SetActive(isValidRole);
+        // InstructorButtonsEgress.SetActive(isValidRole); // only set active in phase 7
         InstructorButtonsSides.SetActive(isValidRole);
         InstructorButtonsBottom.SetActive(isValidRole);
 
