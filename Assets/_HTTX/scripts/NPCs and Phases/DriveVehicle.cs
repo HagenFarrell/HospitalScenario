@@ -192,8 +192,10 @@ public class DriveVehicle : NetworkBehaviour{
         mover.SetRunning(false);
     }
     private bool CanDriveThis(GameObject PlayerUnit){
-        return (PlayerUnit.CompareTag("LawEnforcement") && gameObject.CompareTag("LawEnforcementVehicle")) ||
-            (PlayerUnit.CompareTag("FireDepartment") && gameObject.CompareTag("FireDepartmentVehicle"));
+        AIMover mover = PlayerUnit.GetComponent<AIMover>(); // only units that can pathfind can drive
+        return mover != null
+            && ((PlayerUnit.CompareTag("LawEnforcement") && gameObject.CompareTag("LawEnforcementVehicle")) ||
+            (PlayerUnit.CompareTag("FireDepartment") && gameObject.CompareTag("FireDepartmentVehicle")));
     }
     private void SetVars(GameObject PlayerUnit){
         AIMover mover = PlayerUnit.GetComponent<AIMover>();
