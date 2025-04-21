@@ -131,7 +131,7 @@ public class AIMover : MonoBehaviour
     }
 
     // Update function rewritten to accompany new steering mechanics.
-    private void Update()
+    private void FixedUpdate()
     {
         // Ensuring idling if path is out.
         if (path == null || currentWaypoint >= path.Count)
@@ -282,26 +282,31 @@ public class AIMover : MonoBehaviour
 
     private void applyMovement(Vector3 steering)
     {
-        // Update the currentVelocity with the steering force previously calculated.
-        Vector3 smoothedSteering = Vector3.Lerp(previousSteering, steering, 0.15f);
-        previousSteering = smoothedSteering;
+        // Remove Y component from calculations
+        steering.y = 0;
         
-        // Veclocity object must be created for reinitializing currentVelocity due to its set nature.
-        currentVelocity = new Vector3(currentVelocity.x, 0, currentVelocity.z);
-        smoothedSteering.y = 0;
-
-        // More direct velocity application
-        currentVelocity = Vector3.Lerp(currentVelocity, currentVelocity + smoothedSteering, Time.deltaTime * 6f);
-        currentVelocity = Vector3.ClampMagnitude(currentVelocity, maxSpeed);
-
-        // Update the agents position based on the new velocity calculated.
-        transform.position += currentVelocity * Time.deltaTime;
-
-        // Animate on move.
+        // Calculate desired velocity based on steering
+        Vector3 desiredVelocity = currentVelocity + steering;
+        desiredVelocity = Vector3.ClampMagnitude(desiredVelocity, maxSpeed);
+        
+        // Apply smoothing with less aggressive parameters
+        currentVelocity = Vector3.Lerp(currentVelocity, desiredVelocity, Time.fixedDeltaTime * 2.5f);
+        
+        // Apply deadzone to prevent micro-movements
+        if (currentVelocity.magnitude < 0.05f)
+        {
+            currentVelocity = Vector3.zero;
+        }
+        
+        // Update position with the new velocity
+        transform.position += currentVelocity * Time.fixedDeltaTime;
+        
+        // Update animation and rotation
         UpdateAnimation();
-
-        // Add smooth rotations.
         updateRotation();
+        
+        // Store previous steering with less weighting of current steering
+        previousSteering = Vector3.Lerp(previousSteering, steering, 0.05f);
     }
 
     private bool isRunningExternally = true; // Flag to allow external running command
@@ -378,7 +383,7 @@ public class AIMover : MonoBehaviour
         if (currentVelocity.magnitude > 0.1f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(currentVelocity.normalized);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 8f);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.fixedDeltaTime * 8f);
         }
     }
 
