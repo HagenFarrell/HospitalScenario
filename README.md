@@ -154,7 +154,7 @@
     * **Raydiance Incompatibility:** The Mirror-based implementation is incompatible with the target Avalon Holographics/Raydiance template environment (See Challenges section).
 * **Future Work / To-Do List:**
     * [ ] **Major Task: Investigate/Implement Raydiance Integration:** Address the challenges outlined above to port the simulation to the Avalon Holographics Raydiance environment. This involves resolving network manager conflicts and player instantiation issues.
-    * [ ] **Investigate/Fix FD Animation Bug:** Attempt to identify the cause of the rare Phase 7 FD unit animation issue and implement a fix.
+    * [X] **Investigate/Fix FD Animation Bug:** ~~Attempt to identify the cause of the rare Phase 7 FD unit animation issue and implement a fix.~~ This has been fixed on 4/21/2025 by Kirk Lefevre.
 
 ## Recommendations for Future Teams
 
