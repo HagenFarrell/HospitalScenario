@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
-public class AIMover : MonoBehaviour
+public class AIMover : NetworkBehaviour
 {
     private Animator animator;
 
@@ -306,8 +307,15 @@ public class AIMover : MonoBehaviour
 
     private bool isRunningExternally = true; // Flag to allow external running command
 
+    [Command(requiresAuthority = false)]
     public void SetRunning(bool running)
     {
+        isRunningExternally = running;
+        animator.SetBool("IsRunning", running);
+        RpcSetRunning(running);
+    }
+    [ClientRpc]
+    private void RpcSetRunning(bool running){
         isRunningExternally = running;
         animator.SetBool("IsRunning", running);
     }

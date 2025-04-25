@@ -151,7 +151,7 @@ public class DriveVehicle : NetworkBehaviour{
         isActiveVehicle = false;
         foreach(GameObject PlayerUnit in PlayerUnits){
             // check if roles match up
-            if(ControlPlayer.getPlayerRole() != Player.Roles.Instructor && !PlayerUnit.CompareTag(ControlPlayer.getPlayerRole().ToString())) continue;
+            if(!(ControlPlayer.getPlayerRole() == Player.Roles.Instructor || PlayerUnit.CompareTag(ControlPlayer.getPlayerRole().ToString()))) continue;
 
             AIMover mover = PlayerUnit.GetComponent<AIMover>();
             if(mover == null){
